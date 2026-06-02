@@ -15,7 +15,8 @@
     "build": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "db:rls-test": "tsx scripts/rls-poc-test.ts"
   },
   "dependencies": {
     "dotenv": "^17.2.3",
@@ -26,6 +27,7 @@
     "@propai/config": "workspace:*",
     "@types/node": "^20",
     "drizzle-kit": "^0.31.8",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }
