@@ -34,6 +34,7 @@ Local database URL (default in `.env.example`):
 | `pnpm db:migrate`   | Apply migrations (`DATABASE_URL` in root `.env`)  |
 | `pnpm db:studio`    | Open Drizzle Studio                               |
 | `pnpm db:rls-test`  | Run RLS isolation POC (`propai_app` role)       |
+| `pnpm test:api`     | API RLS integration tests (Vitest + Docker DB)  |
 | `pnpm build`        | Production build                                  |
 | `pnpm lint`         | ESLint (all workspace packages)                   |
 | `pnpm typecheck`    | TypeScript strict check (Turbo)                   |

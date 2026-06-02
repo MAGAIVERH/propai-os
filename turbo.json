@@ -18,6 +18,10 @@
     "lint": {},
     "typecheck": {
       "dependsOn": ["^typecheck"]
+    },
+    "test": {
+      "dependsOn": ["^typecheck"],
+      "cache": false
     }
   }
 }

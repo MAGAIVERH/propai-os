@@ -93,6 +93,70 @@ Script: `packages/db/scripts/rls-poc-test.ts`
 
 ---
 
+## API integration (Day 8)
+
+### Session → tenant mapping
+
+| Layer | Responsibility |
+| ----- | -------------- |
+| Better Auth session | `session.activeOrganizationId` (organization plugin) |
+| `resolveTenantId()` | Maps organization UUID → `tenants.id` (1:1 until mapping table exists) |
+| Fastify middleware | Sets `request.tenantId` from session only — never from request body/query |
+| Route handlers | All tenant DB work via `runInTenantContext(request.tenantId, …)` |
+
+Better Auth is configured in `apps/api/src/auth/better-auth.ts` (organization plugin). Full auth schema + login UI are deferred; integration tests use `Authorization: Bearer mock-session:<org-uuid>` when `NODE_ENV=test`.
+
+### Request flow
+
+```mermaid
+sequenceDiagram
+  participant Client
+  participant API as Fastify /v1
+  participant Auth as getSessionFromRequest
+  participant DB as PostgreSQL RLS
+
+  Client->>API: GET /v1/test-items + session
+  API->>Auth: resolve session
+  Auth-->>API: activeOrganizationId
+  API->>API: resolveTenantId → tenants.id
+  API->>DB: runInTenantContext + set_config
+  DB-->>API: tenant-scoped rows only
+  API-->>Client: 200 JSON
+```
+
+Unauthenticated `/v1/*` requests return **401**; session without valid organization returns **403**. `/health` stays public.
+
+### Automated API tests
+
+Requires Docker Postgres (`pnpm docker:up`) and migrations (`pnpm db:migrate`).
+
+```bash
+pnpm test:api
+# or
+pnpm --filter @propai/api test
+```
+
+Tests (`apps/api/src/test-items.integration.test.ts`):
+
+- Seed two tenants + `test_items` rows (admin db)
+- Tenant A session sees A only; tenant B sees B only
+- No session → 401
+- Unknown organization → 403
+- Raw `getAppDb()` query without context → 0 rows
+
+### API test results (2026-06-02, local Docker)
+
+| Check | Result |
+| ----- | ------ |
+| Unauthenticated GET `/v1/test-items` | **PASS** (401) |
+| Tenant A isolation | **PASS** (2 rows) |
+| Tenant B isolation | **PASS** (2 rows) |
+| Unknown organization | **PASS** (403) |
+| POST scoped to session tenant | **PASS** |
+| App db without tenant context | **PASS** (0 rows) |
+
+---
+
 ## Consequences
 
 ### Positive
@@ -103,7 +167,8 @@ Script: `packages/db/scripts/rls-poc-test.ts`
 ### Negative / follow-ups
 
 - Every business table needs `tenant_id`, RLS enabled, and policies (Day 8+).
-- API middleware must call `withTenantContext` (or equivalent) on every tenant-scoped request.
+- ~~API middleware must call `withTenantContext` (or equivalent) on every tenant-scoped request.~~ **Done (Day 8)** — Fastify middleware + `runInTenantContext`.
+- Better Auth database adapter + login UI in `apps/web` (Day 9+).
 - Neon/production: create a non-superuser role; never run app queries as superuser.
 - `tenants` / auth tables may stay outside RLS or use separate policies (Better Auth integration TBD).
 
@@ -115,4 +180,6 @@ Script: `packages/db/scripts/rls-poc-test.ts`
 - `packages/db/drizzle/0002_propai_app_role.sql` — `propai_app` role
 - `packages/db/drizzle/0003_rls_policy_null_safe.sql` — null-safe policy
 - `packages/db/src/tenant-context.ts` — TypeScript helper
+- `apps/api/src/plugins/tenant-context.ts` — Fastify middleware
+- `apps/api/src/routes/test-items.ts` — RLS-backed demo routes
 - [PostgreSQL RLS documentation](https://www.postgresql.org/docs/current/ddl-rowsecurity.html)

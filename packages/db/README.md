@@ -42,8 +42,23 @@ Set `DATABASE_URL` in root `.env`:
 ## Usage
 
 ```typescript
-import { getDb, tenants } from "@propai/db";
+import { getDb, runInTenantContext, tenants, testItems } from "@propai/db";
 
-const db = getDb();
-const rows = await db.select().from(tenants);
+// Admin / migrations (superuser — no RLS enforcement)
+const adminDb = getDb();
+const tenantsRows = await adminDb.select().from(tenants);
+
+// Tenant-scoped queries (app role + RLS)
+const items = await runInTenantContext(tenantId, async (tx) => {
+  return tx.select().from(testItems);
+});
 ```
+
+### API helpers
+
+| Export | Purpose |
+| ------ | ------- |
+| `runInTenantContext(tenantId, fn)` | Preferred API alias over `withTenantContext` |
+| `TenantContextRequiredError` | Throw when handler lacks tenant scope |
+| `getAppDb()` | Non-superuser client (`DATABASE_APP_URL`) |
+| `getDb()` | Admin client (`DATABASE_URL`) — never for tenant business queries |

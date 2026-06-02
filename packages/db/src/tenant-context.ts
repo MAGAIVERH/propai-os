@@ -38,3 +38,15 @@ export async function withTenantContext<T>(
     return fn(tx);
   });
 }
+
+/**
+ * API-facing alias: runs tenant-scoped work on `getAppDb()` with RLS enforced.
+ */
+export async function runInTenantContext<T>(
+  tenantId: string,
+  fn: (tx: DbTransaction) => Promise<T>,
+): Promise<T> {
+  return withTenantContext(tenantId, fn);
+}
+
+export type { DbTransaction };

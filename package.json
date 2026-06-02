@@ -16,7 +16,9 @@
     "db:generate": "pnpm --filter @propai/db db:generate",
     "db:migrate": "pnpm --filter @propai/db db:migrate",
     "db:studio": "pnpm --filter @propai/db db:studio",
-    "db:rls-test": "pnpm --filter @propai/db db:rls-test"
+    "db:rls-test": "pnpm --filter @propai/db db:rls-test",
+    "test": "turbo test",
+    "test:api": "pnpm --filter @propai/api test"
   },
   "devDependencies": {
     "eslint": "^9",
