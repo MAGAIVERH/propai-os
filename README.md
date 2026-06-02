@@ -98,7 +98,7 @@ propai-os/
 └── README.md
 ```
 
-> **Note:** Monorepo scaffold is in progress. `apps/web` is the brokerage dashboard; `apps/api`, `apps/marketplace`, and full `packages/db` follow the roadmap.
+> **Note:** Monorepo scaffold is active. `packages/ui` and full Drizzle/RLS in `packages/db` ship in Phase 1 (Days 6+).
 
 ---
 
@@ -134,6 +134,19 @@ propai-os/
 
 ---
 
+## Monorepo structure
+
+| Path | Package | Description |
+| ---- | ------- | ----------- |
+| `apps/web` | `@propai/web` | Brokerage SaaS dashboard (Next.js) |
+| `apps/marketplace` | `@propai/marketplace` | Public property search (Next.js, SEO) |
+| `apps/api` | `@propai/api` | REST API entry (Fastify) — WebSocket/workers later |
+| `packages/shared` | `@propai/shared` | Zod contracts, constants, shared types |
+| `packages/db` | `@propai/db` | Drizzle schema, migrations, RLS (Phase 1) |
+| `packages/config` | `@propai/config` | Shared TypeScript / tooling presets |
+
+Managed with **pnpm workspaces** and **Turborepo**.
+
 ## Getting started
 
 **Prerequisites:** Node 20 LTS, pnpm 9+, Docker Desktop (PostgreSQL + Redis locally).
@@ -144,16 +157,30 @@ cd propai-os
 pnpm install
 cp .env.example .env
 pnpm docker:up
-pnpm dev
+```
+
+Run apps (separate terminals or `turbo dev` for all):
+
+```bash
+pnpm --filter @propai/web dev          # http://localhost:3000
+pnpm --filter @propai/marketplace dev  # http://localhost:3001
+pnpm --filter @propai/api dev          # http://localhost:3333/health
+```
+
+Quality checks (also run in CI on every PR):
+
+```bash
+pnpm lint
+pnpm typecheck
 ```
 
 See [docs/dev-setup.md](./docs/dev-setup.md) for editor tooling and cloud accounts.
 
-| App                              | Default URL             |
-| -------------------------------- | ----------------------- |
-| Dashboard (`apps/web`)           | `http://localhost:3000` |
-| Marketplace (`apps/marketplace`) | `http://localhost:3001` |
-| API (`apps/api`)                 | `http://localhost:3333` |
+| App | Default URL |
+| --- | ----------- |
+| Dashboard (`apps/web`) | http://localhost:3000 |
+| Marketplace (`apps/marketplace`) | http://localhost:3001 |
+| API (`apps/api`) | http://localhost:3333 |
 
 ---
 

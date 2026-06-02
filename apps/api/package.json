@@ -1,0 +1,25 @@
+{
+  "name": "@propai/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc --noEmit -p tsconfig.json",
+    "start": "tsx src/index.ts",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@propai/shared": "workspace:*",
+    "fastify": "^5.7.4"
+  },
+  "devDependencies": {
+    "@propai/config": "workspace:*",
+    "@types/node": "^20",
+    "eslint": "^9",
+    "typescript-eslint": "^8.56.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5"
+  }
+}

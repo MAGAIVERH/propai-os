@@ -31,7 +31,8 @@ Local database URL (default in `.env.example`):
 | `pnpm docker:up`    | Start Postgres + Redis via Docker Compose         |
 | `pnpm docker:down`  | Stop local containers                             |
 | `pnpm build`        | Production build                                  |
-| `pnpm lint`         | ESLint                                            |
+| `pnpm lint`         | ESLint (all workspace packages)                   |
+| `pnpm typecheck`    | TypeScript strict check (Turbo)                   |
 | `pnpm lint:fix`     | ESLint with auto-fix                              |
 | `pnpm format`       | Prettier write                                    |
 | `pnpm format:check` | Prettier check (CI)                               |

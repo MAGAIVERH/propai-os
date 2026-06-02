@@ -8,6 +8,7 @@
     "start": "turbo start",
     "lint": "turbo lint",
     "lint:fix": "turbo lint -- --fix",
+    "typecheck": "turbo typecheck",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "docker:up": "docker compose up -d",
