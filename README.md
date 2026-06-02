@@ -1,0 +1,178 @@
+# PropAI OS
+
+**An AI-powered Real Estate Operating System for US brokerages.**
+
+---
+
+## Problem
+
+US brokerages run on fragmented tools: a CRM here, a listing site there, spreadsheets for pipeline, and email for scheduling. Agents context-switch constantly; managers lack a single view of leads, listings, and performance; tenant data isolation is often enforced only in application code. Public marketplaces rarely feed the CRM in real time, and search stays keyword-based while buyers think in natural language. The result is slower deals, duplicated work, and weak visibility from first touch to close.
+
+## Solution
+
+PropAI OS is an AI-powered Real Estate Operating System built for US brokerages and their teams. It unifies multi-tenant CRM, deal pipeline, and a property marketplace in one platform, with semantic search that understands natural-language intent and analytics that turn activity into actionable insight. From lead capture to close, PropAI OS gives agents, brokers, and operators a single workspace to run the business—faster decisions, cleaner workflows, and intelligence embedded where work actually happens.
+
+**Product scope:** SaaS dashboard (brokerages) · public marketplace (SEO) · API + workers · premium landing page.
+
+**Language & market:** English only (en-US), built for the US real estate market.
+
+---
+
+## Live demo
+
+**URL:** [https://demo.propai-os.com](https://demo.propai-os.com) *(TBD — placeholder)*
+
+Demo credentials will be documented here once staging is deployed.
+
+---
+
+## Architecture
+
+High-level system view (target monorepo):
+
+```mermaid
+flowchart TB
+  subgraph clients [Clients]
+    Web[apps/web — Brokerage dashboard]
+    Marketplace[apps/marketplace — Public SEO marketplace]
+    Landing[Landing / marketing]
+  end
+
+  subgraph api [apps/api — Fastify]
+    REST[REST API]
+    WS[WebSocket — real-time CRM]
+    Workers[BullMQ workers]
+  end
+
+  subgraph packages [packages]
+    Shared[shared — Zod contracts]
+    DB[db — Drizzle schema + RLS]
+    UI[ui — shadcn components]
+    Config[config — ESLint, TS, Tailwind]
+  end
+
+  subgraph infra [Infrastructure]
+    Neon[(PostgreSQL + pgvector — Neon)]
+    Redis[(Redis — Upstash)]
+    R2[Object storage — R2 / S3]
+    AI[Vercel AI SDK]
+    Auth[Better Auth — Organizations]
+  end
+
+  Web --> REST
+  Web --> WS
+  Marketplace --> REST
+  Landing --> Web
+
+  REST --> Shared
+  REST --> DB
+  REST --> Auth
+  Workers --> Redis
+  Workers --> AI
+  Workers --> DB
+  DB --> Neon
+  REST --> R2
+```
+
+### Target monorepo structure
+
+```
+propai-os/
+├── apps/
+│   ├── api/              # Fastify — REST + WebSocket + worker entry
+│   ├── web/              # Next.js — SaaS dashboard (brokerages)
+│   └── marketplace/      # Next.js — public property search (SEO/SSR)
+├── packages/
+│   ├── db/               # Drizzle schema, migrations, RLS policies
+│   ├── shared/           # Zod contracts, enums, constants, helpers
+│   ├── ui/               # Shared shadcn-based components
+│   └── config/           # ESLint, TSConfig, Tailwind presets
+├── docs/
+│   ├── architecture.md
+│   ├── adr/              # Architecture Decision Records
+│   ├── demo-script.md
+│   └── legal/            # Privacy, Terms, Fair Housing
+├── docker/
+├── docker-compose.yml
+├── .github/workflows/
+└── README.md
+```
+
+> **Note:** The repository is bootstrapping toward this layout. Early commits may reflect a single Next.js app until the Turborepo monorepo is scaffolded (Phase 0, Day 5).
+
+---
+
+## Tech stack
+
+| Layer | Technology |
+|-------|------------|
+| Monorepo | Turborepo, pnpm workspaces |
+| API | Fastify, Zod validation, WebSocket |
+| Frontend | Next.js, React, TypeScript, Tailwind CSS, shadcn/ui |
+| UI polish | Inspira UI, GSAP, Lenis |
+| Database | PostgreSQL (Neon), Drizzle ORM, Row-Level Security (RLS), pgvector |
+| Auth | Better Auth (Organizations) |
+| Jobs & cache | BullMQ, Redis (Upstash) |
+| AI | Vercel AI SDK (vision, embeddings, lead scoring) |
+| Storage | Cloudflare R2 or AWS S3 (presigned uploads) |
+| Email | Resend |
+| Billing | Stripe |
+| Observability | Sentry |
+| DevOps | Docker, GitHub Actions, Vercel |
+| Testing | Vitest, Playwright |
+
+---
+
+## Core capabilities (roadmap)
+
+- **Multi-tenant CRM** — organizations, roles (owner, manager, agent, viewer), audit log
+- **Pipeline** — Kanban stages, real-time updates via WebSocket
+- **Properties** — US fields (sq ft, USD, state/ZIP), photos, map, AI-assisted listing generation
+- **Marketplace** — SSR property search, semantic query, lead capture into CRM
+- **AI** — photo analysis, pgvector semantic search, lead scoring, price estimates
+- **Analytics & billing** — funnel metrics, CSV export, Stripe Free / Pro plans
+
+---
+
+## Getting started
+
+*Detailed setup will be expanded as the monorepo is initialized.*
+
+**Prerequisites:** Node 20 LTS, pnpm 9+, Docker Desktop (for local PostgreSQL / Redis).
+
+```bash
+git clone https://github.com/YOUR_ORG/propai-os.git
+cd propai-os
+pnpm install
+cp .env.example .env   # configure Neon, Upstash, API keys
+docker compose up -d
+pnpm dev
+```
+
+| App | Default URL |
+|-----|-------------|
+| Dashboard (`apps/web`) | `http://localhost:3000` |
+| Marketplace (`apps/marketplace`) | `http://localhost:3001` |
+| API (`apps/api`) | `http://localhost:3333` |
+
+---
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| `docs/architecture.md` | System design, data flows, auth & AI |
+| `docs/adr/` | Architecture Decision Records |
+| `docs/legal/` | Privacy, Terms, Fair Housing (draft) |
+
+---
+
+## License
+
+TBD.
+
+---
+
+## Status
+
+**Early development** — foundation and monorepo scaffold in progress. See project milestones in internal development guide.
