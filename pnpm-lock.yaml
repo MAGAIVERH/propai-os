@@ -199,6 +199,9 @@ importers:
 
   packages/db:
     dependencies:
+      '@propai/shared':
+        specifier: workspace:*
+        version: link:../shared
       dotenv:
         specifier: ^17.2.3
         version: 17.4.2

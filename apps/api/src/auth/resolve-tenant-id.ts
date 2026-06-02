@@ -1,4 +1,4 @@
-import { getTenantById } from "@propai/db";
+import { getOrganizationById } from "@propai/db";
 
 import type { PropAiSession } from "./types.js";
 
@@ -6,8 +6,8 @@ const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 /**
- * Maps Better Auth `activeOrganizationId` to `tenants.id`.
- * Convention (Day 8): organization UUID equals tenant row UUID until a mapping table exists.
+ * Maps Better Auth `activeOrganizationId` to `organization.id`.
+ * Organization UUID is the tenant root for RLS (`tenant_id` columns).
  */
 export async function resolveTenantId(
   session: PropAiSession,
@@ -18,5 +18,5 @@ export async function resolveTenantId(
     return null;
   }
 
-  return getTenantById(organizationId);
+  return getOrganizationById(organizationId);
 }

@@ -17,6 +17,7 @@
     "db:migrate": "pnpm --filter @propai/db db:migrate",
     "db:studio": "pnpm --filter @propai/db db:studio",
     "db:rls-test": "pnpm --filter @propai/db db:rls-test",
+    "db:seed-dev": "pnpm --filter @propai/db db:seed-dev",
     "test": "turbo test",
     "test:api": "pnpm --filter @propai/api test"
   },

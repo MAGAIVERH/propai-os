@@ -30,7 +30,7 @@ describe("RLS API tenant isolation", () => {
   });
 
   it("returns 401 for unauthenticated GET /v1/test-items", async () => {
-    const app = await buildApp();
+    const app = await buildApp({ mountAuthRoutes: false });
 
     const response = await app.inject({
       method: "GET",
@@ -46,7 +46,7 @@ describe("RLS API tenant isolation", () => {
   });
 
   it("returns only tenant A rows for tenant A session", async () => {
-    const app = await buildApp();
+    const app = await buildApp({ mountAuthRoutes: false });
 
     const response = await app.inject({
       method: "GET",
@@ -69,7 +69,7 @@ describe("RLS API tenant isolation", () => {
   });
 
   it("returns only tenant B rows for tenant B session", async () => {
-    const app = await buildApp();
+    const app = await buildApp({ mountAuthRoutes: false });
 
     const response = await app.inject({
       method: "GET",
@@ -92,7 +92,7 @@ describe("RLS API tenant isolation", () => {
   });
 
   it("returns 403 when session has unknown organization id", async () => {
-    const app = await buildApp();
+    const app = await buildApp({ mountAuthRoutes: false });
 
     const response = await app.inject({
       method: "GET",
@@ -113,7 +113,7 @@ describe("RLS API tenant isolation", () => {
   });
 
   it("creates items scoped to session tenant only", async () => {
-    const app = await buildApp();
+    const app = await buildApp({ mountAuthRoutes: false });
 
     const createResponse = await app.inject({
       method: "POST",

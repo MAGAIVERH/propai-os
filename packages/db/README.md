@@ -2,17 +2,19 @@
 
 Drizzle ORM schema, migrations, and database client for PropAI OS.
 
-Row-Level Security (RLS) POC validated in Day 7 — see `docs/adr/001-rls-multi-tenancy.md`.
+See `docs/adr/001-rls-multi-tenancy.md` (RLS) and `docs/adr/002-identity-organizations-roles.md` (identity).
 
-## Schema (Day 6–7)
+## Schema
 
 | Table | Purpose |
 | ----- | ------- |
-| `tenants` | Brokerage tenant root (`id`, `name`, `slug`, `created_at`) |
-| `tenant_settings` | Per-tenant settings (`timezone`, `currency`, `logo_url`) |
-| `test_items` | RLS POC (`tenant_id`, `name`) — pattern for future business tables |
+| `organization` | Brokerage tenant root (Better Auth org plugin; replaces legacy `tenants`) |
+| `user`, `session`, `account`, `verification` | Better Auth core |
+| `member`, `invitation` | Better Auth organization plugin |
+| `tenant_settings` | Per-org settings (FK → `organization.id`) |
+| `test_items` | RLS POC (`tenant_id` → `organization.id`) |
 
-Product docs refer to `organization_id`; this package uses `tenants` until Better Auth organizations are wired.
+**RLS:** `tenant_id` columns reference `organization.id`. Session scope uses `app.current_tenant`.
 
 ## Roles (local Docker)
 
@@ -28,28 +30,25 @@ Default app URL: `postgresql://propai_app:propai_app@localhost:5432/propai`
 ```bash
 cp .env.example .env
 pnpm docker:up
-pnpm db:generate   # after schema changes
-pnpm db:migrate    # apply migrations (local Docker or Neon dev)
-pnpm db:studio     # Drizzle Studio
-pnpm db:rls-test   # RLS isolation POC (Day 7)
+pnpm db:migrate
+pnpm db:seed-dev      # optional: 1 org + owner user + settings
+pnpm db:rls-test
+pnpm test:api
 ```
-
-Set `DATABASE_URL` in root `.env`:
-
-- **Local:** `postgresql://propai:propai@localhost:5432/propai`
-- **Neon dev:** connection string with `?sslmode=require`
 
 ## Usage
 
 ```typescript
-import { getDb, runInTenantContext, tenants, testItems } from "@propai/db";
+import {
+  getOrganizationById,
+  runInTenantContext,
+  organization,
+  testItems,
+} from "@propai/db";
 
-// Admin / migrations (superuser — no RLS enforcement)
-const adminDb = getDb();
-const tenantsRows = await adminDb.select().from(tenants);
+const orgId = await getOrganizationById(activeOrganizationId);
 
-// Tenant-scoped queries (app role + RLS)
-const items = await runInTenantContext(tenantId, async (tx) => {
+const items = await runInTenantContext(orgId!, async (tx) => {
   return tx.select().from(testItems);
 });
 ```
@@ -58,7 +57,7 @@ const items = await runInTenantContext(tenantId, async (tx) => {
 
 | Export | Purpose |
 | ------ | ------- |
-| `runInTenantContext(tenantId, fn)` | Preferred API alias over `withTenantContext` |
-| `TenantContextRequiredError` | Throw when handler lacks tenant scope |
-| `getAppDb()` | Non-superuser client (`DATABASE_APP_URL`) |
-| `getDb()` | Admin client (`DATABASE_URL`) — never for tenant business queries |
+| `runInTenantContext(tenantId, fn)` | Tenant-scoped queries via `getAppDb()` + RLS |
+| `getOrganizationById` / `getTenantById` | Resolve org UUID (alias) |
+| `authSchema` | Better Auth Drizzle adapter table map |
+| `seedDevIdentity()` | Dev seed: org + owner member + settings |

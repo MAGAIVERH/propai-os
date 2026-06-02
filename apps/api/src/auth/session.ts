@@ -51,14 +51,24 @@ function toFetchHeaders(request: FastifyRequest): Headers {
   return headers;
 }
 
+function readActiveOrganizationId(sessionRecord: Record<string, unknown>): string | null {
+  const value = sessionRecord.activeOrganizationId;
+
+  if (typeof value === "string" && value.length > 0) {
+    return value;
+  }
+
+  return null;
+}
+
 function mapBetterAuthSession(session: {
   user: { id: string };
-  session: { activeOrganizationId?: string | null };
+  session: Record<string, unknown>;
 }): PropAiSession {
   return {
     user: { id: session.user.id },
     session: {
-      activeOrganizationId: session.session.activeOrganizationId ?? null,
+      activeOrganizationId: readActiveOrganizationId(session.session),
     },
   };
 }

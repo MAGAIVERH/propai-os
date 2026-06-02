@@ -1,13 +1,23 @@
 export { closeDb, getAppDb, getDb, type Db } from "./client.js";
 export { TenantContextRequiredError } from "./errors.js";
 export { getDatabaseUrl, loadEnv } from "./env.js";
-export { getTenantById } from "./queries/get-tenant-by-id.js";
 export {
+  getOrganizationById,
+  getTenantById,
+} from "./queries/get-tenant-by-id.js";
+export { seedDevIdentity } from "./seed/dev-identity.js";
+export {
+  account,
+  authSchema,
+  invitation,
+  member,
+  organization,
+  session,
   tenantSettings,
-  tenantSettingsRelations,
   tenants,
-  tenantsRelations,
   testItems,
+  user,
+  verification,
 } from "./schema/index.js";
 export {
   runInTenantContext,
@@ -16,4 +26,4 @@ export {
   type DbTransaction,
 } from "./tenant-context.js";
 
-export const DB_PACKAGE_VERSION = "0.2.0" as const;
+export const DB_PACKAGE_VERSION = "0.3.0" as const;

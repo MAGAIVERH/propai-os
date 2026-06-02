@@ -1,15 +1,24 @@
 import { eq } from "drizzle-orm";
 
 import { getDb } from "../client.js";
-import { tenants } from "../schema/tenants.js";
+import { organization } from "../schema/auth.js";
 
-/** Returns `tenants.id` when the row exists (used for org → tenant mapping). */
-export async function getTenantById(tenantId: string): Promise<string | null> {
-  const [tenant] = await getDb()
-    .select({ id: tenants.id })
-    .from(tenants)
-    .where(eq(tenants.id, tenantId))
+/** Returns `organization.id` when the brokerage tenant exists. */
+export async function getOrganizationById(
+  organizationId: string,
+): Promise<string | null> {
+  const [row] = await getDb()
+    .select({ id: organization.id })
+    .from(organization)
+    .where(eq(organization.id, organizationId))
     .limit(1);
 
-  return tenant?.id ?? null;
+  return row?.id ?? null;
+}
+
+/**
+ * @deprecated Use `getOrganizationById` — alias kept for Day 7–8 callers.
+ */
+export async function getTenantById(tenantId: string): Promise<string | null> {
+  return getOrganizationById(tenantId);
 }

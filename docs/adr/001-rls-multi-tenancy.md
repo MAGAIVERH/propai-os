@@ -168,9 +168,9 @@ Tests (`apps/api/src/test-items.integration.test.ts`):
 
 - Every business table needs `tenant_id`, RLS enabled, and policies (Day 8+).
 - ~~API middleware must call `withTenantContext` (or equivalent) on every tenant-scoped request.~~ **Done (Day 8)** — Fastify middleware + `runInTenantContext`.
-- Better Auth database adapter + login UI in `apps/web` (Day 9+).
+- ~~Better Auth database adapter + login UI in `apps/web` (Day 9+).~~ **Adapter + schema done (Day 9)** — login UI still deferred.
 - Neon/production: create a non-superuser role; never run app queries as superuser.
-- `tenants` / auth tables may stay outside RLS or use separate policies (Better Auth integration TBD).
+- Auth tables (`user`, `session`, etc.) stay outside RLS; business rows use `tenant_id` → `organization.id`.
 
 ---
 
@@ -178,8 +178,8 @@ Tests (`apps/api/src/test-items.integration.test.ts`):
 
 - `packages/db/drizzle/0001_thick_goblin_queen.sql` — `test_items` + RLS
 - `packages/db/drizzle/0002_propai_app_role.sql` — `propai_app` role
-- `packages/db/drizzle/0003_rls_policy_null_safe.sql` — null-safe policy
+- `packages/db/drizzle/0004_identity_organizations.sql` — tenants → organization + Better Auth tables
 - `packages/db/src/tenant-context.ts` — TypeScript helper
 - `apps/api/src/plugins/tenant-context.ts` — Fastify middleware
-- `apps/api/src/routes/test-items.ts` — RLS-backed demo routes
+- [ADR 002 — Identity & roles](./002-identity-organizations-roles.md)
 - [PostgreSQL RLS documentation](https://www.postgresql.org/docs/current/ddl-rowsecurity.html)

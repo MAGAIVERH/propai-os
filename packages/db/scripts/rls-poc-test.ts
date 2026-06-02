@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 
 import { closeDb, getAppDb, getDb } from "../src/client.js";
-import { tenants, testItems } from "../src/schema/index.js";
+import { organization, testItems } from "../src/schema/index.js";
 import { withTenantContext } from "../src/tenant-context.js";
 
 type TestResult = {
@@ -30,16 +30,16 @@ async function main(): Promise<void> {
   const results: TestResult[] = [];
 
   await adminDb.execute(
-    sql`TRUNCATE test_items, tenants RESTART IDENTITY CASCADE`,
+    sql`TRUNCATE test_items, tenant_settings, member, invitation, organization, "user" RESTART IDENTITY CASCADE`,
   );
 
   const [tenantA] = await adminDb
-    .insert(tenants)
+    .insert(organization)
     .values({ name: "Tenant A (RLS POC)", slug: "rls-poc-tenant-a" })
     .returning();
 
   const [tenantB] = await adminDb
-    .insert(tenants)
+    .insert(organization)
     .values({ name: "Tenant B (RLS POC)", slug: "rls-poc-tenant-b" })
     .returning();
 

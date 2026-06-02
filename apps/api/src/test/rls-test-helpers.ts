@@ -1,7 +1,7 @@
 import {
   closeDb,
   getDb,
-  tenants,
+  organization,
   testItems,
   withTenantContext,
 } from "@propai/db";
@@ -15,20 +15,20 @@ export async function seedRlsTestData(): Promise<RlsTestSeed> {
   const adminDb = getDb();
 
   await adminDb.delete(testItems);
-  await adminDb.delete(tenants);
+  await adminDb.delete(organization);
 
   const [tenantA] = await adminDb
-    .insert(tenants)
+    .insert(organization)
     .values({ name: "API Tenant A", slug: "api-rls-tenant-a" })
     .returning();
 
   const [tenantB] = await adminDb
-    .insert(tenants)
+    .insert(organization)
     .values({ name: "API Tenant B", slug: "api-rls-tenant-b" })
     .returning();
 
   if (!tenantA || !tenantB) {
-    throw new Error("Failed to seed tenants for API RLS tests.");
+    throw new Error("Failed to seed organizations for API RLS tests.");
   }
 
   await withTenantContext(tenantA.id, async (tx) => {
