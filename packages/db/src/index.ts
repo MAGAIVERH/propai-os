@@ -1,2 +1,10 @@
-/** Placeholder — Drizzle schema and RLS policies land in Phase 1 (Day 6+). */
-export const DB_PACKAGE_VERSION = "0.0.0" as const;
+export { closeDb, getDb, type Db } from "./client.js";
+export { getDatabaseUrl, loadEnv } from "./env.js";
+export {
+  tenantSettings,
+  tenantSettingsRelations,
+  tenants,
+  tenantsRelations,
+} from "./schema/index.js";
+
+export const DB_PACKAGE_VERSION = "0.1.0" as const;

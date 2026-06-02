@@ -157,6 +157,7 @@ cd propai-os
 pnpm install
 cp .env.example .env
 pnpm docker:up
+pnpm db:migrate
 ```
 
 Run apps (separate terminals or `turbo dev` for all):

@@ -30,6 +30,9 @@ Local database URL (default in `.env.example`):
 | `pnpm dev`          | Turbo — Next.js dashboard (`apps/web`, port 3000) |
 | `pnpm docker:up`    | Start Postgres + Redis via Docker Compose         |
 | `pnpm docker:down`  | Stop local containers                             |
+| `pnpm db:generate`  | Generate SQL migrations from Drizzle schema       |
+| `pnpm db:migrate`   | Apply migrations (`DATABASE_URL` in root `.env`)  |
+| `pnpm db:studio`    | Open Drizzle Studio                               |
 | `pnpm build`        | Production build                                  |
 | `pnpm lint`         | ESLint (all workspace packages)                   |
 | `pnpm typecheck`    | TypeScript strict check (Turbo)                   |
