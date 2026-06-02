@@ -65,7 +65,41 @@ Defined in `packages/shared/src/roles/permissions.ts`:
 
 Database constraint: `member_role_check` on `member.role`.
 
-API permission middleware (Day 10+) will call `hasPermission(member.role, permission)` — not in scope for Day 9.
+API permission middleware (Day 11+) will call `hasPermission(member.role, permission)` — not in scope for Day 10.
+
+---
+
+## Day 10 — Better Auth API wiring
+
+### Configuration (`apps/api/src/auth/better-auth.ts`)
+
+- `emailAndPassword.enabled: true`
+- Organization plugin with `creatorRole: "owner"`
+- `trustedOrigins`: `http://localhost:3000`, `http://localhost:3333`
+- Session `databaseHooks.session.create.before` sets `activeOrganizationId` from first `member` row
+- `organizationHooks.afterCreateOrganization` inserts default `tenant_settings`
+
+### Brokerage sign-up
+
+`POST /api/auth/brokerage-sign-up` — single request:
+
+```json
+{ "email", "password", "name", "organizationName" }
+```
+
+Creates atomically: `user` → `organization` (auto slug) → `member` (owner) → `tenant_settings`, then sets `session.activeOrganizationId`.
+
+### CORS + cookies
+
+- `@fastify/cors` with `credentials: true` (registered before auth routes)
+- Cookies: HttpOnly, SameSite=Lax, Secure in production
+- `BETTER_AUTH_URL` must match API host (`http://localhost:3333`)
+
+### Protected API flow
+
+1. Client sends session cookie (`better-auth.session_token`)
+2. `getSessionFromRequest` → `resolveTenantId` → `request.tenantId`
+3. `runInTenantContext(tenantId, …)` for RLS-scoped queries
 
 ---
 
@@ -79,6 +113,8 @@ Migration `0004_identity_organizations.sql`:
 4. Drop `tenants`
 5. Create Better Auth core + org plugin tables
 6. Grant `propai_app` on new tables
+
+Migration `0005_auth_id_defaults.sql` adds `gen_random_uuid()::text` defaults on Better Auth text PK columns (`user`, `session`, `account`, `member`, `invitation`, `verification`) so sign-up works with the Drizzle adapter.
 
 ---
 

@@ -59,5 +59,7 @@ const items = await runInTenantContext(orgId!, async (tx) => {
 | ------ | ------- |
 | `runInTenantContext(tenantId, fn)` | Tenant-scoped queries via `getAppDb()` + RLS |
 | `getOrganizationById` / `getTenantById` | Resolve org UUID (alias) |
+| `getInitialOrganizationIdForUser` | Session bootstrap (first membership) |
+| `isOrganizationSlugTaken` | Brokerage sign-up slug check |
 | `authSchema` | Better Auth Drizzle adapter table map |
 | `seedDevIdentity()` | Dev seed: org + owner member + settings |

@@ -12,6 +12,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@fastify/cors": "^11.2.0",
     "@propai/db": "workspace:*",
     "@propai/shared": "workspace:*",
     "better-auth": "^1.3.8",
@@ -23,9 +24,9 @@
     "@propai/config": "workspace:*",
     "@types/node": "^20",
     "eslint": "^9",
-    "typescript-eslint": "^8.56.1",
     "tsx": "^4.21.0",
     "typescript": "^5",
+    "typescript-eslint": "^8.56.1",
     "vitest": "^3.2.4"
   }
 }

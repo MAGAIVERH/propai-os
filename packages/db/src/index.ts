@@ -5,6 +5,10 @@ export {
   getOrganizationById,
   getTenantById,
 } from "./queries/get-tenant-by-id.js";
+export {
+  getInitialOrganizationIdForUser,
+  isOrganizationSlugTaken,
+} from "./queries/organization-auth.js";
 export { seedDevIdentity } from "./seed/dev-identity.js";
 export {
   account,

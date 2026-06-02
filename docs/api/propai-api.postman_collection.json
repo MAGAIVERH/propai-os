@@ -1,0 +1,123 @@
+{
+  "info": {
+    "_postman_id": "propai-api-day10",
+    "name": "PropAI OS API — Day 10 Auth",
+    "description": "Better Auth brokerage sign-up, login, session, and protected routes.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3333"
+    },
+    {
+      "key": "testEmail",
+      "value": "owner@acme-brokerage.test"
+    },
+    {
+      "key": "testPassword",
+      "value": "password123"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/health"
+      }
+    },
+    {
+      "name": "Brokerage Sign Up",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 201', function () {",
+              "  pm.response.to.have.status(201);",
+              "});",
+              "",
+              "const body = pm.response.json();",
+              "pm.collectionVariables.set('organizationId', body.organization.id);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\",\n  \"name\": \"Jane Owner\",\n  \"organizationName\": \"Acme Brokerage\"\n}"
+        },
+        "url": "{{baseUrl}}/api/auth/brokerage-sign-up"
+      }
+    },
+    {
+      "name": "Get Session",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/auth/get-session"
+      }
+    },
+    {
+      "name": "Sign In (email)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\",\n  \"rememberMe\": true\n}"
+        },
+        "url": "{{baseUrl}}/api/auth/sign-in/email"
+      }
+    },
+    {
+      "name": "List Test Items (protected)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/v1/test-items"
+      }
+    },
+    {
+      "name": "Create Test Item (protected)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"First listing draft\"\n}"
+        },
+        "url": "{{baseUrl}}/v1/test-items"
+      }
+    },
+    {
+      "name": "Sign Out",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": "{{baseUrl}}/api/auth/sign-out"
+      }
+    }
+  ]
+}

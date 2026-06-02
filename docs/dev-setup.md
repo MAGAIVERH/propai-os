@@ -35,7 +35,7 @@ Local database URL (default in `.env.example`):
 | `pnpm db:studio`    | Open Drizzle Studio                               |
 | `pnpm db:rls-test`  | Run RLS isolation POC (`propai_app` role)       |
 | `pnpm db:seed-dev`    | Seed dev org + owner user + settings            |
-| `pnpm test:api`       | API RLS integration tests (Vitest + Docker DB)  |
+| `pnpm test:api`       | API auth + RLS integration tests (Vitest)       |
 | `pnpm build`        | Production build                                  |
 | `pnpm lint`         | ESLint (all workspace packages)                   |
 | `pnpm typecheck`    | TypeScript strict check (Turbo)                   |
@@ -74,3 +74,25 @@ Create projects and copy keys into `.env` (never commit `.env`):
 - Vercel, Neon, Upstash, R2/S3, Resend, Stripe (test), OpenAI/Anthropic, Sentry
 
 See `.env.example` for variable names.
+
+## API auth (Day 10)
+
+Start the API:
+
+```bash
+pnpm --filter @propai/api dev
+```
+
+Auth endpoints (Better Auth + brokerage sign-up):
+
+| Endpoint | Method | Purpose |
+| -------- | ------ | ------- |
+| `/api/auth/brokerage-sign-up` | POST | Create user + org + owner + settings |
+| `/api/auth/sign-in/email` | POST | Email/password login |
+| `/api/auth/get-session` | GET | Current session + `activeOrganizationId` |
+| `/v1/test-items` | GET | Protected route (requires session cookie) |
+
+Postman collection: `docs/api/propai-api.postman_collection.json`  
+Step-by-step: `docs/api/auth-flow.md`
+
+Required env: `BETTER_AUTH_URL=http://localhost:3333`, `BETTER_AUTH_SECRET` (32+ chars).
