@@ -1,0 +1,292 @@
+---
+description: Regras globais do projeto PROPAI OS
+globs: ["**/*.ts", "**/*.tsx"]
+alwaysApply: true
+---
+
+# PROPAI OS — Regras do projeto
+
+## Objetivo do projeto
+
+Plataforma em desenvolvimento (versão inicial), em constante aprimoramento.
+Documente aqui o escopo de negócio conforme o produto evoluir.
+Toda a interface é dark mode; identidade visual via tokens em `src/app/globals.css`.
+
+---
+
+## Stack tecnológica
+
+- Framework: Next.js 15 (App Router)
+- Linguagem: TypeScript — strict mode, sem any, sem erros de compilação
+- Banco / ORM: Prisma + Neon (PostgreSQL serverless), quando aplicável
+- Styling: Tailwind CSS v4
+- UI Components: shadcn/ui (USAR AO MÁXIMO)
+- Ícones: lucide-react
+- Validação: Zod
+- Notificações: Sonner (toast)
+- Gráficos: Recharts
+- Auth: Better Auth, NextAuth ou similar — conforme o projeto
+
+---
+
+## Fluxo de Trabalho — OBRIGATÓRIO
+
+1. Siga sempre o padrão de **Conventional Commits** (ex: `feat:`, `fix:`, `docs:`, `style:`, `refactor:`).
+2. **Nunca** faça commit, push ou deploy sem pedido explícito do usuário.
+3. Após concluir qualquer tarefa ou conjunto de alterações, pergunte explicitamente ao usuário: **"Deseja que eu realize o deploy e o push das alterações agora?"**
+
+---
+
+## Estrutura de diretórios
+
+propai-os/
+  prisma/
+    migrations/
+    schema.prisma
+  public/
+  src/
+    app/
+      globals.css          — tokens de cor (fonte única do design system)
+      layout.tsx
+      page.tsx
+      api/
+    components/            — componentes genéricos/globais reutilizáveis (incl. ui/ shadcn)
+    components/forms/      — FormField e padrões de formulário
+    generated/             — tipos gerados pelo Prisma
+    hooks/
+      use-mobile.ts
+    lib/
+      db.ts                — instância do Prisma Client
+    modules/               — toda a lógica de negócio por domínio
+      [dominio]/
+        actions/
+        components/
+        queries/
+        schemas/
+        types/
+        data/
+  .env
+  .env.example
+  .gitignore
+  AGENTS.md
+  CLAUDE.md
+  components.json
+  eslint.config.mjs
+  next-env.d.ts
+
+---
+
+## shadcn/ui — OBRIGATÓRIO
+
+1. **USAR AO MÁXIMO** componentes de `@/components/ui` (Button, Input, Select, Card, Dialog, Sheet, Tabs, Badge, Table, etc.).
+2. Antes de criar UI do zero, verificar se o shadcn já oferece o componente; instalar via CLI se faltar (`npx shadcn@latest add ...`).
+3. Estender com `className` + tokens do tema; não recriar primitivos manualmente.
+4. Padrões repetidos → extrair para `src/components/` ou `src/components/forms/`.
+
+---
+
+## Design system — padrões visuais obrigatórios
+
+### Cores — regra crítica
+
+- **NUNCA** use cor hardcoded: sem `#hex`, `rgb()`, `hsl()` inline, nem `bg-[#...]` / `text-[#...]`.
+- **SEMPRE** use tokens definidos em `src/app/globals.css` (`:root` / tema).
+- No código: classes do tema Tailwind (`bg-background`, `text-foreground`, `border-border`, `bg-primary`, `text-muted-foreground`, etc.) ou `hsl(var(--nome))`.
+- **Se precisar de uma cor nova:** crie a variável em `globals.css` primeiro, mapeie no Tailwind se necessário, depois use no componente.
+
+### Visual
+
+- Tema: Dark mode exclusivo — nunca light mode
+- Fundos: preferir tokens `--background`, `--card` ou camadas mapeadas (ex.: zinc-950/900/800 via tema)
+- Bordas: `border-border` ou padrão do projeto (`border-white/10` só se existir token equivalente)
+- Texto: `text-foreground`, `text-muted-foreground` e hierarquia shadcn
+- Acento primário: token `--primary` — não fixar red/blue sem estar em `globals.css`
+- Acento positivo / atenção: tokens `--success`, `--warning` (criar em `globals.css` se não existirem)
+- Arredondamento: rounded-2xl nos cards e seções · rounded-xl em inputs e itens internos
+
+Padrão de card:
+  className="rounded-2xl border border-border bg-card p-5"
+
+Padrão de card com alerta/destaque:
+  className="rounded-2xl border border-primary/30 bg-primary/5 p-5"
+
+Padrão de cabeçalho de módulo:
+  <section className="rounded-2xl border border-border bg-card p-6">
+    <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">Módulo</p>
+    <h1 className="text-3xl font-bold tracking-tight text-foreground">Nome do Módulo</h1>
+    <p className="text-sm leading-7 text-muted-foreground">Descrição do módulo.</p>
+  </section>
+
+Padrão de tabela:
+  <div className="overflow-hidden rounded-2xl border border-border">
+    <div className="grid grid-cols-[...] border-b border-border bg-muted px-6 py-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      {/* headers */}
+    </div>
+    <div className="divide-y divide-border">
+      {/* rows */}
+    </div>
+  </div>
+
+Padrão de ícone em card:
+  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/15 text-primary">
+    <Icon className="h-4 w-4" />
+  </div>
+
+---
+
+## Regras de TypeScript — OBRIGATÓRIAS
+
+1. NUNCA use o tipo `any`. Substitua por `unknown`, tipos genéricos ou tipagens explícitas.
+2. NUNCA entregue arquivos com erros de TypeScript. Todo código deve compilar sem erros.
+3. NUNCA use `as any` ou `@ts-ignore` para suprimir erros. Resolva o erro real.
+4. Use `z.infer<typeof schema>` para derivar tipos de schemas Zod. Não duplique tipos manualmente.
+5. Prefira `type` a `interface` para tipos de dados simples.
+6. Sempre tipar props de componentes React com `type NomeProps = { ... }` antes do componente.
+7. Server Actions devem retornar tipos explícitos: Promise<{ success: boolean; message: string }>.
+8. Use `satisfies` quando quiser validar um objeto contra um tipo sem perder inferência literal.
+9. Enums do Prisma devem ser importados de `@/generated/prisma/client`, nunca redefinidos.
+10. Não use `Record<string, any>`. Especifique o valor: `Record<string, string>`, etc.
+
+---
+
+## Regras de arquitetura — OBRIGATÓRIAS
+
+1. Toda lógica de negócio vive em `src/modules/[dominio]/`. Nunca coloque queries ou actions em `app/` pages.
+2. Server Components buscam dados via funções em `modules/[dominio]/queries/` usando `db` e helpers de escopo em `lib/` (tenant/org), quando aplicável.
+3. Mutações via Server Actions em `modules/[dominio]/actions/`. Fluxo obrigatório: validar com Zod → executar → revalidatePath → retornar { success, message }.
+4. Client Components ficam em `modules/[dominio]/components/` ou `components/`. Nunca busque dados diretamente — receba via props do Server Component pai.
+5. Schemas Zod ficam em `modules/[dominio]/schemas/`. Não repita schemas entre actions e components.
+6. Tipos específicos de um módulo ficam em `modules/[dominio]/types/`. Tipos globais em `src/types/`.
+7. Static/seed data ficam em `modules/[dominio]/data/`.
+8. Nunca use `fetch` diretamente nas pages — use as query functions do módulo.
+9. Pages do App Router devem ser `async` Server Components quando precisam de dados.
+10. `searchParams` em pages deve ser awaited: `const { filtro } = await searchParams`.
+
+---
+
+## Regras de componentes — OBRIGATÓRIAS
+
+1. Client Components usam `'use client'` na primeira linha, sem exceção.
+2. Mutações usam `useTransition` + `startTransition(async () => { ... })`. Use `isPending` para loading — nunca useState só para loading.
+3. Feedbacks ao usuário sempre via `toast` do Sonner. Nunca use `alert()`.
+4. Após mutation com redirecionamento: `router.push` + `router.refresh()` com setTimeout de ~400ms.
+5. Nunca use `<form>` com `action`. Use `<button type="button" onClick={handleSubmit}>` com useTransition.
+6. Inputs de tempo (HH:mm): formatar no onChange, normalizar no onBlur, validar com /^\d{2}:\d{2}$/ antes de submeter.
+7. Listas com `.map()` sempre com `key` única e estável (id, nunca índice).
+8. Formulários complexos: estado local por campo com tipos explícitos; preferir `FormField` em `components/forms/`.
+
+---
+
+## Regras de banco de dados / Prisma — OBRIGATÓRIAS
+
+1. Sempre use `select` ou `include` explícito. Nunca retorne o objeto completo sem select.
+2. Toda query com escopo de tenant/organização via helper em `lib/` — nunca hardcode IDs sensíveis.
+3. Prefira `findFirst` com `where` composto quando filtrar por tenant + id.
+4. Use `Promise.all([...])` para queries paralelas — nunca sequencial.
+5. Erros em `try/catch` — retorne `{ success: false, message }`. Nunca lance o erro para o cliente.
+6. Valores monetários em centavos no banco. Conversão para display feita nas query functions, nunca nos componentes.
+
+---
+
+## Convenções de nomenclatura — OBRIGATÓRIAS
+
+Arquivos:              kebab-case              create-user-complete.ts
+Componentes React:     PascalCase              UserCreateForm
+Funções de query:      camelCase + get         getUserById
+Server Actions:        camelCase + Action      createUserAction
+Schemas Zod:           camelCase + Schema      createUserSchema
+Tipos Zod:             PascalCase + z.infer    type CreateUserInput = z.infer<typeof schema>
+Constantes de array:   SCREAMING_SNAKE_CASE    VALID_FILTERS
+Imports:               sempre alias @/         @/modules/users/queries/...
+Idioma do código:      inglês                  variáveis, funções, tipos, pastas
+Idioma da UI:          português               textos, labels, mensagens de erro
+
+---
+
+## Restrições absolutas — NUNCA faça
+
+- NUNCA use `any` em TypeScript — nem explícito, nem implícito
+- NUNCA entregue um arquivo com erro de TypeScript. Se não compilar, não entregue
+- NUNCA use `@ts-ignore` ou `@ts-expect-error` sem justificativa
+- NUNCA use cor hardcoded — só tokens de `src/app/globals.css` / tema Tailwind
+- NUNCA ignore shadcn quando já existir componente equivalente em `@/components/ui`
+- NUNCA busque dados diretamente em Client Components — receba via props
+- NUNCA use `alert()`, `confirm()` ou `prompt()` — use Sonner toast
+- NUNCA use `<form action={...}>` para mutations — use useTransition
+- NUNCA use índice de array como `key` no `.map()`
+- NUNCA hardcode IDs de tenant/org — use helpers em `lib/`
+- NUNCA use `console.log` em produção — apenas `console.error` em catch de Server Actions
+- NUNCA retorne o objeto Prisma inteiro sem `select`
+- NUNCA use light mode — toda UI é dark mode
+- NUNCA coloque lógica de negócio em `app/` pages
+- NUNCA duplique tipos já definidos em `modules/[dominio]/types/`
+- NUNCA commit, push ou deploy sem pedido explícito do usuário
+
+---
+
+## Arquivos de referência — padrões a seguir
+
+Documente aqui paths reais do PROPAI OS conforme o projeto crescer, no mesmo espírito do Pirillo Roriz:
+
+ref-1: page Server Component — searchParams validados, Promise.all, cabeçalho → métricas → tabela
+ref-2: page com filtros (month/year ou equivalente), gráficos Recharts, Badge shadcn
+ref-3: client form — useTransition, Zod, Sonner, router.push + refresh
+ref-4: server action — 'use server', safeParse, try/catch, revalidatePath
+ref-5: query function — select explícito, transformação antes de retornar
+ref-6: types/ do domínio — tipos + LucideIcon quando necessário
+ref-7: data/ — arrays tipados com satisfies
+
+---
+
+## Padrão de resposta esperada
+
+1. Sempre informe o caminho completo no topo do bloco de código:
+   // src/modules/users/queries/get-user-by-id.ts
+
+2. Ao criar um novo módulo, siga esta ordem:
+   types/ → schemas/ → queries/ → actions/ → components/ → page.tsx
+
+3. Ao criar uma page Server Component, inclua sempre:
+   - Cabeçalho com label "Módulo" em text-primary + h1 + descrição
+   - Promise.all para queries paralelas
+   - Props tipadas com `type NomeDaPageProps`
+
+4. Ao criar uma query function, inclua sempre:
+   - Escopo via helper em `lib/` quando aplicável
+   - select explícito no Prisma
+   - Transformação/formatação dos dados antes de retornar
+
+5. Ao criar um Server Action, inclua sempre:
+   - 'use server' no topo
+   - Schema Zod + safeParse + early return em falha
+   - try/catch com console.error e retorno { success: false, message }
+   - revalidatePath após mutação bem-sucedida
+
+6. Ao criar um Client Component com formulário, inclua sempre:
+   - useTransition para loading
+   - toast do Sonner para erro e sucesso
+   - shadcn para inputs/selects/dialogs
+   - router.push + router.refresh() após sucesso
+
+7. Entregue arquivos completos e funcionais — sem // TODO, sem partes faltando.
+
+---
+
+## Módulos do sistema
+
+Documente os domínios em `src/modules/` conforme forem criados (ex.: users, billing, dashboard, settings).
+
+---
+
+## Resumo rápido
+
+TypeScript     — Zero any, zero erros de compilação
+Arquitetura    — Lógica de negócio em modules/, nunca em app/
+UI             — shadcn ao máximo · dark mode · tokens em globals.css
+Cores          — Nunca hardcode; criar variável em globals.css se faltar
+Mutations      — Server Action + useTransition + Zod + revalidatePath
+Monetário      — Centavos no banco, formatação na query function
+Imports        — Sempre @/ alias, nunca paths relativos com ../..
+Idioma         — Código em inglês, UI/mensagens em português
+Feedback       — Sempre Sonner toast, nunca alert()
+Git            — Conventional Commits; perguntar deploy/push ao finalizar tarefa
