@@ -5,15 +5,42 @@
 **Market:** United States real estate brokerages  
 **Status:** MVP scope locked · v2 items explicitly deferred
 
+**Related:** [architecture.md](./architecture.md) (diagrams and technical alignment)
+
+---
+
+## Table of contents
+
+1. [Overview](#overview)
+2. [Actors](#actors)
+3. [Brokerage flow](#brokerage-flow)
+4. [Public flow (marketplace)](#public-flow-marketplace)
+5. [AI features (v1)](#ai-features-v1)
+6. [US property fields (v1)](#us-property-fields-v1)
+7. [Out of scope (v1)](#out-of-scope-v1)
+8. [v2 backlog](#v2-backlog-reference-only)
+9. [MVP summary](#mvp-summary)
+10. [Two-minute product pitch](#two-minute-product-pitch-reference)
+
 ---
 
 ## Overview
 
 PropAI OS is an AI-powered Real Estate Operating System for US brokerages. Version 1 delivers a multi-tenant brokerage dashboard (CRM, pipeline, properties, analytics), a public SEO marketplace with semantic search and lead capture, and async AI workflows (vision, embeddings, lead scoring, price estimates). This document defines actors, core flows, AI scope, US property fields, and what is **in** vs **out** of v1.
 
+**Product pitch (one line):** _PropAI OS is an AI-powered Real Estate Operating System for US brokerages — multi-tenant CRM, pipeline, marketplace, semantic search, and analytics._
+
 ---
 
 ## Actors
+
+Five brokerage roles plus marketplace consumers. Platform operations are a separate cross-tenant actor.
+
+### Platform Admin
+
+- Operates the PropAI SaaS: tenant health, support escalations, feature flags (`ENABLE_AI_VISION`, semantic search), and incident response.
+- Does not access brokerage deal data except under audited support flows.
+- Provisions demo tenants and monitors compliance tooling.
 
 ### Brokerage Owner
 
@@ -39,31 +66,34 @@ PropAI OS is an AI-powered Real Estate Operating System for US brokerages. Versi
 - Supports compliance, finance, or executive oversight with read-only visibility into team activity and deal status.
 - Exports or shares data only when explicitly granted by organization policy; cannot invite users or change settings.
 
-### Public visitor (marketplace)
+### Marketplace consumer (public)
 
 - Browses published listings on the public marketplace via search and filters (including semantic/natural-language query where enabled).
 - Submits interest forms or contact requests that create or enrich leads in the brokerage CRM.
 - Does not authenticate into the brokerage workspace; identity is limited to information voluntarily provided at capture.
 
+**Authorization (target):** every business row scoped to `organization_id` with PostgreSQL RLS; API and dashboard always pass tenant context.
+
 ---
 
 ## Brokerage flow
 
-1. **Sign up** — A Brokerage Owner registers an account, verifies email, and accepts terms; identity is established for organization creation and billing.
+Eight steps from onboarding through retention. Maps to CRM, pipeline, listings, and analytics.
 
-2. **Create workspace** — The owner provisions a multi-tenant organization (brokerage workspace), sets profile and market defaults (e.g., state, currency, timezone), and selects a plan.
+| Step  | Name                     | What happens                                                                                                                                          | Primary actors                       |
+| ----- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| **1** | **Onboard organization** | Sign up, select plan, complete brokerage profile (license, markets, branding). Owner invites Managers and Agents. Tenant provisioned with RLS active. | Owner, Platform Admin                |
+| **2** | **Capture demand**       | Leads from marketplace forms, manual CRM entry, CSV import, or integrations. Source, budget, timeline stored; duplicates flagged.                     | Agent, Manager, Marketplace consumer |
+| **3** | **Qualify and assign**   | Manager or rules engine scores lead; record assigned to Agent or queue. Status: _new_ → _qualified_ or _nurture_.                                     | Manager, Agent                       |
+| **4** | **Engage and show**      | Agent contacts lead, logs activities, schedules showings, links listings. Timeline and tasks in CRM.                                                  | Agent                                |
+| **5** | **Negotiate offer**      | Pipeline stage _offer_ / _negotiation_: price, contingencies, key dates. Dashboard updates via WebSocket where enabled.                               | Agent, Manager                       |
+| **6** | **Under contract**       | Stage _pending_: escrow milestones, document checklist, compliance notes. Managers monitor aging.                                                     | Agent, Manager, Viewer               |
+| **7** | **Close**                | _Closed won_: final price, close date, commission fields. Listing syncs to marketplace (sold/off-market).                                             | Agent, Manager                       |
+| **8** | **Measure and retain**   | Funnel conversion, agent performance, listing velocity, semantic search quality. Owner reviews billing; nurture past clients.                         | Owner, Manager                       |
 
-3. **Invite agents** — The owner or Manager sends invitations; recipients join with assigned roles (Agent, Manager, or Viewer) scoped to that workspace.
+**Default pipeline stages (steps 3–7):** `New` → `Qualified` → `Active` → `Offer` → `Under contract` → `Closed won` (or `Closed lost`).
 
-4. **Add properties** — Agents or Managers create listings with US-standard fields, media, and location data; approved listings may publish to the internal CRM and public marketplace.
-
-5. **Manage leads** — Inbound leads (marketplace, manual entry, imports) are captured in the CRM, scored or prioritized, assigned to agents, and tracked through pipeline stages.
-
-6. **Schedule visits** — Agents coordinate property showings with prospects; appointments are recorded against listings and lead records for follow-up and audit.
-
-7. **Close deals** — Opportunities advance to won/lost outcomes; deal value, stage history, and closing details are recorded for reporting and commission workflows.
-
-8. **View analytics** — Owners and Managers review funnel, listing, agent, and revenue metrics; read-only Viewers may access dashboards per role policy to inform decisions.
+**Listing lifecycle:** `Draft` → `Active` → `Pending` → `Sold` / `Off-market` (linked to deals when under contract).
 
 ---
 
@@ -122,21 +152,21 @@ Lead creation and related CRM updates (new lead card, pipeline placement, in-app
 
 ## US property fields (v1)
 
-| Field | Type / format | Notes |
-| --- | --- | --- |
-| **List price** | Integer (cents) in DB | Display as `$1,250,000` (en-US). Required for active listings. |
-| **Listing intent** | Enum: `sale` \| `rent` | Drives marketplace filters and CRM workflows. |
-| **Bedrooms** | Integer ≥ 0 | Whole bedrooms; studio may be `0`. |
-| **Bathrooms** | Decimal (e.g., `2.5`) | Supports half-baths; one decimal place max in v1. |
-| **Living area (sq ft)** | Integer | US customary only in v1; no m². |
-| **HOA fee** | Integer (USD/month) or nullable | Monthly HOA in USD; `null` if N/A. |
-| **Year built** | Integer (YYYY) | Valid range e.g. 1800–current year + 1. |
-| **Property type** | Enum | `Single Family`, `Condo`, `Townhouse`, `Multi-Family`. Required. |
-| **Address — line 1** | String | Street number and name; required. |
-| **Address — city** | String | Required. |
-| **Address — state** | Enum (US) | 50 states + DC; 2-letter code in API (e.g., `TX`). |
-| **Address — ZIP** | String | 5-digit or ZIP+4 (`12345` or `12345-6789`). |
-| **Latitude / longitude** | Decimal, optional | WGS84; recommended for map display; may be set via map picker. |
+| Field                    | Type / format                   | Notes                                                            |
+| ------------------------ | ------------------------------- | ---------------------------------------------------------------- |
+| **List price**           | Integer (cents) in DB           | Display as `$1,250,000` (en-US). Required for active listings.   |
+| **Listing intent**       | Enum: `sale` \| `rent`          | Drives marketplace filters and CRM workflows.                    |
+| **Bedrooms**             | Integer ≥ 0                     | Whole bedrooms; studio may be `0`.                               |
+| **Bathrooms**            | Decimal (e.g., `2.5`)           | Supports half-baths; one decimal place max in v1.                |
+| **Living area (sq ft)**  | Integer                         | US customary only in v1; no m².                                  |
+| **HOA fee**              | Integer (USD/month) or nullable | Monthly HOA in USD; `null` if N/A.                               |
+| **Year built**           | Integer (YYYY)                  | Valid range e.g. 1800–current year + 1.                          |
+| **Property type**        | Enum                            | `Single Family`, `Condo`, `Townhouse`, `Multi-Family`. Required. |
+| **Address — line 1**     | String                          | Street number and name; required.                                |
+| **Address — city**       | String                          | Required.                                                        |
+| **Address — state**      | Enum (US)                       | 50 states + DC; 2-letter code in API (e.g., `TX`).               |
+| **Address — ZIP**        | String                          | 5-digit or ZIP+4 (`12345` or `12345-6789`).                      |
+| **Latitude / longitude** | Decimal, optional               | WGS84; recommended for map display; may be set via map picker.   |
 
 **Validation:** All monetary values in USD; addresses US-only; status workflow: draft → active → under contract → sold/rented; soft delete preserves audit history.
 
@@ -144,13 +174,13 @@ Lead creation and related CRM updates (new lead card, pipeline placement, in-app
 
 ## Out of scope (v1)
 
-| Item | Reason (v1) |
-|------|-------------|
-| **MLS integration** | Requires MLS vendor agreements, feed normalization, and ongoing compliance; not required to prove core CRM + marketplace + lead loop. |
-| **Mortgage calculator** | Adds regulated financial UX and liability surface; out of scope for a brokerage operations platform MVP. |
-| **3D virtual tour (Three.js)** | High build and performance cost; does not unblock lead capture, CRM, or semantic search. |
-| **Native mobile app** | v1 is responsive web (dashboard + marketplace); native iOS/Android doubles platform and release overhead. |
-| **Multi-language i18n** | v1 targets US brokerages with English (en-US) UI and copy; localization is deferred until core workflows are stable. |
+| Item                           | Reason (v1)                                                                                                                           |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| **MLS integration**            | Requires MLS vendor agreements, feed normalization, and ongoing compliance; not required to prove core CRM + marketplace + lead loop. |
+| **Mortgage calculator**        | Adds regulated financial UX and liability surface; out of scope for a brokerage operations platform MVP.                              |
+| **3D virtual tour (Three.js)** | High build and performance cost; does not unblock lead capture, CRM, or semantic search.                                              |
+| **Native mobile app**          | v1 is responsive web (dashboard + marketplace); native iOS/Android doubles platform and release overhead.                             |
+| **Multi-language i18n**        | v1 targets US brokerages with English (en-US) UI and copy; localization is deferred until core workflows are stable.                  |
 
 ---
 

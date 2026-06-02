@@ -159,11 +159,12 @@ See [docs/dev-setup.md](./docs/dev-setup.md) for editor tooling and cloud accoun
 
 ## Documentation
 
-| Document               | Description                          |
-| ---------------------- | ------------------------------------ |
-| `docs/architecture.md` | System design, data flows, auth & AI |
-| `docs/adr/`            | Architecture Decision Records        |
-| `docs/legal/`          | Privacy, Terms, Fair Housing (draft) |
+| Document               | Description                                             |
+| ---------------------- | ------------------------------------------------------- |
+| `docs/REQUIREMENTS.md` | **v1 product scope** — flows, AI, fields, MVP lock      |
+| `docs/architecture.md` | Actors, brokerage flow, diagrams, links to requirements |
+| `docs/adr/`            | Architecture Decision Records                           |
+| `docs/legal/`          | Privacy, Terms, Fair Housing (draft)                    |
 
 ---
 

@@ -25,16 +25,16 @@ Local database URL (default in `.env.example`):
 
 ## Scripts
 
-| Command             | Description          |
-| ------------------- | -------------------- |
+| Command             | Description                                       |
+| ------------------- | ------------------------------------------------- |
 | `pnpm dev`          | Turbo — Next.js dashboard (`apps/web`, port 3000) |
-| `pnpm docker:up`    | Start Postgres + Redis via Docker Compose |
-| `pnpm docker:down`  | Stop local containers |
-| `pnpm build`        | Production build     |
-| `pnpm lint`         | ESLint               |
-| `pnpm lint:fix`     | ESLint with auto-fix |
-| `pnpm format`       | Prettier write       |
-| `pnpm format:check` | Prettier check (CI)  |
+| `pnpm docker:up`    | Start Postgres + Redis via Docker Compose         |
+| `pnpm docker:down`  | Stop local containers                             |
+| `pnpm build`        | Production build                                  |
+| `pnpm lint`         | ESLint                                            |
+| `pnpm lint:fix`     | ESLint with auto-fix                              |
+| `pnpm format`       | Prettier write                                    |
+| `pnpm format:check` | Prettier check (CI)                               |
 
 ## Editor
 
