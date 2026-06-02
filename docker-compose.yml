@@ -1,0 +1,41 @@
+# Local development — PostgreSQL + Redis
+# Usage: docker compose up -d
+# DATABASE_URL=postgresql://propai:propai@localhost:5432/propai
+# REDIS_URL=redis://localhost:6379
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: propai-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: propai
+      POSTGRES_PASSWORD: propai
+      POSTGRES_DB: propai
+    volumes:
+      - propai_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U propai -d propai"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: propai-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - propai_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  propai_postgres_data:
+  propai_redis_data:

@@ -1,0 +1,14 @@
+{
+  "name": "@propai/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {},
+  "scripts": {
+    "build": "echo \"@propai/db — schema coming in Day 4\""
+  },
+  "devDependencies": {
+    "@propai/config": "workspace:*",
+    "typescript": "^5"
+  }
+}

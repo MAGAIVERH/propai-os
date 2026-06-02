@@ -20,7 +20,7 @@ PropAI OS is an AI-powered Real Estate Operating System built for US brokerages 
 
 ## Live demo
 
-**URL:** [https://demo.propai-os.com](https://demo.propai-os.com) *(TBD — placeholder)*
+**URL:** [https://demo.propai-os.com](https://demo.propai-os.com) _(TBD — placeholder)_
 
 Demo credentials will be documented here once staging is deployed.
 
@@ -98,28 +98,28 @@ propai-os/
 └── README.md
 ```
 
-> **Note:** The repository is bootstrapping toward this layout. Early commits may reflect a single Next.js app until the Turborepo monorepo is scaffolded (Phase 0, Day 5).
+> **Note:** Monorepo scaffold is in progress. `apps/web` is the brokerage dashboard; `apps/api`, `apps/marketplace`, and full `packages/db` follow the roadmap.
 
 ---
 
 ## Tech stack
 
-| Layer | Technology |
-|-------|------------|
-| Monorepo | Turborepo, pnpm workspaces |
-| API | Fastify, Zod validation, WebSocket |
-| Frontend | Next.js, React, TypeScript, Tailwind CSS, shadcn/ui |
-| UI polish | Inspira UI, GSAP, Lenis |
-| Database | PostgreSQL (Neon), Drizzle ORM, Row-Level Security (RLS), pgvector |
-| Auth | Better Auth (Organizations) |
-| Jobs & cache | BullMQ, Redis (Upstash) |
-| AI | Vercel AI SDK (vision, embeddings, lead scoring) |
-| Storage | Cloudflare R2 or AWS S3 (presigned uploads) |
-| Email | Resend |
-| Billing | Stripe |
-| Observability | Sentry |
-| DevOps | Docker, GitHub Actions, Vercel |
-| Testing | Vitest, Playwright |
+| Layer         | Technology                                                         |
+| ------------- | ------------------------------------------------------------------ |
+| Monorepo      | Turborepo, pnpm workspaces                                         |
+| API           | Fastify, Zod validation, WebSocket                                 |
+| Frontend      | Next.js, React, TypeScript, Tailwind CSS, shadcn/ui                |
+| UI polish     | Inspira UI, GSAP, Lenis                                            |
+| Database      | PostgreSQL (Neon), Drizzle ORM, Row-Level Security (RLS), pgvector |
+| Auth          | Better Auth (Organizations)                                        |
+| Jobs & cache  | BullMQ, Redis (Upstash)                                            |
+| AI            | Vercel AI SDK (vision, embeddings, lead scoring)                   |
+| Storage       | Cloudflare R2 or AWS S3 (presigned uploads)                        |
+| Email         | Resend                                                             |
+| Billing       | Stripe                                                             |
+| Observability | Sentry                                                             |
+| DevOps        | Docker, GitHub Actions, Vercel                                     |
+| Testing       | Vitest, Playwright                                                 |
 
 ---
 
@@ -136,34 +136,34 @@ propai-os/
 
 ## Getting started
 
-*Detailed setup will be expanded as the monorepo is initialized.*
-
-**Prerequisites:** Node 20 LTS, pnpm 9+, Docker Desktop (for local PostgreSQL / Redis).
+**Prerequisites:** Node 20 LTS, pnpm 9+, Docker Desktop (PostgreSQL + Redis locally).
 
 ```bash
-git clone https://github.com/YOUR_ORG/propai-os.git
+git clone https://github.com/MAGAIVERH/propai-os.git
 cd propai-os
 pnpm install
-cp .env.example .env   # configure Neon, Upstash, API keys
-docker compose up -d
+cp .env.example .env
+pnpm docker:up
 pnpm dev
 ```
 
-| App | Default URL |
-|-----|-------------|
-| Dashboard (`apps/web`) | `http://localhost:3000` |
+See [docs/dev-setup.md](./docs/dev-setup.md) for editor tooling and cloud accounts.
+
+| App                              | Default URL             |
+| -------------------------------- | ----------------------- |
+| Dashboard (`apps/web`)           | `http://localhost:3000` |
 | Marketplace (`apps/marketplace`) | `http://localhost:3001` |
-| API (`apps/api`) | `http://localhost:3333` |
+| API (`apps/api`)                 | `http://localhost:3333` |
 
 ---
 
 ## Documentation
 
-| Document | Description |
-|----------|-------------|
+| Document               | Description                          |
+| ---------------------- | ------------------------------------ |
 | `docs/architecture.md` | System design, data flows, auth & AI |
-| `docs/adr/` | Architecture Decision Records |
-| `docs/legal/` | Privacy, Terms, Fair Housing (draft) |
+| `docs/adr/`            | Architecture Decision Records        |
+| `docs/legal/`          | Privacy, Terms, Fair Housing (draft) |
 
 ---
 
@@ -175,4 +175,4 @@ TBD.
 
 ## Status
 
-**Early development** — foundation and monorepo scaffold in progress. See project milestones in internal development guide.
+**Early development** — Turborepo monorepo, Docker Compose, and `apps/web` dashboard active. See [docs/architecture.md](./docs/architecture.md) for actors and brokerage flow.

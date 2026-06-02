@@ -1,0 +1,9 @@
+{
+  "name": "@propai/config",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./typescript/base": "./typescript/base.json",
+    "./typescript/nextjs": "./typescript/nextjs.json"
+  }
+}

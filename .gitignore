@@ -1,5 +1,5 @@
 # Dependencies
-/node_modules
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -9,10 +9,10 @@
 !.yarn/versions
 
 # Build / output
-/.next/
-/out/
-/dist/
-/build/
+.next/
+out/
+dist/
+build/
 .turbo/
 
 # Environment (never commit secrets)
@@ -54,6 +54,7 @@ Thumbs.db
 # Misc
 *.pem
 .cache/
+package-lock.json
 
 # Local-only docs (not for repository)
 guia-desenvolvimento-propai-os-dia-a-dia.md

@@ -23,6 +23,7 @@ Toda a interface é dark mode; identidade visual via tokens em `src/app/globals.
 - UI Components: shadcn/ui (USAR AO MÁXIMO)
 - Ícones: lucide-react
 - Validação: Zod
+- Formulários: React Hook Form + `@hookform/resolvers` (integração Zod)
 - Notificações: Sonner (toast)
 - Gráficos: Recharts
 - Auth: Better Auth, NextAuth ou similar — conforme o projeto
@@ -34,6 +35,7 @@ Toda a interface é dark mode; identidade visual via tokens em `src/app/globals.
 1. Siga sempre o padrão de **Conventional Commits** (ex: `feat:`, `fix:`, `docs:`, `style:`, `refactor:`).
 2. **Nunca** faça commit, push ou deploy sem pedido explícito do usuário.
 3. Após concluir qualquer tarefa ou conjunto de alterações, pergunte explicitamente ao usuário: **"Deseja que eu realize o deploy e o push das alterações agora?"**
+4. **Antes de considerar a tarefa concluída**, verifique erros de TypeScript nos arquivos alterados (`ReadLints` no IDE ou `npx tsc --noEmit`). Corrija todos os erros antes de entregar — arquivos com erro de compilação serão rejeitados.
 
 ---
 
@@ -136,16 +138,17 @@ Padrão de ícone em card:
 
 ## Regras de TypeScript — OBRIGATÓRIAS
 
-1. NUNCA use o tipo `any`. Substitua por `unknown`, tipos genéricos ou tipagens explícitas.
-2. NUNCA entregue arquivos com erros de TypeScript. Todo código deve compilar sem erros.
-3. NUNCA use `as any` ou `@ts-ignore` para suprimir erros. Resolva o erro real.
-4. Use `z.infer<typeof schema>` para derivar tipos de schemas Zod. Não duplique tipos manualmente.
-5. Prefira `type` a `interface` para tipos de dados simples.
-6. Sempre tipar props de componentes React com `type NomeProps = { ... }` antes do componente.
-7. Server Actions devem retornar tipos explícitos: Promise<{ success: boolean; message: string }>.
-8. Use `satisfies` quando quiser validar um objeto contra um tipo sem perder inferência literal.
-9. Enums do Prisma devem ser importados de `@/generated/prisma/client`, nunca redefinidos.
-10. Não use `Record<string, any>`. Especifique o valor: `Record<string, string>`, etc.
+1. NUNCA use o tipo `any` — nem explícito (`: any`), nem implícito, nem `as any`, nem `Record<string, any>`. Arquivos com `any` **serão rejeitados** (CI/review). Substitua por `unknown`, tipos genéricos ou tipagens explícitas.
+2. NUNCA entregue arquivos com erros de TypeScript. Todo código deve compilar sem erros (`strict: true` no `tsconfig.json`).
+3. **Sempre verifique** erros de TypeScript após criar ou editar arquivos `.ts`/`.tsx` antes de finalizar a tarefa. Use `ReadLints` nos arquivos alterados ou `npx tsc --noEmit`; corrija tudo antes de entregar.
+4. NUNCA use `as any` ou `@ts-ignore` para suprimir erros. Resolva o erro real.
+5. Use `z.infer<typeof schema>` para derivar tipos de schemas Zod. Não duplique tipos manualmente.
+6. Prefira `type` a `interface` para tipos de dados simples.
+7. Sempre tipar props de componentes React com `type NomeProps = { ... }` antes do componente.
+8. Server Actions devem retornar tipos explícitos: Promise<{ success: boolean; message: string }>.
+9. Use `satisfies` quando quiser validar um objeto contra um tipo sem perder inferência literal.
+10. Enums do Prisma devem ser importados de `@/generated/prisma/client`, nunca redefinidos.
+11. Não use `Record<string, any>`. Especifique o valor: `Record<string, string>`, etc.
 
 ---
 
@@ -164,16 +167,29 @@ Padrão de ícone em card:
 
 ---
 
+## Formulários — OBRIGATÓRIO
+
+1. **Todo formulário** do projeto usa **React Hook Form** (`useForm`). Não use `useState` por campo nem controle manual de valores/erros.
+2. Validação client-side com **Zod** + `zodResolver` (`@hookform/resolvers/zod`); reutilize o schema de `modules/[dominio]/schemas/`.
+3. Tipagem: `useForm<z.infer<typeof schema>>()` ou `type FormValues = z.infer<typeof schema>`.
+4. UI via shadcn **`Form`** (`@/components/ui/form`): `Form`, `FormField`, `FormItem`, `FormLabel`, `FormControl`, `FormMessage`. Instalar com `npx shadcn@latest add form` se faltar.
+5. Submit: `form.handleSubmit(onValid)` dentro de `startTransition`; loading com `isPending` do `useTransition`, não com state separado.
+6. Erros de validação → `FormMessage`; erros da Server Action → `toast` do Sonner.
+7. Padrões repetidos de campo → extrair em `src/components/forms/`.
+8. Inputs de tempo (HH:mm): `Controller` ou `register` + formatar no `onChange`, normalizar no `onBlur`, validar com `/^\d{2}:\d{2}$/` no schema Zod.
+
+---
+
 ## Regras de componentes — OBRIGATÓRIAS
 
 1. Client Components usam `'use client'` na primeira linha, sem exceção.
 2. Mutações usam `useTransition` + `startTransition(async () => { ... })`. Use `isPending` para loading — nunca useState só para loading.
 3. Feedbacks ao usuário sempre via `toast` do Sonner. Nunca use `alert()`.
 4. Após mutation com redirecionamento: `router.push` + `router.refresh()` com setTimeout de ~400ms.
-5. Nunca use `<form>` com `action`. Use `<button type="button" onClick={handleSubmit}>` com useTransition.
-6. Inputs de tempo (HH:mm): formatar no onChange, normalizar no onBlur, validar com /^\d{2}:\d{2}$/ antes de submeter.
+5. Nunca use `<form action={...}>` (Server Action no atributo `action`). Use React Hook Form: `<form onSubmit={form.handleSubmit(onSubmit)}>` ou botão com `form.handleSubmit(onSubmit)` + `useTransition`.
+6. Inputs de tempo (HH:mm): ver seção **Formulários** — formatar no onChange, normalizar no onBlur, validar no schema Zod.
 7. Listas com `.map()` sempre com `key` única e estável (id, nunca índice).
-8. Formulários complexos: estado local por campo com tipos explícitos; preferir `FormField` em `components/forms/`.
+8. Formulários: **sempre React Hook Form** + shadcn `Form`; nunca estado local por campo com `useState`.
 
 ---
 
@@ -205,14 +221,15 @@ Idioma da UI:          português               textos, labels, mensagens de err
 
 ## Restrições absolutas — NUNCA faça
 
-- NUNCA use `any` em TypeScript — nem explícito, nem implícito
-- NUNCA entregue um arquivo com erro de TypeScript. Se não compilar, não entregue
+- NUNCA use `any` em TypeScript — nem explícito, nem implícito; arquivos com `any` serão rejeitados
+- NUNCA entregue um arquivo com erro de TypeScript. Se não compilar, não entregue — verifique com `ReadLints` ou `tsc --noEmit` antes de finalizar
 - NUNCA use `@ts-ignore` ou `@ts-expect-error` sem justificativa
 - NUNCA use cor hardcoded — só tokens de `src/app/globals.css` / tema Tailwind
 - NUNCA ignore shadcn quando já existir componente equivalente em `@/components/ui`
 - NUNCA busque dados diretamente em Client Components — receba via props
 - NUNCA use `alert()`, `confirm()` ou `prompt()` — use Sonner toast
-- NUNCA use `<form action={...}>` para mutations — use useTransition
+- NUNCA use `<form action={...}>` para mutations — use React Hook Form + useTransition
+- NUNCA gerencie campos de formulário com `useState` — use React Hook Form
 - NUNCA use índice de array como `key` no `.map()`
 - NUNCA hardcode IDs de tenant/org — use helpers em `lib/`
 - NUNCA use `console.log` em produção — apenas `console.error` em catch de Server Actions
@@ -230,7 +247,7 @@ Documente aqui paths reais do PROPAI OS conforme o projeto crescer, no mesmo esp
 
 ref-1: page Server Component — searchParams validados, Promise.all, cabeçalho → métricas → tabela
 ref-2: page com filtros (month/year ou equivalente), gráficos Recharts, Badge shadcn
-ref-3: client form — useTransition, Zod, Sonner, router.push + refresh
+ref-3: client form — React Hook Form, zodResolver, shadcn Form, useTransition, Sonner, router.push + refresh
 ref-4: server action — 'use server', safeParse, try/catch, revalidatePath
 ref-5: query function — select explícito, transformação antes de retornar
 ref-6: types/ do domínio — tipos + LucideIcon quando necessário
@@ -263,8 +280,10 @@ ref-7: data/ — arrays tipados com satisfies
    - revalidatePath após mutação bem-sucedida
 
 6. Ao criar um Client Component com formulário, inclua sempre:
-   - useTransition para loading
-   - toast do Sonner para erro e sucesso
+   - React Hook Form (`useForm`) + `zodResolver` com schema Zod do módulo
+   - shadcn `Form` / `FormField` / `FormMessage` para campos e erros
+   - useTransition para loading no submit
+   - toast do Sonner para erro e sucesso da Server Action
    - shadcn para inputs/selects/dialogs
    - router.push + router.refresh() após sucesso
 
@@ -280,11 +299,12 @@ Documente os domínios em `src/modules/` conforme forem criados (ex.: users, bil
 
 ## Resumo rápido
 
-TypeScript     — Zero any, zero erros de compilação
+TypeScript     — Zero any (rejeitado se usar), zero erros; verificar com ReadLints/tsc antes de entregar
 Arquitetura    — Lógica de negócio em modules/, nunca em app/
 UI             — shadcn ao máximo · dark mode · tokens em globals.css
 Cores          — Nunca hardcode; criar variável em globals.css se faltar
-Mutations      — Server Action + useTransition + Zod + revalidatePath
+Mutations      — Server Action + React Hook Form + useTransition + Zod + revalidatePath
+Formulários    — React Hook Form + zodResolver + shadcn Form; nunca useState por campo
 Monetário      — Centavos no banco, formatação na query function
 Imports        — Sempre @/ alias, nunca paths relativos com ../..
 Idioma         — Código em inglês, UI/mensagens em português
