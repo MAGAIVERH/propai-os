@@ -164,7 +164,7 @@ See [docs/dev-setup.md](./docs/dev-setup.md) for editor tooling and cloud accoun
 | `docs/REQUIREMENTS.md` | **v1 product scope** — flows, AI, fields, MVP lock      |
 | `docs/architecture.md` | Actors, brokerage flow, diagrams, links to requirements |
 | `docs/adr/`            | Architecture Decision Records                           |
-| `docs/legal/`          | Privacy, Terms, Fair Housing (draft)                    |
+| `docs/legal/`          | [Privacy, Terms, Fair Housing](./docs/legal/) (draft)   |
 
 ---
 
