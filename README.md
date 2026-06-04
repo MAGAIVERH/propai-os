@@ -2,6 +2,8 @@
 
 **An AI-powered Real Estate Operating System for US brokerages.**
 
+**Foundation v0.1.0** — [Checklist](docs/BACKEND-FOUNDATION-CHECKLIST.md) · [Release notes](docs/releases/foundation-v0.1.0.md) · Git tag `foundation-v0.1.0`
+
 ---
 
 ## Problem
@@ -147,11 +149,25 @@ propai-os/
 
 Managed with **pnpm workspaces** and **Turborepo**.
 
+## What's included in v0.1 (Foundation)
+
+Phase 1 backend freeze — multi-tenancy only (no Properties UI yet):
+
+- **Row-Level Security** — `test_items` + `audit_logs`; `runInTenantContext`; `propai_app` DB role
+- **Auth** — Better Auth organizations; brokerage sign-up, invite, session; [Auth POC GO](docs/AUTH-POC-FEEDBACK.md)
+- **Audit** — tenant-scoped `audit_logs`; `GET /v1/audit-logs` (owner/manager)
+- **Health** — `GET /health` (liveness), `GET /ready` (Postgres probe)
+- **Local dev** — Docker Compose, `pnpm setup:local`, `pnpm dev`, `pnpm dev:smoke`
+
+Details: [docs/releases/foundation-v0.1.0.md](./docs/releases/foundation-v0.1.0.md) · [docs/architecture.md](./docs/architecture.md)
+
+---
+
 ## Getting started
 
 **Prerequisites:** Node 20 LTS, pnpm 9+, Docker Desktop (Windows or macOS).
 
-**Full guide:** [docs/LOCAL-DEV.md](./docs/LOCAL-DEV.md) — fresh clone, troubleshooting, Day 14 checklist.
+**Start here:** [docs/LOCAL-DEV.md](./docs/LOCAL-DEV.md) — fresh clone, Docker, migrate, `pnpm dev`, smoke tests, troubleshooting.
 
 ```bash
 git clone https://github.com/MAGAIVERH/propai-os.git
@@ -168,7 +184,8 @@ Verify (second terminal while `pnpm dev` is running):
 curl -s http://localhost:3333/health
 curl -s http://localhost:3333/ready    # expect HTTP 200
 curl -s -o /dev/null -w "%{http_code}" http://localhost:3000
-pnpm dev:smoke                        # optional PASS/FAIL regression
+pnpm dev:smoke --spawn-api            # smoke without pnpm dev (spawns temp API)
+# or: pnpm dev (terminal 1) + pnpm dev:smoke (terminal 2)
 ```
 
 | Command | Apps |
@@ -211,7 +228,8 @@ API scaffold (Day 12): [docs/api/api-scaffold.md](./docs/api/api-scaffold.md)
 | Document               | Description                                             |
 | ---------------------- | ------------------------------------------------------- |
 | `docs/LOCAL-DEV.md`    | **Fresh clone** — Docker, migrate, dev, smoke, troubleshooting |
-| `docs/BACKEND-FOUNDATION-CHECKLIST.md` | **Phase 1 sign-off** — Days 6–15, tag `foundation-v0.1.0` |
+| `docs/BACKEND-FOUNDATION-CHECKLIST.md` | **Phase 1 sign-off** — Days 6–15, pre-tag verification |
+| `docs/releases/foundation-v0.1.0.md` | **Release notes** — tag `foundation-v0.1.0` |
 | `docs/PHASE-2-PLAN.md` | **Properties** — Days 16–25 roadmap |
 | `docs/REQUIREMENTS.md` | **v1 product scope** — flows, AI, fields, MVP lock      |
 | `docs/architecture.md` | Actors, brokerage flow, **RLS diagrams** (Foundation v0.1) |

@@ -123,26 +123,57 @@ Use this checklist to sign off Foundation v0.1. Each item includes a **verificat
 | 15.2 | `architecture.md` — RLS section + Mermaid diagrams | [x] | [architecture.md](./architecture.md#multi-tenancy--row-level-security-foundation-v01) |
 | 15.3 | Phase 2 plan (Days 16–25) | [x] | [PHASE-2-PLAN.md](./PHASE-2-PLAN.md) |
 | 15.4 | Verification gate (tests + smoke) | [x] | See [T15-4 sign-off](#t15-4-verification-gate) below |
-| 15.5 | Git tag `foundation-v0.1.0` + release notes | [x] | `git tag -a foundation-v0.1.0` — [FOUNDATION-v0.1.0-RELEASE.md](./FOUNDATION-v0.1.0-RELEASE.md) |
+| 15.5 | Git tag `foundation-v0.1.0` + release notes | [x] | `git tag -l 'foundation-v0.1.0'` — [releases/foundation-v0.1.0.md](./releases/foundation-v0.1.0.md) |
 
 ---
 
-## T15-4 verification gate
+## Pre-tag verification (T15-4 release gate)
 
-Run on **2026-06-04** (local Docker Postgres, migrations applied):
+**Run date:** 2026-06-04  
+**Environment:** Windows 11, Node v22.22.0, pnpm 11.5.0, Docker Compose (Postgres 16 + Redis 7)  
+**Git commit under test:** `b9fc639` (tag `foundation-v0.1.0`)  
+**Signed off by:** PropAI OS engineering (automated run)
 
-| Check | Command | Result |
-| ----- | ------- | ------ |
-| RLS POC (test_items + audit_logs) | `pnpm db:rls-test` | **PASS** (8/8) |
-| API integration suite | `pnpm test:api` | **PASS** (30/30) |
-| Shared role tests | `pnpm test:shared` | **PASS** (8/8) |
-| `/health` + `/ready` | `pnpm test:api` (`health.integration.test.ts`) | **PASS** |
-| Live probes (optional) | `pnpm dev` then `curl` `/health`, `/ready` | Manual while stack up |
-| Stack smoke (optional) | `pnpm dev:smoke` | With `pnpm dev` running |
+All commands below must pass before creating or moving tag `foundation-v0.1.0`. No exceptions recorded.
+
+| # | Command | Result | Details |
+| - | ------- | ------ | ------- |
+| 1 | `pnpm typecheck` | **PASS** | Turbo: 6/6 packages (`@propai/api`, `@propai/db`, `@propai/shared`, `@propai/web`, `@propai/marketplace`, `@propai/config`) |
+| 2 | `pnpm lint` | **PASS** | Turbo: 5/5 packages |
+| 3 | `pnpm docker:up` | **PASS** | `propai-postgres`, `propai-redis` healthy |
+| 4 | `pnpm db:migrate` | **PASS** | Drizzle migrations applied (no pending) |
+| 5 | `pnpm db:rls-test` | **PASS** | 8/8 RLS checks (`test_items` + `audit_logs`) |
+| 6 | `pnpm test:api` | **PASS** | Vitest **30/30** (10 files) |
+| 7 | `pnpm test:shared` | **PASS** | Vitest **8/8** (1 file) |
+| 8 | `pnpm auth:poc` | **PASS** | Auth POC smoke **6/6** checks |
+| 9 | `pnpm dev:smoke --spawn-api` | **PASS** | 4/4 probes (Postgres :5432, Redis PING, `/health` 200, `/ready` 200) |
+
+### `pnpm dev:smoke` notes
+
+- **Without API running:** use `pnpm dev:smoke --spawn-api` (starts temporary API via `pnpm --filter @propai/api start`).
+- **With stack up:** run `pnpm dev` in another terminal, then `pnpm dev:smoke` (default mode).
+
+### Vitest breakdown (`pnpm test:api`)
+
+| Suite | Tests |
+| ----- | ----- |
+| `audit.integration.test.ts` | 4 |
+| `auth-invitation.integration.test.ts` | 3 |
+| `auth.integration.test.ts` | 3 |
+| `auth-tenant-isolation.integration.test.ts` | 1 |
+| `test-items.integration.test.ts` | 6 |
+| `health.integration.test.ts` | 2 |
+| `error-handler.test.ts` | 2 |
+| `tenants.integration.test.ts` | 2 |
+| `health.test.ts` | 3 |
+| `member-access.test.ts` | 4 |
+| **Total** | **30** |
+
+**Gate status:** **GREEN** — safe to tag `foundation-v0.1.0`.
 
 **Architecture alignment:** Tenant root is `organization.id`; business tables use `tenant_id` FK to `organization.id`. Auth tables (`user`, `session`, `member`, …) have **no RLS** — isolation is session + app middleware + RLS on business tables.
 
-**Related architecture doc:** [Multi-tenancy & RLS (Foundation v0.1)](./architecture.md#multi-tenancy--row-level-security-foundation-v01)
+**Related:** [Multi-tenancy & RLS](./architecture.md#multi-tenancy--row-level-security-foundation-v01) · [Release notes](../releases/foundation-v0.1.0.md)
 
 ---
 
@@ -158,16 +189,16 @@ Run on **2026-06-04** (local Docker Postgres, migrations applied):
 
 ---
 
-## Quick reference — commands
+## Quick reference — pre-tag gate (full)
 
 ```bash
+pnpm typecheck
+pnpm lint
 pnpm docker:up
 pnpm db:migrate
 pnpm db:rls-test
 pnpm test:api
 pnpm test:shared
-pnpm dev
-curl -s http://localhost:3333/health
-curl -s http://localhost:3333/ready
-pnpm dev:smoke
+pnpm auth:poc
+pnpm dev:smoke --spawn-api
 ```
