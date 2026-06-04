@@ -65,7 +65,7 @@ Defined in `packages/shared/src/roles/permissions.ts`:
 
 Database constraint: `member_role_check` on `member.role`.
 
-API permission middleware (Day 11+) will call `hasPermission(member.role, permission)` — not in scope for Day 10.
+Unit tests for `hasPermission` / `parseBrokerageRole` live in `packages/shared/src/roles/permissions.test.ts` (Day 11). Fastify permission middleware will call `hasPermission(member.role, permission)` — **Day 12**, not Day 11.
 
 ---
 

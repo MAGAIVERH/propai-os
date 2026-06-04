@@ -36,6 +36,8 @@ Local database URL (default in `.env.example`):
 | `pnpm db:rls-test`  | Run RLS isolation POC (`propai_app` role)       |
 | `pnpm db:seed-dev`    | Seed dev org + owner user + settings            |
 | `pnpm test:api`       | API auth + RLS integration tests (Vitest)       |
+| `pnpm test:shared`    | Shared package unit tests (`hasPermission`, roles) |
+| `pnpm auth:poc`       | Day 11 auth smoke (dual org isolation + invite) — needs Postgres + migrations |
 | `pnpm build`        | Production build                                  |
 | `pnpm lint`         | ESLint (all workspace packages)                   |
 | `pnpm typecheck`    | TypeScript strict check (Turbo)                   |
@@ -96,3 +98,15 @@ Postman collection: `docs/api/propai-api.postman_collection.json`
 Step-by-step: `docs/api/auth-flow.md`
 
 Required env: `BETTER_AUTH_URL=http://localhost:3333`, `BETTER_AUTH_SECRET` (32+ chars).
+
+### Day 11 quick re-validation
+
+```bash
+pnpm docker:up
+pnpm db:migrate
+pnpm auth:poc          # PASS/FAIL smoke (no Vitest runner)
+pnpm test:api          # full integration suite
+pnpm test:shared       # role permission unit tests
+```
+
+Sign-off template: `docs/AUTH-POC-FEEDBACK.md` · Manual steps: `docs/api/auth-flow.md` (Day 11).

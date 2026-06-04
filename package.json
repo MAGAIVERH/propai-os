@@ -19,7 +19,9 @@
     "db:rls-test": "pnpm --filter @propai/db db:rls-test",
     "db:seed-dev": "pnpm --filter @propai/db db:seed-dev",
     "test": "turbo test",
-    "test:api": "pnpm --filter @propai/api test"
+    "test:api": "pnpm --filter @propai/api test",
+    "test:shared": "pnpm --filter @propai/shared test",
+    "auth:poc": "pnpm --filter @propai/api auth:poc"
   },
   "devDependencies": {
     "eslint": "^9",
