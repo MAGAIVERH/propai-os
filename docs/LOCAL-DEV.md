@@ -22,9 +22,9 @@ Optional: [GitHub CLI](https://cli.github.com/) (`gh`) for PRs — not required 
 
 ---
 
-## Day 14 checklist
+## Day 14 — Docker Compose local dev
 
-Mirror of the day-by-day guide — tick in order:
+### Your checklist (tick when validating a fresh machine)
 
 - [ ] Clone repository
 - [ ] `pnpm install`
@@ -34,9 +34,45 @@ Mirror of the day-by-day guide — tick in order:
 - [ ] `pnpm dev` — API + dashboard running
 - [ ] `curl http://localhost:3333/health` → `status: ok`
 - [ ] `curl http://localhost:3333/ready` → HTTP **200** (not 503)
-- [ ] `pnpm dev:smoke` → all checks **PASS** (optional but recommended)
+- [ ] `curl` / browser — http://localhost:3000 responds (200 or 307)
+- [ ] `pnpm dev:smoke` → all checks **PASS** (recommended)
 
-**Done when:** fresh clone completes the checklist without ad-hoc steps.
+**Done when:** clone → compose up → `pnpm dev` → `/health` ok.
+
+### Shipped in this repo
+
+- [x] `docker-compose.yml` — Postgres 16 + Redis (+ optional `api` profile)
+- [x] `.env.example` (EN), `DATABASE_APP_URL` documented
+- [x] `pnpm dev` — `@propai/api` + `@propai/web` (use `pnpm dev:all` for marketplace)
+- [x] `docs/LOCAL-DEV.md` — this guide
+- [x] `pnpm setup:local` + `pnpm dev:smoke`
+- [x] `predev` — TCP check on Postgres `:5432` before `pnpm dev`
+- [x] `docker/postgres/init/01-roles.sql` — `propai_app` role on first volume boot (migrations still required)
+
+### Manual validation (close-out)
+
+New folder or **new Docker volume** (`docker compose down -v` then `docker compose up -d`):
+
+```bash
+git clone https://github.com/MAGAIVERH/propai-os.git
+cd propai-os
+pnpm install
+cp .env.example .env
+pnpm docker:up
+pnpm db:migrate
+pnpm dev
+```
+
+Second terminal:
+
+```bash
+curl -s http://localhost:3333/health
+curl -s http://localhost:3333/ready
+curl -s -o /dev/null -w "%{http_code}" http://localhost:3000
+pnpm dev:smoke
+```
+
+Optional regression: `pnpm auth:poc` (Days 11–13).
 
 ---
 
@@ -112,11 +148,20 @@ curl -s http://localhost:3333/ready
 | `pnpm dev:smoke --spawn-api` | Same, but starts temporary API via `pnpm --filter @propai/api start` |
 | `pnpm auth:poc` | Day 11 auth isolation smoke (needs Postgres + migrations) |
 
-`pnpm dev` runs a fast **predev** check: if Postgres is not listening on `localhost:5432`, it prints:
+`pnpm dev` runs a fast **predev** check (~1.5s max on Windows if Postgres is down): TCP probe on `localhost:5432`. If it fails:
 
 ```text
 Run: pnpm docker:up && pnpm db:migrate
 ```
+
+Skip when using a remote database: `SKIP_PREDEV=1 pnpm dev`.
+
+### VS Code / Cursor tasks
+
+`Terminal → Run Task…` — see `.vscode/tasks.json`:
+
+- **Docker: up**, **DB: migrate**, **Setup: local**, **Dev: API+Web**, **Dev: smoke**
+- **Debug API** — Run and Debug panel (`.vscode/launch.json`)
 
 ---
 
@@ -152,6 +197,8 @@ docker compose up -d
 | ------- | --------- | ------ |
 | PostgreSQL 16 | 5432 | `pg_isready` |
 | Redis 7 | 6379 | `redis-cli ping` |
+
+On a **brand-new Postgres volume**, `docker/postgres/init/01-roles.sql` creates the `propai_app` login role before you run migrations. Schemas, tables, grants, and RLS still require `pnpm db:migrate` (Drizzle migrations, including `0002_propai_app_role.sql`).
 
 Optional API container (most devs run API on the host):
 

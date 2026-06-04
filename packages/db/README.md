@@ -24,6 +24,8 @@ See `docs/adr/001-rls-multi-tenancy.md` (RLS) and `docs/adr/002-identity-organiz
 | `propai` | `DATABASE_URL` | Admin, migrations, seed |
 | `propai_app` | `DATABASE_APP_URL` | App runtime + RLS tests (non-superuser) |
 
+`propai_app` is created on first Postgres volume boot (`docker/postgres/init/01-roles.sql`) and granted via migrations (`0002_propai_app_role.sql` and later).
+
 Default app URL: `postgresql://propai_app:propai_app@localhost:5432/propai`
 
 ## Commands (from repo root)

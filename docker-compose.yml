@@ -13,6 +13,8 @@
 #   docker compose down
 #   pnpm docker:down            # same as above (root package.json script)
 #
+# Fresh volume: docker/postgres/init/ creates propai_app role; pnpm db:migrate still required.
+#
 # Ports (host):
 #   PostgreSQL 5432  — DATABASE_URL / DATABASE_APP_URL → localhost:5432
 #   Redis      6379  — REDIS_URL → redis://localhost:6379
@@ -31,6 +33,8 @@ services:
       POSTGRES_DB: propai
     volumes:
       - propai_postgres_data:/var/lib/postgresql/data
+      # First boot only (empty volume): creates propai_app role before db:migrate
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U propai -d propai"]
       interval: 5s

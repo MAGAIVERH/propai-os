@@ -1,5 +1,15 @@
 import net from "node:net";
 
+/**
+ * Fast infra probe before `pnpm dev` (npm `predev` lifecycle).
+ * Skipped when SKIP_PREDEV=1 (e.g. remote DB, custom port forwarding).
+ * ~1.5s max on Windows when Postgres is down; instant when port is open.
+ */
+
+if (process.env.SKIP_PREDEV === "1") {
+  process.exit(0);
+}
+
 const POSTGRES_HOST = "127.0.0.1";
 const POSTGRES_PORT = 5432;
 const TIMEOUT_MS = 1_500;

@@ -157,15 +157,25 @@ Managed with **pnpm workspaces** and **Turborepo**.
 git clone https://github.com/MAGAIVERH/propai-os.git
 cd propai-os
 pnpm install
-pnpm setup:local      # .env + Docker + migrations
-pnpm dev              # API :3333 + dashboard :3000
-pnpm dev:smoke        # PASS/FAIL stack smoke (API must be running)
+pnpm setup:local       # .env + Docker + migrations
+# Set BETTER_AUTH_SECRET in .env (min 32 chars) if using auth
+pnpm dev               # API :3333 + dashboard :3000
+```
+
+Verify (second terminal while `pnpm dev` is running):
+
+```bash
+curl -s http://localhost:3333/health
+curl -s http://localhost:3333/ready    # expect HTTP 200
+curl -s -o /dev/null -w "%{http_code}" http://localhost:3000
+pnpm dev:smoke                        # optional PASS/FAIL regression
 ```
 
 | Command | Apps |
 | ------- | ---- |
-| `pnpm dev` | API + dashboard (default local workflow) |
+| `pnpm dev` | API + dashboard (default — Turbo filters `@propai/api` + `@propai/web`) |
 | `pnpm dev:all` | API + dashboard + marketplace (`:3001`) |
+| `pnpm setup:local` | `.env` + `docker:up` + `db:migrate` |
 
 Run a single app:
 

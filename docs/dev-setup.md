@@ -15,7 +15,28 @@ Verify Docker: `docker run --rm hello-world`
 
 ## Fresh clone (Day 14)
 
-See **[LOCAL-DEV.md](./LOCAL-DEV.md)** — checklist, `pnpm setup:local`, `pnpm dev:smoke`, and troubleshooting.
+See **[LOCAL-DEV.md](./LOCAL-DEV.md)** — full walkthrough, troubleshooting, and manual validation.
+
+### Day 14 — delivered in repo
+
+| Item | Status |
+| ---- | ------ |
+| `docker-compose.yml` — Postgres 16 + Redis (+ optional `api` profile) | Done |
+| `.env.example` (EN), `DATABASE_APP_URL` documented | Done |
+| `pnpm dev` — API + web (not marketplace) | Done |
+| `docs/LOCAL-DEV.md` | Done |
+| `pnpm setup:local` + `pnpm dev:smoke` | Done |
+| `predev` — fast Postgres `:5432` check before `pnpm dev` | Done |
+| `docker/postgres/init` — `propai_app` role on first volume boot | Done |
+
+**Done criterion:** clone → `docker compose up` → `pnpm dev` → `curl /health` ok.
+
+```bash
+pnpm setup:local
+pnpm dev
+curl -s http://localhost:3333/health
+curl -s http://localhost:3333/ready
+```
 
 ## Install (incremental)
 
@@ -31,9 +52,10 @@ pnpm db:migrate
 | Command             | Description                                       |
 | ------------------- | ------------------------------------------------- |
 | `pnpm setup:local`  | `.env` + Docker up + wait + `db:migrate`          |
-| `pnpm dev`          | Turbo — API (`:3333`) + dashboard (`:3000`)       |
+| `pnpm dev`          | Turbo — **API** (`:3333`) + **dashboard** (`:3000`); runs `predev` (Postgres `:5432`) |
 | `pnpm dev:all`      | Turbo — API + dashboard + marketplace (`:3001`)   |
 | `pnpm dev:smoke`    | Stack smoke — `/health`, `/ready`, Redis PING     |
+| `pnpm predev:check` | Manual infra probe (same as automatic `predev`)     |
 | `pnpm docker:up`    | Start Postgres + Redis via Docker Compose         |
 | `pnpm docker:down`  | Stop local containers                             |
 | `pnpm db:generate`  | Generate SQL migrations from Drizzle schema       |
@@ -51,15 +73,30 @@ pnpm db:migrate
 | `pnpm format`       | Prettier write                                    |
 | `pnpm format:check` | Prettier check (CI)                               |
 
-## Editor
+## Editor (VS Code / Cursor)
 
 Recommended extensions (see `.vscode/extensions.json`):
 
 - ESLint
 - Prettier
 - Tailwind CSS IntelliSense
+- Docker
+
+**Tasks** (`Terminal → Run Task…` or `.vscode/tasks.json`):
+
+| Task | Command |
+| ---- | ------- |
+| Docker: up | `pnpm docker:up` |
+| DB: migrate | `pnpm db:migrate` |
+| Setup: local | `pnpm setup:local` |
+| Dev: API+Web | `pnpm dev` |
+| Dev: smoke | `pnpm dev:smoke` |
+
+**Debug API:** Run and Debug → **Debug API (@propai/api)** (`.vscode/launch.json`).
 
 Format on save is enabled in `.vscode/settings.json`.
+
+Skip infra check before dev (remote DB): `SKIP_PREDEV=1 pnpm dev`.
 
 ## UI stack
 

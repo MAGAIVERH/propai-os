@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "predev": "node scripts/predev-check.mjs",
+    "predev:check": "node scripts/predev-check.mjs",
     "dev": "turbo dev --filter=@propai/api --filter=@propai/web",
     "dev:all": "turbo dev",
     "dev:smoke": "node scripts/dev-stack-smoke.mjs",
