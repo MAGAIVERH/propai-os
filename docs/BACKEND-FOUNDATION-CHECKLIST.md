@@ -131,7 +131,7 @@ Use this checklist to sign off Foundation v0.1. Each item includes a **verificat
 
 **Run date:** 2026-06-04  
 **Environment:** Windows 11, Node v22.22.0, pnpm 11.5.0, Docker Compose (Postgres 16 + Redis 7)  
-**Git commit tagged:** `95ad3d6` (tag `foundation-v0.1.0`) — verification run on same codebase (doc-only delta after `b9fc639`)  
+**Git commit tagged:** `6b11554` (tag `foundation-v0.1.0`) — verification run 2026-06-04 on foundation codebase (`b9fc639` + doc-only commits)  
 **Signed off by:** PropAI OS engineering (automated run)
 
 All commands below must pass before creating or moving tag `foundation-v0.1.0`. No exceptions recorded.

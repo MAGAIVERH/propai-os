@@ -81,7 +81,7 @@ Full guide: [LOCAL-DEV.md](../LOCAL-DEV.md)
 
 ## Maintainer — publish tag
 
-Tag on `main` at commit `95ad3d6` (annotated `foundation-v0.1.0`):
+Tag on `main` at commit `6b11554` (annotated `foundation-v0.1.0`):
 
 ```bash
 git tag -l 'foundation-v0.1.0'
