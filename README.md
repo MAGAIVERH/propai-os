@@ -149,24 +149,17 @@ Managed with **pnpm workspaces** and **Turborepo**.
 
 ## Getting started
 
-**Prerequisites:** Node 20 LTS, pnpm 9+, Docker Desktop (PostgreSQL + Redis locally).
+**Prerequisites:** Node 20 LTS, pnpm 9+, Docker Desktop (Windows or macOS).
 
-**Fresh clone → running stack:**
+**Full guide:** [docs/LOCAL-DEV.md](./docs/LOCAL-DEV.md) — fresh clone, troubleshooting, Day 14 checklist.
 
 ```bash
 git clone https://github.com/MAGAIVERH/propai-os.git
 cd propai-os
 pnpm install
-cp .env.example .env
-# Set BETTER_AUTH_SECRET (min 32 chars) — see .env.example
-pnpm docker:up      # Postgres :5432, Redis :6379
-pnpm db:migrate
-pnpm dev            # API :3333 + dashboard :3000
-```
-
-```bash
-curl -s http://localhost:3333/health   # liveness
-curl -s http://localhost:3333/ready    # readiness (needs Postgres)
+pnpm setup:local      # .env + Docker + migrations
+pnpm dev              # API :3333 + dashboard :3000
+pnpm dev:smoke        # PASS/FAIL stack smoke (API must be running)
 ```
 
 | Command | Apps |
@@ -192,7 +185,7 @@ pnpm typecheck
 pnpm test:api    # requires Docker Postgres + pnpm db:migrate
 ```
 
-See [docs/dev-setup.md](./docs/dev-setup.md) for editor tooling and cloud accounts.  
+See [docs/LOCAL-DEV.md](./docs/LOCAL-DEV.md) (onboarding) and [docs/dev-setup.md](./docs/dev-setup.md) (editor, cloud, auth tables).  
 API scaffold (Day 12): [docs/api/api-scaffold.md](./docs/api/api-scaffold.md)
 
 | App | Default URL |
@@ -207,6 +200,7 @@ API scaffold (Day 12): [docs/api/api-scaffold.md](./docs/api/api-scaffold.md)
 
 | Document               | Description                                             |
 | ---------------------- | ------------------------------------------------------- |
+| `docs/LOCAL-DEV.md`    | **Fresh clone** — Docker, migrate, dev, smoke, troubleshooting |
 | `docs/REQUIREMENTS.md` | **v1 product scope** — flows, AI, fields, MVP lock      |
 | `docs/architecture.md` | Actors, brokerage flow, diagrams, links to requirements |
 | `docs/api/api-scaffold.md` | Fastify layout, `/health` vs `/ready`, K8s probes   |

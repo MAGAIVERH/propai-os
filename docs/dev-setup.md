@@ -1,5 +1,7 @@
 # Development setup
 
+> **Onboarding:** For a fresh clone (Docker, migrate, `pnpm dev`, health checks, troubleshooting), use **[LOCAL-DEV.md](./LOCAL-DEV.md)** first.
+
 ## Prerequisites
 
 | Tool    | Version            | Check            |
@@ -13,35 +15,7 @@ Verify Docker: `docker run --rm hello-world`
 
 ## Fresh clone (Day 14)
 
-```bash
-git clone https://github.com/MAGAIVERH/propai-os.git
-cd propai-os
-pnpm install
-cp .env.example .env
-# Edit BETTER_AUTH_SECRET — minimum 32 characters (see .env.example)
-pnpm docker:up          # Postgres :5432 + Redis :6379
-pnpm db:migrate
-pnpm dev                # API :3333 + dashboard :3000
-```
-
-Health check:
-
-```bash
-curl -s http://localhost:3333/health
-curl -s http://localhost:3333/ready   # 200 when Postgres is up
-```
-
-Optional: marketplace on port 3001 → `pnpm dev:all`  
-Optional: API in Docker → `docker compose --profile api up -d` (most devs use `pnpm dev` on the host).
-
-### Database URLs
-
-| Variable | Role | Used by |
-| -------- | ---- | ------- |
-| `DATABASE_URL` | `propai` (superuser locally) | `pnpm db:migrate`, Studio, seeds |
-| `DATABASE_APP_URL` | `propai_app` (RLS) | API `getAppDb()` |
-
-Defaults (local Compose): see `.env.example`.
+See **[LOCAL-DEV.md](./LOCAL-DEV.md)** — checklist, `pnpm setup:local`, `pnpm dev:smoke`, and troubleshooting.
 
 ## Install (incremental)
 
@@ -56,8 +30,10 @@ pnpm db:migrate
 
 | Command             | Description                                       |
 | ------------------- | ------------------------------------------------- |
+| `pnpm setup:local`  | `.env` + Docker up + wait + `db:migrate`          |
 | `pnpm dev`          | Turbo — API (`:3333`) + dashboard (`:3000`)       |
 | `pnpm dev:all`      | Turbo — API + dashboard + marketplace (`:3001`)   |
+| `pnpm dev:smoke`    | Stack smoke — `/health`, `/ready`, Redis PING     |
 | `pnpm docker:up`    | Start Postgres + Redis via Docker Compose         |
 | `pnpm docker:down`  | Stop local containers                             |
 | `pnpm db:generate`  | Generate SQL migrations from Drizzle schema       |
