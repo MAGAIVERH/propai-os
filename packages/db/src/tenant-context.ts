@@ -15,7 +15,7 @@ type DbTransaction = PgTransaction<
 
 /**
  * Sets the tenant scope for the current transaction (`SET LOCAL` equivalent).
- * Used by PostgreSQL RLS policies on `test_items` and future business tables.
+ * Used by PostgreSQL RLS policies on `test_items`, `audit_logs`, and other tenant tables.
  */
 export async function setTenantContext(
   executor: Db | DbTransaction,

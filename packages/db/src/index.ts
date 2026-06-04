@@ -1,3 +1,9 @@
+export {
+  auditLog,
+  logAuditEvent,
+  type LogAuditEventInput,
+  type LogAuditEventResult,
+} from "./audit/audit-log.js";
 export { closeDb, getAppDb, getDb, type Db } from "./client.js";
 export { TenantContextRequiredError } from "./errors.js";
 export { getDatabaseUrl, loadEnv } from "./env.js";
@@ -15,6 +21,7 @@ export {
 export { seedDevIdentity } from "./seed/dev-identity.js";
 export {
   account,
+  auditLogs,
   authSchema,
   invitation,
   member,

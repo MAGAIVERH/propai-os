@@ -30,6 +30,7 @@ export {
   userRelations,
   verification,
 };
+export { auditLogs } from "./audit-logs.js";
 export { tenantSettings } from "./tenant-settings.js";
 export { testItems } from "./test-items.js";
 

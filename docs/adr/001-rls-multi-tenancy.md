@@ -179,6 +179,7 @@ Tests (`apps/api/src/test-items.integration.test.ts`):
 - `packages/db/drizzle/0001_thick_goblin_queen.sql` — `test_items` + RLS
 - `packages/db/drizzle/0002_propai_app_role.sql` — `propai_app` role
 - `packages/db/drizzle/0004_identity_organizations.sql` — tenants → organization + Better Auth tables
+- `packages/db/drizzle/0006_audit_logs.sql` — `audit_logs` + RLS (see [ADR 003](./003-audit-logs.md))
 - `packages/db/src/tenant-context.ts` — TypeScript helper
 - `apps/api/src/plugins/tenant-context.ts` — Fastify middleware
 - [ADR 002 — Identity & roles](./002-identity-organizations-roles.md)

@@ -13,8 +13,9 @@ See `docs/adr/001-rls-multi-tenancy.md` (RLS) and `docs/adr/002-identity-organiz
 | `member`, `invitation` | Better Auth organization plugin |
 | `tenant_settings` | Per-org settings (FK → `organization.id`) |
 | `test_items` | RLS POC (`tenant_id` → `organization.id`) |
+| `audit_logs` | Immutable audit trail (`tenant_id` → `organization.id`; Day 13) |
 
-**RLS:** `tenant_id` columns reference `organization.id`. Session scope uses `app.current_tenant`.
+**RLS:** `tenant_id` columns reference `organization.id`. Session scope uses `app.current_tenant`. See `docs/adr/003-audit-logs.md`.
 
 ## Roles (local Docker)
 

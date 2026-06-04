@@ -1,4 +1,17 @@
 export {
+  AUDIT_ACTIONS,
+  auditActionSchema,
+  auditLogEntrySchema,
+  auditLogListQuerySchema,
+  auditLogListResponseSchema,
+  auditLogResponseSchema,
+  type AuditAction,
+  type AuditLogEntry,
+  type AuditLogListQuery,
+  type AuditLogListResponse,
+  type AuditLogResponse,
+} from "./audit/audit-log.js";
+export {
   BROKERAGE_ROLES,
   brokerageRoleSchema,
   getPermissionsForRole,
