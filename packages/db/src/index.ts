@@ -6,7 +6,7 @@ export {
 } from "./audit/audit-log.js";
 export { closeDb, getAppDb, getDb, type Db } from "./client.js";
 export { TenantContextRequiredError } from "./errors.js";
-export { getDatabaseUrl, loadEnv } from "./env.js";
+export { getAppDatabaseUrl, getDatabaseUrl, loadEnv } from "./env.js";
 export {
   getOrganizationById,
   getOrganizationProfileById,

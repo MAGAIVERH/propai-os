@@ -1,0 +1,24 @@
+# Optional dev API image (docker compose --profile api).
+# Most developers run the API on the host via `pnpm dev` instead.
+FROM node:20-alpine
+
+RUN corepack enable && corepack prepare pnpm@11.5.0 --activate
+
+WORKDIR /app
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY apps/api/package.json apps/api/
+COPY packages/db/package.json packages/db/
+COPY packages/shared/package.json packages/shared/
+COPY packages/config/package.json packages/config/
+
+RUN pnpm install --frozen-lockfile --filter @propai/api...
+
+COPY apps/api apps/api
+COPY packages/db packages/db
+COPY packages/shared packages/shared
+COPY packages/config packages/config
+
+EXPOSE 3333
+
+CMD ["pnpm", "--filter", "@propai/api", "dev"]

@@ -22,7 +22,7 @@ See `docs/adr/001-rls-multi-tenancy.md` (RLS) and `docs/adr/002-identity-organiz
 | Role | URL var | Purpose |
 | ---- | ------- | ------- |
 | `propai` | `DATABASE_URL` | Admin, migrations, seed |
-| `propai_app` | `DATABASE_APP_URL` (optional) | App runtime + RLS tests (non-superuser) |
+| `propai_app` | `DATABASE_APP_URL` | App runtime + RLS tests (non-superuser) |
 
 Default app URL: `postgresql://propai_app:propai_app@localhost:5432/propai`
 

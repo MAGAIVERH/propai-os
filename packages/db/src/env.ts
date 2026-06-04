@@ -19,7 +19,10 @@ export function loadEnv(): void {
   envLoaded = true;
 }
 
-/** Returns `DATABASE_URL` after loading root `.env`. */
+/**
+ * Returns `DATABASE_URL` (admin / migrations user) after loading root `.env`.
+ * Use for Drizzle migrations, Studio, and seeds — not for RLS-scoped API queries.
+ */
 export function getDatabaseUrl(): string {
   loadEnv();
 
@@ -32,4 +35,14 @@ export function getDatabaseUrl(): string {
   }
 
   return databaseUrl;
+}
+
+/**
+ * Returns `DATABASE_APP_URL` (RLS app role) after loading root `.env`.
+ * Falls back to the local Docker default when unset (see getAppDb in client.ts).
+ */
+export function getAppDatabaseUrl(): string | undefined {
+  loadEnv();
+  const url = process.env.DATABASE_APP_URL?.trim();
+  return url && url.length > 0 ? url : undefined;
 }

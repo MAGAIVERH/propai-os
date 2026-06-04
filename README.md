@@ -151,16 +151,30 @@ Managed with **pnpm workspaces** and **Turborepo**.
 
 **Prerequisites:** Node 20 LTS, pnpm 9+, Docker Desktop (PostgreSQL + Redis locally).
 
+**Fresh clone → running stack:**
+
 ```bash
 git clone https://github.com/MAGAIVERH/propai-os.git
 cd propai-os
 pnpm install
 cp .env.example .env
-pnpm docker:up
+# Set BETTER_AUTH_SECRET (min 32 chars) — see .env.example
+pnpm docker:up      # Postgres :5432, Redis :6379
 pnpm db:migrate
+pnpm dev            # API :3333 + dashboard :3000
 ```
 
-Run apps (separate terminals or `turbo dev` for all):
+```bash
+curl -s http://localhost:3333/health   # liveness
+curl -s http://localhost:3333/ready    # readiness (needs Postgres)
+```
+
+| Command | Apps |
+| ------- | ---- |
+| `pnpm dev` | API + dashboard (default local workflow) |
+| `pnpm dev:all` | API + dashboard + marketplace (`:3001`) |
+
+Run a single app:
 
 ```bash
 pnpm --filter @propai/web dev          # http://localhost:3000
@@ -168,12 +182,7 @@ pnpm --filter @propai/marketplace dev  # http://localhost:3001
 pnpm --filter @propai/api dev          # http://localhost:3333
 ```
 
-API ops (no auth required):
-
-```bash
-curl -s http://localhost:3333/health   # liveness
-curl -s http://localhost:3333/ready    # readiness (needs Postgres)
-```
+Docker Compose optional API container: `docker compose --profile api up -d` (see `docker-compose.yml`).
 
 Quality checks (also run in CI on every PR):
 

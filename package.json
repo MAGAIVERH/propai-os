@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "turbo dev",
+    "dev": "turbo dev --filter=@propai/api --filter=@propai/web",
+    "dev:all": "turbo dev",
     "build": "turbo build",
     "start": "turbo start",
     "lint": "turbo lint",

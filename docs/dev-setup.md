@@ -1,33 +1,63 @@
-# Development setup (Day 2)
+# Development setup
 
 ## Prerequisites
 
 | Tool    | Version            | Check            |
 | ------- | ------------------ | ---------------- |
 | Node.js | 20 LTS (22 OK)     | `node -v`        |
-| pnpm    | 9+                 | `pnpm -v`        |
+| pnpm    | 9+ (11 in repo)    | `pnpm -v`        |
 | Docker  | Desktop running    | `docker -v`      |
 | GitHub  | `gh` authenticated | `gh auth status` |
 
 Verify Docker: `docker run --rm hello-world`
 
-## Install
+## Fresh clone (Day 14)
+
+```bash
+git clone https://github.com/MAGAIVERH/propai-os.git
+cd propai-os
+pnpm install
+cp .env.example .env
+# Edit BETTER_AUTH_SECRET — minimum 32 characters (see .env.example)
+pnpm docker:up          # Postgres :5432 + Redis :6379
+pnpm db:migrate
+pnpm dev                # API :3333 + dashboard :3000
+```
+
+Health check:
+
+```bash
+curl -s http://localhost:3333/health
+curl -s http://localhost:3333/ready   # 200 when Postgres is up
+```
+
+Optional: marketplace on port 3001 → `pnpm dev:all`  
+Optional: API in Docker → `docker compose --profile api up -d` (most devs use `pnpm dev` on the host).
+
+### Database URLs
+
+| Variable | Role | Used by |
+| -------- | ---- | ------- |
+| `DATABASE_URL` | `propai` (superuser locally) | `pnpm db:migrate`, Studio, seeds |
+| `DATABASE_APP_URL` | `propai_app` (RLS) | API `getAppDb()` |
+
+Defaults (local Compose): see `.env.example`.
+
+## Install (incremental)
 
 ```bash
 pnpm install
 cp .env.example .env
 pnpm docker:up    # PostgreSQL + Redis (local)
+pnpm db:migrate
 ```
-
-Local database URL (default in `.env.example`):
-
-`postgresql://propai:propai@localhost:5432/propai`
 
 ## Scripts
 
 | Command             | Description                                       |
 | ------------------- | ------------------------------------------------- |
-| `pnpm dev`          | Turbo — Next.js dashboard (`apps/web`, port 3000) |
+| `pnpm dev`          | Turbo — API (`:3333`) + dashboard (`:3000`)       |
+| `pnpm dev:all`      | Turbo — API + dashboard + marketplace (`:3001`)   |
 | `pnpm docker:up`    | Start Postgres + Redis via Docker Compose         |
 | `pnpm docker:down`  | Stop local containers                             |
 | `pnpm db:generate`  | Generate SQL migrations from Drizzle schema       |
@@ -79,9 +109,11 @@ See `.env.example` for variable names.
 
 ## API auth (Day 10)
 
-Start the API:
+Start the API (included in `pnpm dev`):
 
 ```bash
+pnpm dev
+# or only API:
 pnpm --filter @propai/api dev
 ```
 
