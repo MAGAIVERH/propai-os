@@ -1,18 +1,21 @@
 import cors from "@fastify/cors";
-import { fromNodeHeaders } from "better-auth/node";
 import Fastify, { type FastifyInstance } from "fastify";
 
-import { auth, TRUSTED_ORIGINS } from "./auth/better-auth.js";
+import { TRUSTED_ORIGINS } from "./modules/auth/index.js";
+
 import {
   getFastifyLoggerConfig,
   requestIdOptions,
 } from "./lib/logger.js";
+import { registerAuditModule } from "./modules/audit/index.js";
 import { registerHealthModule } from "./modules/health/index.js";
+import { registerTenantsModule } from "./modules/tenants/index.js";
+import { registerTestItemsModule } from "./modules/test-items/index.js";
+import { authPlugin } from "./plugins/auth.js";
+import { errorHandlerPlugin } from "./plugins/error-handler.js";
 import { securityPlugin } from "./plugins/security.js";
 import { tenantContextPlugin } from "./plugins/tenant-context.js";
-import { registerBrokerageAuthRoutes } from "./routes/brokerage-auth.js";
-import { registerBrokerageInviteRoutes } from "./routes/brokerage-invite.js";
-import { registerTestItemsRoutes } from "./routes/test-items.js";
+import { zodValidatorPlugin } from "./plugins/zod-validator.js";
 
 type BuildAppOptions = {
   logger?: boolean;
@@ -28,6 +31,9 @@ export async function buildApp(
   });
   const mountAuthRoutes = options.mountAuthRoutes ?? true;
 
+  await app.register(zodValidatorPlugin);
+  await app.register(errorHandlerPlugin);
+
   await app.register(cors, {
     origin: [...TRUSTED_ORIGINS],
     credentials: true,
@@ -37,59 +43,18 @@ export async function buildApp(
   await app.register(securityPlugin);
   await registerHealthModule(app);
 
-  if (mountAuthRoutes) {
-    await registerBrokerageAuthRoutes(app);
-    await registerBrokerageInviteRoutes(app);
-
-    app.all("/api/auth/*", async (request, reply) => {
-      const host = request.headers.host ?? "localhost:3333";
-      const url = new URL(request.url, `http://${host}`);
-      const headers = fromNodeHeaders(request.headers);
-
-      let body: string | undefined;
-
-      if (
-        request.method !== "GET" &&
-        request.method !== "HEAD" &&
-        request.body !== undefined &&
-        request.body !== null
-      ) {
-        body =
-          typeof request.body === "string"
-            ? request.body
-            : JSON.stringify(request.body);
-      }
-
-      const authRequest = new Request(url.toString(), {
-        method: request.method,
-        headers,
-        body,
-      });
-
-      const response = await auth.handler(authRequest);
-
-      reply.status(response.status);
-      response.headers.forEach((value, key) => {
-        void reply.header(key, value);
-      });
-
-      const responseText = await response.text();
-
-      if (!responseText) {
-        return reply.send();
-      }
-
-      return reply.send(JSON.parse(responseText) as unknown);
-    });
-  }
+  await app.register(authPlugin, { enabled: mountAuthRoutes });
 
   await app.register(tenantContextPlugin);
   await app.register(
     async (v1) => {
-      await registerTestItemsRoutes(v1);
+      await registerTenantsModule(v1);
+      await registerTestItemsModule(v1);
     },
     { prefix: "/v1" },
   );
+
+  await registerAuditModule(app);
 
   return app;
 }

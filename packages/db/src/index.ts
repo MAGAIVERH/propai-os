@@ -3,7 +3,9 @@ export { TenantContextRequiredError } from "./errors.js";
 export { getDatabaseUrl, loadEnv } from "./env.js";
 export {
   getOrganizationById,
+  getOrganizationProfileById,
   getTenantById,
+  type OrganizationProfile,
 } from "./queries/get-tenant-by-id.js";
 export {
   getInitialOrganizationIdForUser,

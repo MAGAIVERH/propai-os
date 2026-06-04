@@ -93,6 +93,7 @@ Auth endpoints (Better Auth + brokerage sign-up):
 | `/api/auth/sign-in/email` | POST | Email/password login |
 | `/api/auth/get-session` | GET | Current session + `activeOrganizationId` |
 | `/v1/test-items` | GET | Protected route (requires session cookie) |
+| `/v1/organization/me` | GET | Active organization `{ id, name, slug }` (session) |
 
 Postman collection: `docs/api/propai-api.postman_collection.json`  
 Step-by-step: `docs/api/auth-flow.md`

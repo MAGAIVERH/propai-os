@@ -9,11 +9,11 @@ import {
   tenantSettings,
 } from "@propai/db";
 
+import { recordDevInvitation } from "../../lib/invitation-dev-store.js";
 import {
   brokerageOrganizationAccess,
   brokerageOrganizationRoles,
 } from "./organization-access.js";
-import { recordDevInvitation } from "../lib/invitation-dev-store.js";
 
 const authSecret =
   process.env.BETTER_AUTH_SECRET ?? "dev-better-auth-secret-min-32-chars";

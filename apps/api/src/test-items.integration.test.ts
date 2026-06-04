@@ -2,7 +2,7 @@ import { getAppDb, testItems } from "@propai/db";
 import { describe, expect, it, beforeAll, afterAll } from "vitest";
 
 import { buildApp } from "./app.js";
-import { createMockSessionAuthorization } from "./auth/session.js";
+import { createMockSessionAuthorization } from "./modules/auth/session.js";
 import {
   seedRlsTestData,
   teardownRlsTestData,

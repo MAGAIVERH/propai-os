@@ -1,9 +1,10 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import fp from "fastify-plugin";
 
-import { getSessionFromRequest } from "../auth/session.js";
-import { resolveTenantId } from "../auth/resolve-tenant-id.js";
-import type { PropAiSession } from "../auth/types.js";
+import { apiError } from "../lib/api-error.js";
+import { getSessionFromRequest } from "../modules/auth/session.js";
+import { resolveTenantId } from "../modules/auth/resolve-tenant-id.js";
+import type { PropAiSession } from "../modules/auth/types.js";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -11,11 +12,6 @@ declare module "fastify" {
     tenantId: string | null;
   }
 }
-
-type ErrorBody = {
-  error: string;
-  message: string;
-};
 
 function isProtectedRoute(url: string): boolean {
   return url.startsWith("/v1/");
@@ -35,21 +31,17 @@ export const tenantContextPlugin = fp(async (app) => {
       const session = await getSessionFromRequest(request);
 
       if (!session) {
-        const body: ErrorBody = {
-          error: "Unauthorized",
-          message: "Authentication required.",
-        };
-        return reply.status(401).send(body);
+        return reply
+          .status(401)
+          .send(apiError("Unauthorized", "Authentication required."));
       }
 
       const tenantId = await resolveTenantId(session);
 
       if (!tenantId) {
-        const body: ErrorBody = {
-          error: "Forbidden",
-          message: "Active organization required.",
-        };
-        return reply.status(403).send(body);
+        return reply
+          .status(403)
+          .send(apiError("Forbidden", "Active organization required."));
       }
 
       request.session = session;

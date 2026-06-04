@@ -3,25 +3,21 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 
 import { isOrganizationSlugTaken } from "@propai/db";
 
-import { auth } from "../auth/better-auth.js";
+import { apiError } from "../../../lib/api-error.js";
 import {
   getAuthHttpErrorMessage,
   getAuthHttpErrorStatus,
   isAuthHttpError,
   mapSignUpErrorMessage,
   mapSignUpErrorStatus,
-} from "../lib/auth-http-error.js";
+} from "../../../lib/auth-http-error.js";
 import {
   buildCookieHeader,
   forwardSetCookieHeaders,
-} from "../lib/forward-auth-cookies.js";
-import { slugifyOrganizationName } from "../lib/organization-slug.js";
+} from "../../../lib/forward-auth-cookies.js";
+import { slugifyOrganizationName } from "../../../lib/organization-slug.js";
+import { auth } from "../better-auth.js";
 import { brokerageSignUpSchema } from "../schemas/brokerage-sign-up.js";
-
-type ErrorBody = {
-  error: string;
-  message: string;
-};
 
 type BrokerageSignUpResponse = {
   user: {
@@ -62,11 +58,14 @@ export async function registerBrokerageAuthRoutes(
       const parsed = brokerageSignUpSchema.safeParse(request.body);
 
       if (!parsed.success) {
-        const body: ErrorBody = {
-          error: "Bad Request",
-          message: parsed.error.issues[0]?.message ?? "Invalid request body.",
-        };
-        return reply.status(400).send(body);
+        return reply
+          .status(400)
+          .send(
+            apiError(
+              "Bad Request",
+              parsed.error.issues[0]?.message ?? "Invalid request body.",
+            ),
+          );
       }
 
       const { email, password, name, organizationName } = parsed.data;
@@ -74,12 +73,14 @@ export async function registerBrokerageAuthRoutes(
       const slugTaken = await isOrganizationSlugTaken(slug);
 
       if (slugTaken) {
-        const body: ErrorBody = {
-          error: "Conflict",
-          message:
-            "Organization slug already taken. Choose a different brokerage name.",
-        };
-        return reply.status(409).send(body);
+        return reply
+          .status(409)
+          .send(
+            apiError(
+              "Conflict",
+              "Organization slug already taken. Choose a different brokerage name.",
+            ),
+          );
       }
 
       try {
@@ -110,11 +111,14 @@ export async function registerBrokerageAuthRoutes(
         const organizationId = orgResult.response?.id;
 
         if (!organizationId) {
-          const body: ErrorBody = {
-            error: "Internal Server Error",
-            message: "Failed to create organization.",
-          };
-          return reply.status(500).send(body);
+          return reply
+            .status(500)
+            .send(
+              apiError(
+                "Internal Server Error",
+                "Failed to create organization.",
+              ),
+            );
         }
 
         const activeResult = await auth.api.setActiveOrganization({
@@ -149,22 +153,25 @@ export async function registerBrokerageAuthRoutes(
         if (isAuthHttpError(error)) {
           const status = getAuthHttpErrorStatus(error);
           const message = getAuthHttpErrorMessage(error);
-          const body: ErrorBody = {
-            error: status === 409 || status === 422 ? "Conflict" : "Bad Request",
-            message: mapSignUpErrorMessage(status, message),
-          };
 
-          return reply.status(mapSignUpErrorStatus(status)).send(body);
+          return reply.status(mapSignUpErrorStatus(status)).send(
+            apiError(
+              status === 409 || status === 422 ? "Conflict" : "Bad Request",
+              mapSignUpErrorMessage(status, message),
+            ),
+          );
         }
 
         console.error("Brokerage sign-up failed:", error);
 
-        const body: ErrorBody = {
-          error: "Internal Server Error",
-          message: "Failed to complete brokerage sign-up.",
-        };
-
-        return reply.status(500).send(body);
+        return reply
+          .status(500)
+          .send(
+            apiError(
+              "Internal Server Error",
+              "Failed to complete brokerage sign-up.",
+            ),
+          );
       }
     },
   );
