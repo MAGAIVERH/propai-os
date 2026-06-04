@@ -40,11 +40,159 @@ flowchart LR
 
 **Marketplace consumers** (buyers and renters) are not brokerage members. They search public listings, save favorites, and submit lead forms that create or enrich CRM records inside the brokerage tenant via the marketplace app and API.
 
-### Authorization model (target)
+### Authorization model
 
-- **Tenant boundary:** every business row is scoped to `organization_id`; Row-Level Security (RLS) enforces isolation in PostgreSQL.
-- **Role hierarchy:** Owner ⊃ Manager ⊃ Agent; Viewer is parallel read-only.
-- **Defense in depth:** API and dashboard always pass tenant context; never rely on UI alone for isolation.
+- **Tenant boundary:** every business row uses `tenant_id` referencing `organization.id` (Better Auth organization plugin). Row-Level Security (RLS) enforces isolation in PostgreSQL for business tables.
+- **Role hierarchy:** Owner ⊃ Manager ⊃ Agent; Viewer is parallel read-only (`@propai/shared` — see [ADR 002](./adr/002-identity-organizations-roles.md)).
+- **Defense in depth:** Fastify middleware resolves session → `organization.id`; handlers use `runInTenantContext`; RLS on `propai_app` role. Never rely on UI alone.
+
+**Foundation v0.1 (implemented):** full data-plane detail in [Multi-tenancy & RLS](#multi-tenancy--row-level-security-foundation-v01) below. **Phase 2+ (target):** CRM, properties, pipeline routes follow the same pattern.
+
+---
+
+## Multi-tenancy & Row-Level Security (Foundation v0.1)
+
+Implemented in Phase 1 (Days 6–15). Sign-off: [BACKEND-FOUNDATION-CHECKLIST.md](./BACKEND-FOUNDATION-CHECKLIST.md) · tag `foundation-v0.1.0`.
+
+### Data plane (request → database)
+
+```mermaid
+flowchart LR
+  subgraph client [Client]
+    Browser[Browser / Postman / Vitest]
+  end
+
+  subgraph api [apps/api — Fastify]
+    V1["/v1/* routes"]
+    TC[tenant-context plugin]
+    Session[getSessionFromRequest]
+    Resolve[resolveTenantId]
+    Handler[Route handler]
+    RTC[runInTenantContext]
+  end
+
+  subgraph db [PostgreSQL — Docker / Neon]
+    SetCfg["set_config('app.current_tenant')"]
+    RLS[RLS policies]
+    Tables[(test_items · audit_logs · …)]
+  end
+
+  Browser -->|Cookie or Bearer session| V1
+  V1 --> TC
+  TC --> Session
+  Session -->|activeOrganizationId| Resolve
+  Resolve -->|organization.id| Handler
+  Handler --> RTC
+  RTC --> SetCfg
+  SetCfg --> RLS
+  RLS --> Tables
+```
+
+**Sequence (typical read):**
+
+```mermaid
+sequenceDiagram
+  participant C as Client
+  participant F as Fastify /v1
+  participant S as Better Auth session
+  participant R as resolveTenantId
+  participant T as runInTenantContext
+  participant P as Postgres propai_app
+
+  C->>F: GET /v1/test-items
+  F->>S: getSessionFromRequest
+  S-->>F: activeOrganizationId
+  F->>R: map to organization.id
+  R-->>F: tenantId
+  F->>T: transaction + set_config
+  T->>P: SELECT … (RLS filters rows)
+  P-->>F: tenant-scoped rows only
+  F-->>C: 200 JSON
+```
+
+| Step | Component | Responsibility |
+| ---- | --------- | -------------- |
+| 1 | Better Auth `session` | `activeOrganizationId` — active brokerage |
+| 2 | `resolveTenantId()` | Validates UUID; returns `organization.id` (tenant root for RLS) |
+| 3 | `tenant-context` plugin | Sets `request.tenantId`; **401** without session, **403** without org |
+| 4 | `runInTenantContext()` | `set_config('app.current_tenant', tenantId, true)` inside transaction |
+| 5 | `getAppDb()` | Non-superuser `propai_app` — RLS not bypassed |
+| 6 | RLS policy | `tenant_id = nullif(current_setting('app.current_tenant', true), '')::uuid` |
+
+Code references: `apps/api/src/plugins/tenant-context.ts`, `apps/api/src/modules/auth/resolve-tenant-id.ts`, `packages/db/src/tenant-context.ts`, `packages/db/src/client.ts`.
+
+### Defense in depth
+
+```mermaid
+flowchart TB
+  subgraph layer1 [Layer 1 — Application]
+    MW[Fastify tenant-context on /v1/*]
+    RBAC[require-member-role / permissions]
+    Body[Never trust tenant_id from client body]
+  end
+
+  subgraph layer2 [Layer 2 — Session mapping]
+    BA[Better Auth activeOrganizationId]
+    Map[resolveTenantId → organization.id]
+  end
+
+  subgraph layer3 [Layer 3 — Database]
+    AppRole[propai_app role — no superuser bypass]
+    Ctx[app.current_tenant per transaction]
+    RLS[FORCE ROW LEVEL SECURITY]
+  end
+
+  MW --> BA
+  BA --> Map
+  Map --> AppRole
+  AppRole --> Ctx
+  Ctx --> RLS
+```
+
+| Layer | If it fails alone | RLS still protects? |
+| ----- | ----------------- | ------------------- |
+| Missing `WHERE tenant_id` in query | Yes — policy hides other tenants' rows |
+| Wrong `tenant_id` in INSERT body | Yes — `WITH CHECK` must match session context |
+| Superuser / `getDb()` in app routes | **No** — bypasses RLS; use `getAppDb()` only |
+| No `runInTenantContext` | Yes — zero rows (empty `app.current_tenant`) |
+
+### Tables: RLS vs no RLS
+
+```mermaid
+flowchart LR
+  subgraph noRls [No RLS — identity plane]
+    user[user]
+    session[session]
+    account[account]
+    organization[organization]
+    member[member]
+    invitation[invitation]
+  end
+
+  subgraph withRls [RLS — business plane tenant_id → organization.id]
+    tenant_settings[tenant_settings]
+    test_items[test_items POC]
+    audit_logs[audit_logs]
+    properties_future[properties — Phase 2 target]
+  end
+
+  organization --> tenant_settings
+  organization --> test_items
+  organization --> audit_logs
+  organization -.-> properties_future
+```
+
+Auth tables are isolated by **application session** and membership checks, not PostgreSQL RLS. Business data is isolated by **session → tenant context → RLS** (see [ADR 001](./adr/001-rls-multi-tenancy.md), [ADR 002](./adr/002-identity-organizations-roles.md)).
+
+### Verify locally
+
+```bash
+pnpm docker:up && pnpm db:migrate
+pnpm db:rls-test
+pnpm test:api
+```
+
+See [LOCAL-DEV.md](./LOCAL-DEV.md) and [api/api-scaffold.md](./api/api-scaffold.md).
 
 ---
 
@@ -129,7 +277,13 @@ The Fastify app in `apps/api` exposes **liveness** (`GET /health`) and **readine
 | Document                             | Purpose                                                        |
 | ------------------------------------ | -------------------------------------------------------------- |
 | [REQUIREMENTS.md](./REQUIREMENTS.md) | **v1 scope lock** — actors, flows, AI, fields, in/out of scope |
+| [BACKEND-FOUNDATION-CHECKLIST.md](./BACKEND-FOUNDATION-CHECKLIST.md) | Phase 1 sign-off (Days 6–15) |
+| [PHASE-2-PLAN.md](./PHASE-2-PLAN.md) | Properties roadmap (Days 16–25) |
+| [LOCAL-DEV.md](./LOCAL-DEV.md)       | Fresh clone, Docker, `pnpm dev`, smoke |
 | [api/api-scaffold.md](./api/api-scaffold.md) | Day 12 API structure, `/health` vs `/ready`, ops probes |
-| [dev-setup.md](./dev-setup.md)       | Local tooling and scripts                                      |
+| [AUTH-POC-FEEDBACK.md](./AUTH-POC-FEEDBACK.md) | Day 11 auth POC — **GO** |
+| [adr/001-rls-multi-tenancy.md](./adr/001-rls-multi-tenancy.md) | RLS decision + POC results |
+| [adr/002-identity-organizations-roles.md](./adr/002-identity-organizations-roles.md) | Organizations + roles |
+| [adr/003-audit-logs.md](./adr/003-audit-logs.md) | Tenant-scoped audit trail |
+| [dev-setup.md](./dev-setup.md)       | Editor, cloud, extended setup                                  |
 | [../README.md](../README.md)         | Product pitch, stack, monorepo layout                          |
-| `docs/adr/`                          | Architecture Decision Records (as added)                       |

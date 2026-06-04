@@ -211,8 +211,10 @@ API scaffold (Day 12): [docs/api/api-scaffold.md](./docs/api/api-scaffold.md)
 | Document               | Description                                             |
 | ---------------------- | ------------------------------------------------------- |
 | `docs/LOCAL-DEV.md`    | **Fresh clone** — Docker, migrate, dev, smoke, troubleshooting |
+| `docs/BACKEND-FOUNDATION-CHECKLIST.md` | **Phase 1 sign-off** — Days 6–15, tag `foundation-v0.1.0` |
+| `docs/PHASE-2-PLAN.md` | **Properties** — Days 16–25 roadmap |
 | `docs/REQUIREMENTS.md` | **v1 product scope** — flows, AI, fields, MVP lock      |
-| `docs/architecture.md` | Actors, brokerage flow, diagrams, links to requirements |
+| `docs/architecture.md` | Actors, brokerage flow, **RLS diagrams** (Foundation v0.1) |
 | `docs/api/api-scaffold.md` | Fastify layout, `/health` vs `/ready`, K8s probes   |
 | `docs/adr/`            | Architecture Decision Records                           |
 | `docs/legal/`          | [Privacy, Terms, Fair Housing](./docs/legal/) (draft)   |
@@ -227,4 +229,4 @@ TBD.
 
 ## Status
 
-**Early development** — Turborepo monorepo, Docker Compose, and `apps/web` dashboard active. See [docs/architecture.md](./docs/architecture.md) for actors and brokerage flow.
+**Foundation v0.1 (Phase 1)** — Multi-tenancy backend frozen: RLS, Better Auth orgs, Fastify API scaffold, audit logs, local Docker dev. Checklist: [docs/BACKEND-FOUNDATION-CHECKLIST.md](./docs/BACKEND-FOUNDATION-CHECKLIST.md). Next: [docs/PHASE-2-PLAN.md](./docs/PHASE-2-PLAN.md) (Properties). See [docs/architecture.md](./docs/architecture.md) for actors, RLS data plane, and brokerage flow.
