@@ -10,6 +10,7 @@ import {
   isAuthHttpError,
 } from "../../../lib/auth-http-error.js";
 import { forwardSetCookieHeaders } from "../../../lib/forward-auth-cookies.js";
+import { writeAuditEventSafe } from "../../../lib/write-audit-event.js";
 import { auth } from "../better-auth.js";
 import { getSessionFromRequest } from "../session.js";
 import { brokerageInviteSchema } from "../schemas/brokerage-invite.js";
@@ -97,6 +98,19 @@ export async function registerBrokerageInviteRoutes(
               apiError("Internal Server Error", "Failed to create invitation."),
             );
         }
+
+        await writeAuditEventSafe({
+          tenantId: organizationId,
+          actorId: session.user.id,
+          action: "invitation.sent",
+          entityType: "invitation",
+          entityId: invitation.id,
+          metadata: {
+            email: invitation.email,
+            role: invitation.role,
+          },
+          ip: request.ip,
+        });
 
         return reply.status(201).send({ invitation });
       } catch (error: unknown) {

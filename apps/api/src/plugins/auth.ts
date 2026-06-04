@@ -1,7 +1,8 @@
 import { fromNodeHeaders } from "better-auth/node";
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import fp from "fastify-plugin";
 
+import { tryAuditInvitationAccepted } from "../lib/audit-invitation-accepted.js";
 import { auth } from "../modules/auth/better-auth.js";
 import { registerBrokerageAuthRoutes } from "../modules/auth/routes/brokerage-auth.js";
 import { registerBrokerageInviteRoutes } from "../modules/auth/routes/brokerage-invite.js";
@@ -12,46 +13,58 @@ export type AuthPluginOptions = {
 };
 
 async function registerBetterAuthHandler(app: FastifyInstance): Promise<void> {
-  app.all("/api/auth/*", async (request, reply) => {
-    const host = request.headers.host ?? "localhost:3333";
-    const url = new URL(request.url, `http://${host}`);
-    const headers = fromNodeHeaders(request.headers);
+  app.all(
+    "/api/auth/*",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const host = request.headers.host ?? "localhost:3333";
+      const url = new URL(request.url, `http://${host}`);
+      const headers = fromNodeHeaders(request.headers);
+      const requestBody = request.body;
 
-    let body: string | undefined;
+      let body: string | undefined;
 
-    if (
-      request.method !== "GET" &&
-      request.method !== "HEAD" &&
-      request.body !== undefined &&
-      request.body !== null
-    ) {
-      body =
-        typeof request.body === "string"
-          ? request.body
-          : JSON.stringify(request.body);
-    }
+      if (
+        request.method !== "GET" &&
+        request.method !== "HEAD" &&
+        requestBody !== undefined &&
+        requestBody !== null
+      ) {
+        body =
+          typeof requestBody === "string"
+            ? requestBody
+            : JSON.stringify(requestBody);
+      }
 
-    const authRequest = new Request(url.toString(), {
-      method: request.method,
-      headers,
-      body,
-    });
+      const authRequest = new Request(url.toString(), {
+        method: request.method,
+        headers,
+        body,
+      });
 
-    const response = await auth.handler(authRequest);
+      const response = await auth.handler(authRequest);
 
-    reply.status(response.status);
-    response.headers.forEach((value, key) => {
-      void reply.header(key, value);
-    });
+      if (url.pathname.endsWith("/accept-invitation")) {
+        await tryAuditInvitationAccepted(
+          request,
+          response.status,
+          requestBody,
+        );
+      }
 
-    const responseText = await response.text();
+      reply.status(response.status);
+      response.headers.forEach((value, key) => {
+        void reply.header(key, value);
+      });
 
-    if (!responseText) {
-      return reply.send();
-    }
+      const responseText = await response.text();
 
-    return reply.send(JSON.parse(responseText) as unknown);
-  });
+      if (!responseText) {
+        return reply.send();
+      }
+
+      return reply.send(JSON.parse(responseText) as unknown);
+    },
+  );
 }
 
 /**

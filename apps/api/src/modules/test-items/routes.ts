@@ -7,6 +7,8 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 
 import { apiError } from "../../lib/api-error.js";
+import { writeAuditEventSafe } from "../../lib/write-audit-event.js";
+import { MOCK_SESSION_DEFAULT_USER_ID } from "../auth/session.js";
 import { createTestItemSchema } from "./schemas/test-items.js";
 
 type TestItemResponse = {
@@ -77,6 +79,23 @@ export async function registerTestItemsRoutes(
             apiError("Internal Server Error", "Failed to create test item."),
           );
       }
+
+      const sessionUserId = request.session?.user.id ?? null;
+      const actorId =
+        process.env.NODE_ENV === "test" &&
+        sessionUserId === MOCK_SESSION_DEFAULT_USER_ID
+          ? null
+          : sessionUserId;
+
+      await writeAuditEventSafe({
+        tenantId,
+        actorId,
+        action: "test_item.created",
+        entityType: "test_item",
+        entityId: created.id,
+        metadata: { name: created.name },
+        ip: request.ip,
+      });
 
       const payload: TestItemResponse = {
         id: created.id,

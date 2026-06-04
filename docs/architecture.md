@@ -118,6 +118,8 @@ The public marketplace (`apps/marketplace`) is SEO-friendly and unauthenticated.
 
 The Fastify app in `apps/api` exposes **liveness** (`GET /health`) and **readiness** (`GET /ready`, Postgres `SELECT 1`) for probes, plus plugins for CORS, Helmet, Zod validation, global errors, Better Auth, and tenant context on `/v1/*`.
 
+**Audit trail (Day 13):** tenant-scoped `audit_logs` table with RLS; `GET /v1/audit-logs` for owner/manager — see [ADR 003](./adr/003-audit-logs.md).
+
 **Technical scaffold (folder layout, plugins, curl, K8s probes):** [api/api-scaffold.md](./api/api-scaffold.md)
 
 ---

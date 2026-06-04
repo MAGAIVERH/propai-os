@@ -59,8 +59,11 @@ const items = await runInTenantContext(orgId!, async (tx) => {
 | Export | Purpose |
 | ------ | ------- |
 | `runInTenantContext(tenantId, fn)` | Tenant-scoped queries via `getAppDb()` + RLS |
+| `logAuditEvent` / `auditLog` | Append tenant-scoped audit row (Day 13) |
 | `getOrganizationById` / `getTenantById` | Resolve org UUID (alias) |
 | `getInitialOrganizationIdForUser` | Session bootstrap (first membership) |
 | `isOrganizationSlugTaken` | Brokerage sign-up slug check |
 | `authSchema` | Better Auth Drizzle adapter table map |
 | `seedDevIdentity()` | Dev seed: org + owner member + settings |
+
+`pnpm db:rls-test` validates RLS for **`test_items`** and **`audit_logs`** (tenant A/B isolation, no context, cross-tenant filter).

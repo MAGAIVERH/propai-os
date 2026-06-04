@@ -3,7 +3,7 @@ import type { FastifyRequest } from "fastify";
 import type { PropAiSession } from "./types.js";
 
 const MOCK_SESSION_PREFIX = "Bearer mock-session:";
-const MOCK_SESSION_DEFAULT_USER_ID = "test-user-id";
+export const MOCK_SESSION_DEFAULT_USER_ID = "test-user-id";
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;

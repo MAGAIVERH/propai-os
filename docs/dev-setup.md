@@ -94,6 +94,7 @@ Auth endpoints (Better Auth + brokerage sign-up):
 | `/api/auth/get-session` | GET | Current session + `activeOrganizationId` |
 | `/v1/test-items` | GET | Protected route (requires session cookie) |
 | `/v1/organization/me` | GET | Active organization `{ id, name, slug }` (session) |
+| `/v1/audit-logs` | GET | Audit trail (owner/manager; session cookie) |
 
 Postman collection: `docs/api/propai-api.postman_collection.json`  
 Step-by-step: `docs/api/auth-flow.md`
@@ -141,9 +142,12 @@ Scaffold reference: [docs/api/api-scaffold.md](./api/api-scaffold.md) (K8s/Docke
 pnpm docker:up
 pnpm db:migrate
 pnpm auth:poc          # PASS/FAIL smoke (no Vitest runner)
-pnpm test:api          # full integration suite
+pnpm test:api          # full integration suite (includes Day 13 audit.integration.test.ts)
 pnpm test:shared       # role permission unit tests
+pnpm db:rls-test       # RLS POC: test_items + audit_logs isolation
 ```
+
+**Day 13 quick check:** brokerage sign-up → `GET /v1/audit-logs` with owner cookie → `organization.created` in `items`. Postman folder “Day 13 — Audit logs”. ADR: `docs/adr/003-audit-logs.md`.
 
 Sign-off template: `docs/AUTH-POC-FEEDBACK.md` · Manual steps: `docs/api/auth-flow.md` (Day 11).
 

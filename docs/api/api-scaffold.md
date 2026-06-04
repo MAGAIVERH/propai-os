@@ -15,7 +15,7 @@ apps/api/src/
 │   ├── tenants/        # GET /v1/organization/me
 │   ├── test-items/     # RLS demo routes (/v1/test-items)
 │   ├── health/         # GET /health, GET /ready
-│   └── audit/          # Day 13 stub (empty)
+│   └── audit/          # GET /v1/audit-logs (owner/manager, paginated)
 └── plugins/
     ├── auth.ts         # Better Auth + brokerage registration
     ├── zod-validator.ts
@@ -34,6 +34,39 @@ apps/api/src/
 | `security` | Helmet security headers |
 | `auth` | Better Auth `app.all("/api/auth/*")` + brokerage routes (skippable in tests) |
 | `tenant-context` | Session + `tenantId` for `/v1/*` only |
+
+## Day 13 — Audit logs
+
+| Endpoint | Method | Auth | RBAC |
+| -------- | ------ | ---- | ---- |
+| `/v1/audit-logs` | GET | Session cookie (or test mock) | `audit:read` (owner, manager) |
+
+Query params: `limit` (default 20, max 100), `cursor` (optional, `createdAt\|id` from previous page).
+
+Response:
+
+```json
+{
+  "items": [
+    {
+      "id": "uuid",
+      "tenantId": "uuid",
+      "actorId": "user-id",
+      "action": "organization.created",
+      "entityType": "organization",
+      "entityId": "uuid",
+      "metadata": {},
+      "ip": "127.0.0.1",
+      "createdAt": "2026-06-04T12:00:00.000Z"
+    }
+  ],
+  "nextCursor": null
+}
+```
+
+Writes use `logAuditEvent` from `@propai/db` inside `runInTenantContext`. Hooks: brokerage sign-up, test-item create, invite, accept invitation.
+
+**ADR:** [003-audit-logs.md](../adr/003-audit-logs.md) · **Postman:** folder “Day 13 — Audit logs” in `propai-api.postman_collection.json`.
 
 ## `/health` vs `/ready`
 
@@ -114,12 +147,13 @@ healthcheck:
   start_period: 15s
 ```
 
-## Local validation (Day 12 checklist)
+## Local validation (Day 12–13 checklist)
 
 ```bash
 pnpm docker:up
 pnpm db:migrate
 pnpm test:api
+pnpm db:rls-test    # test_items + audit_logs RLS
 pnpm --filter @propai/api dev
 ```
 

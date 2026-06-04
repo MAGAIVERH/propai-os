@@ -1,8 +1,8 @@
 {
   "info": {
     "_postman_id": "propai-api-day12",
-    "name": "PropAI OS API — Day 12",
-    "description": "Day 12 ops: /health (liveness) and /ready (readiness). Day 11 auth POC (M1–M6) and Day 10 reference requests included.",
+    "name": "PropAI OS API — Day 12–13",
+    "description": "Day 12 ops: /health and /ready. Day 13 audit logs. Day 11 auth POC (M1–M6) and Day 10 reference requests included.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -90,6 +90,86 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/ready"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Day 13 — Audit logs",
+      "description": "Run after Postgres is up. Enable Postman cookies for localhost:3333. Flow: M1 sign-up → M2 list audit logs (owner).",
+      "item": [
+        {
+          "name": "M1 — Brokerage Sign-Up (owner)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('organizationIdA', body.organization.id);",
+                  "pm.test('activeOrganizationId matches org', function () {",
+                  "  pm.expect(body.session.activeOrganizationId).to.eql(body.organization.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"audit-owner-{{$guid}}@test.propai-os.local\",\n  \"password\": \"{{testPassword}}\",\n  \"name\": \"Audit Owner\",\n  \"organizationName\": \"Audit Brokerage {{$guid}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/brokerage-sign-up"
+          }
+        },
+        {
+          "name": "M2 — List audit logs (owner)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "const orgId = pm.collectionVariables.get('organizationIdA');",
+                  "pm.test('organization.created present', function () {",
+                  "  const found = body.items.some(function (e) {",
+                  "    return e.action === 'organization.created' && e.entityId === orgId;",
+                  "  });",
+                  "  pm.expect(found).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/audit-logs?limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "audit-logs"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
           }
         }
       ]

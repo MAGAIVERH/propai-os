@@ -1,7 +1,8 @@
 import { sql } from "drizzle-orm";
 
+import { logAuditEvent } from "../src/audit/audit-log.js";
 import { closeDb, getAppDb, getDb } from "../src/client.js";
-import { organization, testItems } from "../src/schema/index.js";
+import { auditLogs, organization, testItems } from "../src/schema/index.js";
 import { withTenantContext } from "../src/tenant-context.js";
 
 type TestResult = {
@@ -30,7 +31,7 @@ async function main(): Promise<void> {
   const results: TestResult[] = [];
 
   await adminDb.execute(
-    sql`TRUNCATE test_items, tenant_settings, member, invitation, organization, "user" RESTART IDENTITY CASCADE`,
+    sql`TRUNCATE audit_logs, test_items, tenant_settings, member, invitation, organization, "user" RESTART IDENTITY CASCADE`,
   );
 
   const [tenantA] = await adminDb
@@ -66,6 +67,29 @@ async function main(): Promise<void> {
   } catch (error) {
     throw new Error(`Seed tenant B items failed: ${formatError(error)}`);
   }
+
+  const auditSeedA = await logAuditEvent({
+    tenantId: tenantA.id,
+    actorId: null,
+    action: "organization.created",
+    entityType: "organization",
+    entityId: tenantA.id,
+    metadata: { slug: "rls-poc-tenant-a" },
+  });
+
+  const auditSeedB = await logAuditEvent({
+    tenantId: tenantB.id,
+    actorId: null,
+    action: "organization.created",
+    entityType: "organization",
+    entityId: tenantB.id,
+    metadata: { slug: "rls-poc-tenant-b" },
+  });
+
+  assert(
+    auditSeedA.success && auditSeedB.success,
+    "Failed to seed audit_logs for RLS POC",
+  );
 
   let tenantARows;
 
@@ -118,9 +142,56 @@ async function main(): Promise<void> {
     detail: `expected 0 cross-tenant rows, got ${crossTenantRows.length}`,
   });
 
+  const tenantAAuditRows = await withTenantContext(tenantA.id, async (tx) => {
+    return tx.select({ id: auditLogs.id, tenantId: auditLogs.tenantId }).from(auditLogs);
+  });
+
+  results.push({
+    name: "Tenant A sees only own audit_logs",
+    passed:
+      tenantAAuditRows.length === 1 &&
+      tenantAAuditRows.every((row) => row.tenantId === tenantA.id),
+    detail: `expected 1 audit row for tenant A, got ${tenantAAuditRows.length}`,
+  });
+
+  const tenantBAuditRows = await withTenantContext(tenantB.id, async (tx) => {
+    return tx.select({ id: auditLogs.id, tenantId: auditLogs.tenantId }).from(auditLogs);
+  });
+
+  results.push({
+    name: "Tenant B sees only own audit_logs",
+    passed:
+      tenantBAuditRows.length === 1 &&
+      tenantBAuditRows.every((row) => row.tenantId === tenantB.id),
+    detail: `expected 1 audit row for tenant B, got ${tenantBAuditRows.length}`,
+  });
+
+  const noContextAuditRows = await appDb
+    .select({ id: auditLogs.id })
+    .from(auditLogs);
+
+  results.push({
+    name: "No tenant context returns zero audit_logs",
+    passed: noContextAuditRows.length === 0,
+    detail: `expected 0 audit rows without app.current_tenant, got ${noContextAuditRows.length}`,
+  });
+
+  const crossTenantAuditRows = await withTenantContext(tenantA.id, async (tx) => {
+    return tx
+      .select({ id: auditLogs.id })
+      .from(auditLogs)
+      .where(sql`${auditLogs.tenantId} = ${tenantB.id}`);
+  });
+
+  results.push({
+    name: "Tenant A cannot read tenant B audit_logs by filter",
+    passed: crossTenantAuditRows.length === 0,
+    detail: `expected 0 cross-tenant audit rows, got ${crossTenantAuditRows.length}`,
+  });
+
   const failed = results.filter((result) => !result.passed);
 
-  console.log("\nRLS POC — test_items isolation (propai_app role)\n");
+  console.log("\nRLS POC — test_items + audit_logs isolation (propai_app role)\n");
 
   for (const result of results) {
     const status = result.passed ? "PASS" : "FAIL";

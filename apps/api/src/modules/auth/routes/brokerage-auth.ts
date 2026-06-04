@@ -1,7 +1,7 @@
 import { fromNodeHeaders } from "better-auth/node";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 
-import { isOrganizationSlugTaken, logAuditEvent } from "@propai/db";
+import { isOrganizationSlugTaken } from "@propai/db";
 
 import { apiError } from "../../../lib/api-error.js";
 import {
@@ -16,6 +16,7 @@ import {
   forwardSetCookieHeaders,
 } from "../../../lib/forward-auth-cookies.js";
 import { slugifyOrganizationName } from "../../../lib/organization-slug.js";
+import { writeAuditEventSafe } from "../../../lib/write-audit-event.js";
 import { auth } from "../better-auth.js";
 import { brokerageSignUpSchema } from "../schemas/brokerage-sign-up.js";
 
@@ -132,7 +133,7 @@ export async function registerBrokerageAuthRoutes(
 
         forwardSetCookieHeaders(activeResult.headers, reply);
 
-        const auditResult = await logAuditEvent({
+        await writeAuditEventSafe({
           tenantId: organizationId,
           actorId: signUpResult.response.user.id,
           action: "organization.created",
@@ -141,13 +142,6 @@ export async function registerBrokerageAuthRoutes(
           metadata: { slug, organizationName },
           ip: request.ip,
         });
-
-        if (!auditResult.success) {
-          console.error(
-            "Failed to write audit log for organization.created:",
-            auditResult.message,
-          );
-        }
 
         const payload: BrokerageSignUpResponse = {
           user: {
