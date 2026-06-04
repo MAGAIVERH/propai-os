@@ -165,7 +165,14 @@ Run apps (separate terminals or `turbo dev` for all):
 ```bash
 pnpm --filter @propai/web dev          # http://localhost:3000
 pnpm --filter @propai/marketplace dev  # http://localhost:3001
-pnpm --filter @propai/api dev          # http://localhost:3333/health
+pnpm --filter @propai/api dev          # http://localhost:3333
+```
+
+API ops (no auth required):
+
+```bash
+curl -s http://localhost:3333/health   # liveness
+curl -s http://localhost:3333/ready    # readiness (needs Postgres)
 ```
 
 Quality checks (also run in CI on every PR):
@@ -173,9 +180,11 @@ Quality checks (also run in CI on every PR):
 ```bash
 pnpm lint
 pnpm typecheck
+pnpm test:api    # requires Docker Postgres + pnpm db:migrate
 ```
 
-See [docs/dev-setup.md](./docs/dev-setup.md) for editor tooling and cloud accounts.
+See [docs/dev-setup.md](./docs/dev-setup.md) for editor tooling and cloud accounts.  
+API scaffold (Day 12): [docs/api/api-scaffold.md](./docs/api/api-scaffold.md)
 
 | App | Default URL |
 | --- | ----------- |
@@ -191,6 +200,7 @@ See [docs/dev-setup.md](./docs/dev-setup.md) for editor tooling and cloud accoun
 | ---------------------- | ------------------------------------------------------- |
 | `docs/REQUIREMENTS.md` | **v1 product scope** — flows, AI, fields, MVP lock      |
 | `docs/architecture.md` | Actors, brokerage flow, diagrams, links to requirements |
+| `docs/api/api-scaffold.md` | Fastify layout, `/health` vs `/ready`, K8s probes   |
 | `docs/adr/`            | Architecture Decision Records                           |
 | `docs/legal/`          | [Privacy, Terms, Fair Housing](./docs/legal/) (draft)   |
 

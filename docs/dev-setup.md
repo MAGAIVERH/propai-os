@@ -35,7 +35,7 @@ Local database URL (default in `.env.example`):
 | `pnpm db:studio`    | Open Drizzle Studio                               |
 | `pnpm db:rls-test`  | Run RLS isolation POC (`propai_app` role)       |
 | `pnpm db:seed-dev`    | Seed dev org + owner user + settings            |
-| `pnpm test:api`       | API auth + RLS integration tests (Vitest)       |
+| `pnpm test:api`       | API integration tests (Vitest; Postgres required) |
 | `pnpm test:shared`    | Shared package unit tests (`hasPermission`, roles) |
 | `pnpm auth:poc`       | Day 11 auth smoke (dual org isolation + invite) — needs Postgres + migrations |
 | `pnpm build`        | Production build                                  |
@@ -122,6 +122,19 @@ If Postgres is stopped (`pnpm docker:down`), `/ready` returns `503` with:
 { "status": "degraded", "checks": { "database": "down" } }
 ```
 
+Scaffold reference: [docs/api/api-scaffold.md](./api/api-scaffold.md) (K8s/Docker probe YAML, folder layout).
+
+### Day 12 — API Fastify scaffold (checklist)
+
+- [x] Structure `modules/` + `plugins/` (auth, tenants, health, audit stub)
+- [x] Plugins: CORS, Helmet, Zod validator, Pino logger
+- [x] Plugins: `tenant-context`, `auth`, `error-handler`
+- [x] `GET /health` → `{ "status": "ok" }`
+- [x] `GET /ready` → DB connection check
+- [x] `server.ts` + `app.ts` (bootstrap split)
+
+**Done when:** `curl` on `/health` and `/ready` return OK with DB up (see commands above).
+
 ### Day 11 quick re-validation
 
 ```bash
@@ -133,3 +146,13 @@ pnpm test:shared       # role permission unit tests
 ```
 
 Sign-off template: `docs/AUTH-POC-FEEDBACK.md` · Manual steps: `docs/api/auth-flow.md` (Day 11).
+
+## CI — API tests with Postgres (optional job)
+
+GitHub Actions runs `test-api` with a Postgres 16 service container (`continue-on-error: true` so flaky integration tests do not block merge). Locally mirror CI:
+
+```bash
+pnpm docker:up
+pnpm db:migrate
+pnpm test:api
+```

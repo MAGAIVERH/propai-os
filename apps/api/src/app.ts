@@ -43,7 +43,7 @@ export async function buildApp(
   await app.register(securityPlugin);
   await registerHealthModule(app);
 
-  await app.register(authPlugin, { enabled: mountAuthRoutes });
+  await app.register(authPlugin, { mountAuthRoutes });
 
   await app.register(tenantContextPlugin);
   await app.register(

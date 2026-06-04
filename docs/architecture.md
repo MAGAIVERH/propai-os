@@ -114,11 +114,20 @@ The public marketplace (`apps/marketplace`) is SEO-friendly and unauthenticated.
 
 ---
 
+## API runtime (Day 12)
+
+The Fastify app in `apps/api` exposes **liveness** (`GET /health`) and **readiness** (`GET /ready`, Postgres `SELECT 1`) for probes, plus plugins for CORS, Helmet, Zod validation, global errors, Better Auth, and tenant context on `/v1/*`.
+
+**Technical scaffold (folder layout, plugins, curl, K8s probes):** [api/api-scaffold.md](./api/api-scaffold.md)
+
+---
+
 ## Related documents
 
 | Document                             | Purpose                                                        |
 | ------------------------------------ | -------------------------------------------------------------- |
 | [REQUIREMENTS.md](./REQUIREMENTS.md) | **v1 scope lock** — actors, flows, AI, fields, in/out of scope |
+| [api/api-scaffold.md](./api/api-scaffold.md) | Day 12 API structure, `/health` vs `/ready`, ops probes |
 | [dev-setup.md](./dev-setup.md)       | Local tooling and scripts                                      |
 | [../README.md](../README.md)         | Product pitch, stack, monorepo layout                          |
 | `docs/adr/`                          | Architecture Decision Records (as added)                       |
