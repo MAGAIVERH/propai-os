@@ -1,8 +1,11 @@
 import type { FastifyInstance } from "fastify";
 
-/** Day 13 — audit_logs persistence and query API (not implemented in Day 12). */
+import { memberRolePlugin } from "../../plugins/require-member-role.js";
+import { registerAuditRoutes } from "./routes.js";
+
 export async function registerAuditModule(
-  _app: FastifyInstance,
+  app: FastifyInstance,
 ): Promise<void> {
-  // Intentionally empty scaffold for Day 13.
+  await app.register(memberRolePlugin);
+  await registerAuditRoutes(app);
 }

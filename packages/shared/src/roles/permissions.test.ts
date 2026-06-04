@@ -16,6 +16,13 @@ describe("hasPermission", () => {
     expect(hasPermission("viewer", "billing:manage")).toBe(false);
   });
 
+  it("grants audit:read to owner and manager only", () => {
+    expect(hasPermission("owner", "audit:read")).toBe(true);
+    expect(hasPermission("manager", "audit:read")).toBe(true);
+    expect(hasPermission("agent", "audit:read")).toBe(false);
+    expect(hasPermission("viewer", "audit:read")).toBe(false);
+  });
+
   it("denies analytics:read to agent and allows viewer", () => {
     expect(hasPermission("viewer", "analytics:read")).toBe(true);
     expect(hasPermission("agent", "analytics:read")).toBe(false);

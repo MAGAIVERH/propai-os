@@ -3,6 +3,7 @@ import type { FastifyRequest } from "fastify";
 import type { PropAiSession } from "./types.js";
 
 const MOCK_SESSION_PREFIX = "Bearer mock-session:";
+const MOCK_SESSION_DEFAULT_USER_ID = "test-user-id";
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -10,8 +11,13 @@ const UUID_PATTERN =
 /** Builds an Authorization header for integration tests (NODE_ENV=test only). */
 export function createMockSessionAuthorization(
   organizationId: string,
+  userId: string = MOCK_SESSION_DEFAULT_USER_ID,
 ): string {
-  return `${MOCK_SESSION_PREFIX}${organizationId}`;
+  if (userId === MOCK_SESSION_DEFAULT_USER_ID) {
+    return `${MOCK_SESSION_PREFIX}${organizationId}`;
+  }
+
+  return `${MOCK_SESSION_PREFIX}${organizationId}/${userId}`;
 }
 
 function parseMockSession(request: FastifyRequest): PropAiSession | null {
@@ -25,14 +31,21 @@ function parseMockSession(request: FastifyRequest): PropAiSession | null {
     return null;
   }
 
-  const organizationId = authorization.slice(MOCK_SESSION_PREFIX.length);
+  const payload = authorization.slice(MOCK_SESSION_PREFIX.length);
+  const slashIndex = payload.indexOf("/");
+  const organizationId =
+    slashIndex === -1 ? payload : payload.slice(0, slashIndex);
+  const userId =
+    slashIndex === -1
+      ? MOCK_SESSION_DEFAULT_USER_ID
+      : payload.slice(slashIndex + 1);
 
-  if (!UUID_PATTERN.test(organizationId)) {
+  if (!UUID_PATTERN.test(organizationId) || userId.length === 0) {
     return null;
   }
 
   return {
-    user: { id: "test-user-id" },
+    user: { id: userId },
     session: { activeOrganizationId: organizationId },
   };
 }

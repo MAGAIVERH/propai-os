@@ -50,11 +50,10 @@ export async function buildApp(
     async (v1) => {
       await registerTenantsModule(v1);
       await registerTestItemsModule(v1);
+      await registerAuditModule(v1);
     },
     { prefix: "/v1" },
   );
-
-  await registerAuditModule(app);
 
   return app;
 }

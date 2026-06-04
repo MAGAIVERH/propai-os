@@ -15,6 +15,7 @@ export const PERMISSIONS = [
   "leads:write",
   "properties:write",
   "analytics:read",
+  "audit:read",
   "billing:manage",
 ] as const;
 
@@ -30,9 +31,10 @@ export const ROLE_PERMISSIONS: Record<
     "leads:write",
     "properties:write",
     "analytics:read",
+    "audit:read",
     "billing:manage",
   ],
-  manager: ["leads:write", "properties:write", "analytics:read"],
+  manager: ["leads:write", "properties:write", "analytics:read", "audit:read"],
   agent: ["leads:write", "properties:write"],
   viewer: ["analytics:read"],
 };
