@@ -1,0 +1,112 @@
+# Auth POC feedback — Day 11
+
+Validation record for the Better Auth + organization + RLS auth proof-of-concept.
+
+---
+
+## Environment
+
+| Field | Value |
+| ----- | ----- |
+| **Date** | 2026-06-04 |
+| **Validated by** | PropAI OS engineering (automated Vitest + documented manual runbook) |
+| **Runtime** | Node.js 22 (local), pnpm 11.5 |
+| **Database** | PostgreSQL 16 via Docker Compose (`propai-postgres`, port 5432) |
+| **API** | `@propai/api` — `http://localhost:3333` |
+| **Auth base** | `BETTER_AUTH_URL=http://localhost:3333` |
+| **Migrations** | `pnpm db:migrate` (applied, including `0004_identity_organizations`, `0005_auth_id_defaults`) |
+| **Neon** | Not used for this sign-off (local Docker only) |
+
+**References:**
+
+- [ADR 001 — RLS multi-tenancy](./adr/001-rls-multi-tenancy.md)
+- [ADR 002 — Identity, organizations, roles](./adr/002-identity-organizations-roles.md)
+- [API auth flow (Day 10–11)](./api/auth-flow.md)
+- Postman: [`docs/api/propai-api.postman_collection.json`](./api/propai-api.postman_collection.json)
+
+---
+
+## Automated tests (Vitest)
+
+**Command:** `pnpm test:api`  
+**Result:** **13 / 13 passed** (2026-06-04, local Docker Postgres)
+
+| Suite | Tests | Maps to manual |
+| ----- | ----- | -------------- |
+| `auth.integration.test.ts` | 3 | Day 10 sign-up, sign-in, slug `409` |
+| `auth-tenant-isolation.integration.test.ts` | 1 | **M1**, **M2** — two orgs, isolated `test-items` |
+| `auth-invitation.integration.test.ts` | 3 | **M3**, **M4**, **M5** — invite, accept, tenant scope; owner-only invite `403` |
+| `test-items.integration.test.ts` | 6 | **M6** — `401` without auth; RLS bearer isolation |
+
+**Blockers from automation:** None.
+
+---
+
+## Manual scenarios
+
+Runbook: [auth-flow.md — Day 11](./api/auth-flow.md#day-11--manual-validation-runbook).  
+Postman folder: **Day 11 — Manual POC**.
+
+| ID | Scenario | Expected | Result | Notes |
+| -- | -------- | -------- | ------ | ----- |
+| **M1** | Owner A sign-up + item | `201` + cookie; item on org A | **PASS** | Vitest parity (`auth-tenant-isolation`); Postman scripts assert `201` + `tenantId` |
+| **M2** | Owner B sign-up + item; no A data | B list ≠ A | **PASS** | Vitest: two tenants never cross-read; Postman M2 tests exclude `alpha-only-item` |
+| **M3** | A invites agent | `invitation` pending | **PASS** | Vitest `auth-invitation`; dev log `[PropAI invite]` with `invitationId` |
+| **M4** | Agent accepts | `member` in A; `activeOrganizationId` = A | **PASS** | Vitest accept + `get-session` |
+| **M5** | Agent lists test-items | Only tenant A | **PASS** | Vitest: sees org A item, not other org |
+| **M6** | No cookie / bad login | `401` on `/v1/test-items` | **PASS** | `test-items.integration` `401`; Postman M6 no-auth request |
+
+**Human re-run (optional):** Import Postman collection, execute M1→M6 with fresh emails. Required for external audit; engineering sign-off uses Vitest + runbook equivalence above.
+
+---
+
+## Issues found
+
+| ID | Severity | Description | Status |
+| -- | -------- | ----------- | ------ |
+| CI-01 | Low | GitHub Actions used Node 20; pnpm 11.5 requires Node 22 | **Fixed** — `ci.yml` → Node 22 (`dc8fbfc`) |
+| — | — | No auth/RLS regressions in Day 11 scope | — |
+
+**Out of scope (Day 11):** Production deploy, Resend email, Neon sign-off, permission middleware on CRM routes.
+
+---
+
+## Security notes (cross-tenant, cookies, RLS)
+
+| Topic | Observation |
+| ----- | ----------- |
+| **Cross-tenant reads** | `GET /v1/test-items` returns only rows for `session.activeOrganizationId` → `organization.id` via `runInTenantContext` + RLS (`propai_app` role). Two-org Vitest proves no leakage. |
+| **Cross-tenant writes** | `POST /v1/test-items` binds `tenantId` from session; other tenant cannot inject foreign `tenantId` in body. |
+| **Cookies** | HttpOnly, SameSite=Lax; `Secure` in production. Session token name: `better-auth.session_token`. |
+| **Invite authorization** | Only `owner` may call `POST /api/auth/brokerage-invite`; Better Auth AC denies `invitation:create` for manager/agent/viewer. |
+| **Invitation accept** | Email on session must match invitation; `requireEmailVerificationOnInvitation: false` for POC (dev/test accept without SMTP). |
+| **BETTER_AUTH_URL** | Must match request host (see failure checklist in auth-flow.md). |
+
+---
+
+## Decision
+
+### **GO**
+
+Auth POC meets Day 11 exit criteria:
+
+- Two independent org sign-ups with isolated tenant data (**M1**, **M2**)
+- Owner invite + agent accept with correct org membership and session (**M3**–**M5**)
+- Protected routes reject unauthenticated callers (**M6**)
+- Automated suite green (13/13)
+- Manual runbook + importable Postman collection published
+
+**Signed off:** 2026-06-04 — **Environment: local Docker Postgres** (not Neon production).
+
+**GO with fixes:** N/A — no blocking fixes required for Day 12 planning.
+
+---
+
+## Next steps (Day 12)
+
+1. Wire dashboard (`apps/web`) to Better Auth session cookies + `activeOrganizationId`.
+2. Add permission middleware using `@propai/shared` `hasPermission` on protected CRM routes.
+3. Configure Resend (or equivalent) for `sendInvitationEmail` in staging/production.
+4. Extend CI with `pnpm test:api` (Postgres service container) on pull requests.
+5. Neon branch validation when staging URL is available (repeat Vitest + manual M1–M6).
+6. Defer production deploy until full project completion (per team agreement).

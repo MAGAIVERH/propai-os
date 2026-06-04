@@ -1,8 +1,8 @@
 {
   "info": {
-    "_postman_id": "propai-api-day10",
-    "name": "PropAI OS API — Day 10 Auth",
-    "description": "Better Auth brokerage sign-up, login, session, and protected routes.",
+    "_postman_id": "propai-api-day11",
+    "name": "PropAI OS API — Day 11 Auth POC",
+    "description": "Day 11 manual POC: tenant isolation (M1–M2), invite + accept (M3–M5), unauthorized access (M6). Day 10 reference requests included.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -11,113 +11,591 @@
       "value": "http://localhost:3333"
     },
     {
-      "key": "testEmail",
-      "value": "owner@acme-brokerage.test"
+      "key": "ownerAEmail",
+      "value": "owner-a-manual@test.propai-os.local"
+    },
+    {
+      "key": "ownerBEmail",
+      "value": "owner-b-manual@test.propai-os.local"
+    },
+    {
+      "key": "agentEmail",
+      "value": "agent-manual@test.propai-os.local"
     },
     {
       "key": "testPassword",
       "value": "password123"
+    },
+    {
+      "key": "invitationId",
+      "value": ""
+    },
+    {
+      "key": "organizationIdA",
+      "value": ""
+    },
+    {
+      "key": "testEmail",
+      "value": "owner@acme-brokerage.test"
     }
   ],
   "item": [
     {
-      "name": "Health",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": "{{baseUrl}}/health"
-      }
+      "name": "Day 11 — Manual POC",
+      "description": "Run M1 → M6 in order. Use fresh emails or reset DB between full runs. Enable Postman cookies for localhost:3333.",
+      "item": [
+        {
+          "name": "M1 — Owner A sign-up + item",
+          "item": [
+            {
+              "name": "Brokerage Sign Up (Owner A)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('M1: Status 201', function () {",
+                      "  pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "const body = pm.response.json();",
+                      "pm.test('M1: activeOrganizationId matches org', function () {",
+                      "  pm.expect(body.session.activeOrganizationId).to.eql(body.organization.id);",
+                      "});",
+                      "pm.collectionVariables.set('organizationIdA', body.organization.id);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{ownerAEmail}}\",\n  \"password\": \"{{testPassword}}\",\n  \"name\": \"Owner A\",\n  \"organizationName\": \"Brokerage Alpha Manual\"\n}"
+                },
+                "url": "{{baseUrl}}/api/auth/brokerage-sign-up"
+              }
+            },
+            {
+              "name": "Create Test Item (Owner A)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('M1: Item created 201', function () {",
+                      "  pm.response.to.have.status(201);",
+                      "});",
+                      "const body = pm.response.json();",
+                      "pm.test('M1: tenantId matches org A', function () {",
+                      "  pm.expect(body.item.tenantId).to.eql(pm.collectionVariables.get('organizationIdA'));",
+                      "});",
+                      "pm.test('M1: Item name alpha-only-item', function () {",
+                      "  pm.expect(body.item.name).to.eql('alpha-only-item');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"alpha-only-item\"\n}"
+                },
+                "url": "{{baseUrl}}/v1/test-items"
+              }
+            }
+          ]
+        },
+        {
+          "name": "M2 — Owner B isolated tenant",
+          "item": [
+            {
+              "name": "Brokerage Sign Up (Owner B)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('M2: Status 201', function () {",
+                      "  pm.response.to.have.status(201);",
+                      "});",
+                      "const body = pm.response.json();",
+                      "pm.collectionVariables.set('organizationIdB', body.organization.id);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{ownerBEmail}}\",\n  \"password\": \"{{testPassword}}\",\n  \"name\": \"Owner B\",\n  \"organizationName\": \"Brokerage Beta Manual\"\n}"
+                },
+                "url": "{{baseUrl}}/api/auth/brokerage-sign-up"
+              }
+            },
+            {
+              "name": "Create Test Item (Owner B)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"beta-only-item\"\n}"
+                },
+                "url": "{{baseUrl}}/v1/test-items"
+              }
+            },
+            {
+              "name": "List Test Items (Owner B)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('M2: Status 200', function () {",
+                      "  pm.response.to.have.status(200);",
+                      "});",
+                      "const body = pm.response.json();",
+                      "pm.test('M2: Only beta item visible', function () {",
+                      "  pm.expect(body.items).to.have.lengthOf(1);",
+                      "  pm.expect(body.items[0].name).to.eql('beta-only-item');",
+                      "});",
+                      "pm.test('M2: No alpha item from tenant A', function () {",
+                      "  const names = body.items.map((i) => i.name);",
+                      "  pm.expect(names).to.not.include('alpha-only-item');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/v1/test-items"
+              }
+            }
+          ]
+        },
+        {
+          "name": "M3 — Owner A invites agent",
+          "item": [
+            {
+              "name": "Brokerage Invite Agent",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// Re-run M1 sign-up first if cookies were cleared, or sign in as Owner A."
+                    ],
+                    "type": "text/javascript"
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('M3: Status 201', function () {",
+                      "  pm.response.to.have.status(201);",
+                      "});",
+                      "const body = pm.response.json();",
+                      "pm.test('M3: Invitation pending', function () {",
+                      "  pm.expect(body.invitation.status).to.eql('pending');",
+                      "  pm.expect(body.invitation.role).to.eql('agent');",
+                      "});",
+                      "pm.collectionVariables.set('invitationId', body.invitation.id);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{agentEmail}}\",\n  \"role\": \"agent\"\n}"
+                },
+                "url": "{{baseUrl}}/api/auth/brokerage-invite",
+                "description": "Requires Owner A session cookie. Run M1 sign-up first in the same Postman cookie jar."
+              }
+            }
+          ]
+        },
+        {
+          "name": "M4 — Agent accepts invitation",
+          "item": [
+            {
+              "name": "Sign Up Agent",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('M4: Agent sign-up 200', function () {",
+                      "  pm.response.to.have.status(200);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{agentEmail}}\",\n  \"password\": \"{{testPassword}}\",\n  \"name\": \"Agent Manual\"\n}"
+                },
+                "url": "{{baseUrl}}/api/auth/sign-up/email"
+              }
+            },
+            {
+              "name": "Accept Invitation",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('M4: Accept 200', function () {",
+                      "  pm.response.to.have.status(200);",
+                      "});",
+                      "const body = pm.response.json();",
+                      "pm.test('M4: Member in org A', function () {",
+                      "  pm.expect(body.member.organizationId).to.eql(pm.collectionVariables.get('organizationIdA'));",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"invitationId\": \"{{invitationId}}\"\n}"
+                },
+                "url": "{{baseUrl}}/api/auth/organization/accept-invitation"
+              }
+            },
+            {
+              "name": "Get Session (Agent)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('M4: Session 200', function () {",
+                      "  pm.response.to.have.status(200);",
+                      "});",
+                      "const body = pm.response.json();",
+                      "pm.test('M4: activeOrganizationId is org A', function () {",
+                      "  pm.expect(body.session.activeOrganizationId).to.eql(pm.collectionVariables.get('organizationIdA'));",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/auth/get-session"
+              }
+            }
+          ]
+        },
+        {
+          "name": "M5 — Agent lists test-items",
+          "item": [
+            {
+              "name": "List Test Items (Agent)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('M5: Status 200', function () {",
+                      "  pm.response.to.have.status(200);",
+                      "});",
+                      "const body = pm.response.json();",
+                      "const orgA = pm.collectionVariables.get('organizationIdA');",
+                      "pm.test('M5: Includes alpha item', function () {",
+                      "  const names = body.items.map((i) => i.name);",
+                      "  pm.expect(names).to.include('alpha-only-item');",
+                      "});",
+                      "pm.test('M5: Excludes beta item', function () {",
+                      "  const names = body.items.map((i) => i.name);",
+                      "  pm.expect(names).to.not.include('beta-only-item');",
+                      "});",
+                      "pm.test('M5: All items tenant A', function () {",
+                      "  body.items.forEach((item) => {",
+                      "    pm.expect(item.tenantId).to.eql(orgA);",
+                      "  });",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/v1/test-items"
+              }
+            }
+          ]
+        },
+        {
+          "name": "M6 — Unauthorized",
+          "item": [
+            {
+              "name": "List Test Items (no cookie)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('M6: Status 401', function () {",
+                      "  pm.response.to.have.status(401);",
+                      "});",
+                      "pm.test('M6: Unauthorized error', function () {",
+                      "  const body = pm.response.json();",
+                      "  pm.expect(body.error).to.eql('Unauthorized');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/v1/test-items"
+              }
+            },
+            {
+              "name": "Sign In (wrong password)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('M6: Wrong password not 200', function () {",
+                      "  pm.expect(pm.response.code).to.not.eql(200);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{ownerAEmail}}\",\n  \"password\": \"wrong-password\",\n  \"rememberMe\": true\n}"
+                },
+                "url": "{{baseUrl}}/api/auth/sign-in/email"
+              }
+            }
+          ]
+        }
+      ]
     },
     {
-      "name": "Brokerage Sign Up",
-      "event": [
+      "name": "Day 10 — Reference",
+      "item": [
         {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('Status 201', function () {",
-              "  pm.response.to.have.status(201);",
-              "});",
-              "",
-              "const body = pm.response.json();",
-              "pm.collectionVariables.set('organizationId', body.organization.id);"
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/health"
+          }
+        },
+        {
+          "name": "Brokerage Sign Up",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('organizationId', body.organization.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
-            "type": "text/javascript"
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\",\n  \"name\": \"Jane Owner\",\n  \"organizationName\": \"Acme Brokerage\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/brokerage-sign-up"
+          }
+        },
+        {
+          "name": "Get Session",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/auth/get-session"
+          }
+        },
+        {
+          "name": "Sign In (email)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\",\n  \"rememberMe\": true\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/sign-in/email"
+          }
+        },
+        {
+          "name": "List Test Items (protected)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/v1/test-items"
+          }
+        },
+        {
+          "name": "Create Test Item (protected)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"First listing draft\"\n}"
+            },
+            "url": "{{baseUrl}}/v1/test-items"
+          }
+        },
+        {
+          "name": "Brokerage Invite",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"agent@acme-brokerage.test\",\n  \"role\": \"agent\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/brokerage-invite"
+          }
+        },
+        {
+          "name": "Accept Invitation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"invitationId\": \"{{invitationId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/organization/accept-invitation"
+          }
+        },
+        {
+          "name": "Sign Out",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/auth/sign-out"
           }
         }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\",\n  \"name\": \"Jane Owner\",\n  \"organizationName\": \"Acme Brokerage\"\n}"
-        },
-        "url": "{{baseUrl}}/api/auth/brokerage-sign-up"
-      }
-    },
-    {
-      "name": "Get Session",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": "{{baseUrl}}/api/auth/get-session"
-      }
-    },
-    {
-      "name": "Sign In (email)",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\",\n  \"rememberMe\": true\n}"
-        },
-        "url": "{{baseUrl}}/api/auth/sign-in/email"
-      }
-    },
-    {
-      "name": "List Test Items (protected)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": "{{baseUrl}}/v1/test-items"
-      }
-    },
-    {
-      "name": "Create Test Item (protected)",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"name\": \"First listing draft\"\n}"
-        },
-        "url": "{{baseUrl}}/v1/test-items"
-      }
-    },
-    {
-      "name": "Sign Out",
-      "request": {
-        "method": "POST",
-        "header": [],
-        "url": "{{baseUrl}}/api/auth/sign-out"
-      }
+      ]
     }
   ]
 }
