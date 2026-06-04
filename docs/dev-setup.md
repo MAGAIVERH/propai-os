@@ -99,6 +99,28 @@ Step-by-step: `docs/api/auth-flow.md`
 
 Required env: `BETTER_AUTH_URL=http://localhost:3333`, `BETTER_AUTH_SECRET` (32+ chars).
 
+## API health & readiness (Day 12)
+
+| Endpoint   | Method | Purpose |
+| ---------- | ------ | ------- |
+| `/health`  | GET    | Liveness — always `{ "status": "ok" }` (+ app metadata) |
+| `/ready`   | GET    | Readiness — `200` if Postgres answers `SELECT 1`, else `503` |
+
+```bash
+pnpm docker:up
+pnpm db:migrate
+pnpm --filter @propai/api dev
+
+curl -s http://localhost:3333/health
+curl -s http://localhost:3333/ready
+```
+
+If Postgres is stopped (`pnpm docker:down`), `/ready` returns `503` with:
+
+```json
+{ "status": "degraded", "checks": { "database": "down" } }
+```
+
 ### Day 11 quick re-validation
 
 ```bash

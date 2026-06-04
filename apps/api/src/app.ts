@@ -1,19 +1,18 @@
-import { APP_NAME, PRODUCT_TAGLINE } from "@propai/shared";
 import cors from "@fastify/cors";
 import { fromNodeHeaders } from "better-auth/node";
 import Fastify, { type FastifyInstance } from "fastify";
 
 import { auth, TRUSTED_ORIGINS } from "./auth/better-auth.js";
+import {
+  getFastifyLoggerConfig,
+  requestIdOptions,
+} from "./lib/logger.js";
+import { registerHealthModule } from "./modules/health/index.js";
+import { securityPlugin } from "./plugins/security.js";
 import { tenantContextPlugin } from "./plugins/tenant-context.js";
 import { registerBrokerageAuthRoutes } from "./routes/brokerage-auth.js";
 import { registerBrokerageInviteRoutes } from "./routes/brokerage-invite.js";
 import { registerTestItemsRoutes } from "./routes/test-items.js";
-
-type HealthResponse = {
-  status: "ok";
-  app: typeof APP_NAME;
-  tagline: typeof PRODUCT_TAGLINE;
-};
 
 type BuildAppOptions = {
   logger?: boolean;
@@ -23,7 +22,10 @@ type BuildAppOptions = {
 export async function buildApp(
   options: BuildAppOptions = {},
 ): Promise<FastifyInstance> {
-  const app = Fastify({ logger: options.logger ?? false });
+  const app = Fastify({
+    logger: getFastifyLoggerConfig(options.logger ?? false),
+    ...requestIdOptions,
+  });
   const mountAuthRoutes = options.mountAuthRoutes ?? true;
 
   await app.register(cors, {
@@ -32,11 +34,8 @@ export async function buildApp(
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   });
 
-  app.get("/health", async (): Promise<HealthResponse> => ({
-    status: "ok",
-    app: APP_NAME,
-    tagline: PRODUCT_TAGLINE,
-  }));
+  await app.register(securityPlugin);
+  await registerHealthModule(app);
 
   if (mountAuthRoutes) {
     await registerBrokerageAuthRoutes(app);
