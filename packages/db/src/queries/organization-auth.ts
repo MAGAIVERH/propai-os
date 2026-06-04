@@ -1,4 +1,4 @@
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 
 import { getDb } from "../client.js";
 import { member, organization } from "../schema/auth.js";
@@ -15,6 +15,22 @@ export async function getInitialOrganizationIdForUser(
     .limit(1);
 
   return row?.organizationId ?? null;
+}
+
+/** Returns the member role for a user within an organization, if any. */
+export async function getMemberRoleForOrganization(
+  userId: string,
+  organizationId: string,
+): Promise<string | null> {
+  const [row] = await getDb()
+    .select({ role: member.role })
+    .from(member)
+    .where(
+      and(eq(member.userId, userId), eq(member.organizationId, organizationId)),
+    )
+    .limit(1);
+
+  return row?.role ?? null;
 }
 
 /** Returns true when an organization slug is already registered. */

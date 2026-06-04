@@ -6,6 +6,7 @@ import Fastify, { type FastifyInstance } from "fastify";
 import { auth, TRUSTED_ORIGINS } from "./auth/better-auth.js";
 import { tenantContextPlugin } from "./plugins/tenant-context.js";
 import { registerBrokerageAuthRoutes } from "./routes/brokerage-auth.js";
+import { registerBrokerageInviteRoutes } from "./routes/brokerage-invite.js";
 import { registerTestItemsRoutes } from "./routes/test-items.js";
 
 type HealthResponse = {
@@ -39,6 +40,7 @@ export async function buildApp(
 
   if (mountAuthRoutes) {
     await registerBrokerageAuthRoutes(app);
+    await registerBrokerageInviteRoutes(app);
 
     app.all("/api/auth/*", async (request, reply) => {
       const host = request.headers.host ?? "localhost:3333";

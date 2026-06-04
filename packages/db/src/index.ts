@@ -7,6 +7,7 @@ export {
 } from "./queries/get-tenant-by-id.js";
 export {
   getInitialOrganizationIdForUser,
+  getMemberRoleForOrganization,
   isOrganizationSlugTaken,
 } from "./queries/organization-auth.js";
 export { seedDevIdentity } from "./seed/dev-identity.js";

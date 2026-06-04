@@ -9,6 +9,12 @@ import {
   tenantSettings,
 } from "@propai/db";
 
+import {
+  brokerageOrganizationAccess,
+  brokerageOrganizationRoles,
+} from "./organization-access.js";
+import { recordDevInvitation } from "../lib/invitation-dev-store.js";
+
 const authSecret =
   process.env.BETTER_AUTH_SECRET ?? "dev-better-auth-secret-min-32-chars";
 
@@ -52,6 +58,27 @@ export const auth = betterAuth({
     organizationPlugin({
       creatorRole: "owner",
       allowUserToCreateOrganization: true,
+      ac: brokerageOrganizationAccess,
+      roles: brokerageOrganizationRoles,
+      requireEmailVerificationOnInvitation: false,
+      async sendInvitationEmail(data) {
+        const acceptPath = `/api/auth/organization/accept-invitation`;
+        const acceptUrl = `${authBaseUrl}${acceptPath}`;
+
+        recordDevInvitation({
+          id: data.id,
+          email: data.email,
+          role: data.role,
+          organizationId: data.organization.id,
+          acceptPath,
+        });
+
+        if (process.env.NODE_ENV !== "production") {
+          console.info(
+            `[PropAI invite] email=${data.email} role=${data.role} org=${data.organization.name} invitationId=${data.id} accept=${acceptUrl} body={"invitationId":"${data.id}"}`,
+          );
+        }
+      },
       organizationHooks: {
         afterCreateOrganization: async ({ organization: org }) => {
           await getDb()

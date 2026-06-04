@@ -175,10 +175,104 @@ Variables:
 
 ---
 
+## 6. Invite member (owner only)
+
+**Request**
+
+```
+POST /api/auth/brokerage-invite
+Cookie: <owner session>
+Content-Type: application/json
+```
+
+**Body**
+
+```json
+{
+  "email": "agent@acme-brokerage.test",
+  "role": "agent"
+}
+```
+
+**Roles:** `manager` | `agent` | `viewer` (validated against `@propai/shared` — owner cannot be invited).
+
+**Expected:** `201 Created`
+
+```json
+{
+  "invitation": {
+    "id": "<invitation-uuid>",
+    "email": "agent@acme-brokerage.test",
+    "role": "agent",
+    "organizationId": "<organization-uuid>",
+    "status": "pending"
+  }
+}
+```
+
+**Errors**
+
+| Status | Cause |
+| ------ | ----- |
+| `401` | No session cookie |
+| `403` | Caller is not `owner` of the active organization |
+| `400` | Invalid email or role |
+
+**Alternative (Better Auth native):** `POST /api/auth/organization/invite-member` with the same body fields. PropAI documents `brokerage-invite` for explicit role validation and owner checks.
+
+### Dev without Resend
+
+When `NODE_ENV` is not `production`, the API logs invitation details to the console:
+
+```
+[PropAI invite] email=... invitationId=... accept=http://localhost:3333/api/auth/organization/accept-invitation body={"invitationId":"..."}
+```
+
+Use that `invitationId` after the invitee signs up or signs in.
+
+---
+
+## 7. Accept invitation
+
+Invitee must be logged in with the **same email** as the invitation.
+
+**Request**
+
+```
+POST /api/auth/organization/accept-invitation
+Cookie: <invitee session>
+Content-Type: application/json
+```
+
+**Body**
+
+```json
+{
+  "invitationId": "<id from invite response or dev log>"
+}
+```
+
+**Expected:** `200 OK` — creates `member` row, sets `session.activeOrganizationId` to the inviting organization.
+
+**Verify**
+
+```
+GET /api/auth/get-session
+```
+
+`session.activeOrganizationId` should match the inviting org. Then `GET /v1/test-items` returns only that tenant's rows.
+
+---
+
 ## Vitest (automated)
 
 ```bash
 pnpm test:api
 ```
 
-Includes `auth.integration.test.ts` (real cookies) and `test-items.integration.test.ts` (mock bearer for RLS isolation).
+Includes:
+
+- `auth.integration.test.ts` — sign-up, sign-in, session
+- `auth-tenant-isolation.integration.test.ts` — two orgs, isolated `test-items`
+- `auth-invitation.integration.test.ts` — invite, accept, org-scoped access
+- `test-items.integration.test.ts` — mock bearer for RLS isolation

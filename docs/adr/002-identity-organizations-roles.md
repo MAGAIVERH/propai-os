@@ -30,7 +30,7 @@ PropAI OS uses **Better Auth** for identity and the **organization plugin** for 
 | `verification` | Better Auth | Email verification tokens |
 | `organization` | Better Auth plugin | Brokerage tenant root (replaces `tenants`) |
 | `member` | Better Auth plugin | User ↔ org membership + `role` |
-| `invitation` | Better Auth plugin | Pending invites (flow deferred) |
+| `invitation` | Better Auth plugin | Pending invites (`POST /api/auth/brokerage-invite`, accept via organization plugin) |
 | `tenant_settings` | PropAI custom | Timezone, currency, logo (FK → `organization`) |
 | `test_items` | PropAI POC | RLS demo (`tenant_id` → `organization.id`) |
 
