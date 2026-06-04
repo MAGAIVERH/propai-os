@@ -124,6 +124,10 @@ Use this checklist to sign off Foundation v0.1. Each item includes a **verificat
 | 15.3 | Phase 2 plan (Days 16–25) | [x] | [PHASE-2-PLAN.md](./PHASE-2-PLAN.md) |
 | 15.4 | Verification gate (tests + smoke) | [x] | See [T15-4 sign-off](#t15-4-verification-gate) below |
 | 15.5 | Git tag `foundation-v0.1.0` + release notes | [x] | `git tag -l 'foundation-v0.1.0'` — [releases/foundation-v0.1.0.md](./releases/foundation-v0.1.0.md) |
+| 15.6 | ADR index | [x] | [adr/README.md](./adr/README.md) |
+| 15.7 | Doc hygiene (paths, drift) | [x] | ADR 001/002 paths → `modules/auth/`; AUTH-POC + dev-setup updated |
+| 15.8 | Executive sign-off page | [x] | [FOUNDATION-SIGNOFF.md](./FOUNDATION-SIGNOFF.md) |
+| 15.9 | CI `test:api` required on PR | [x] | `.github/workflows/ci.yml` — no `continue-on-error` |
 
 ---
 
@@ -171,6 +175,8 @@ All commands below must pass before creating or moving tag `foundation-v0.1.0`. 
 | **Total** | **30** |
 
 **Gate status:** **GREEN** — safe to tag `foundation-v0.1.0`.
+
+**CI (T15-10):** GitHub Actions job `test-api` is **required** on PRs (`continue-on-error` removed post–Foundation v0.1).
 
 **Architecture alignment:** Tenant root is `organization.id`; business tables use `tenant_id` FK to `organization.id`. Auth tables (`user`, `session`, `member`, …) have **no RLS** — isolation is session + app middleware + RLS on business tables.
 

@@ -2,7 +2,7 @@
 
 **An AI-powered Real Estate Operating System for US brokerages.**
 
-**Foundation v0.1.0** — [Checklist](docs/BACKEND-FOUNDATION-CHECKLIST.md) · [Release notes](docs/releases/foundation-v0.1.0.md) · Git tag `foundation-v0.1.0`
+**Foundation v0.1.0** — [Sign-off](docs/FOUNDATION-SIGNOFF.md) · [Checklist](docs/BACKEND-FOUNDATION-CHECKLIST.md) · [Release](docs/releases/foundation-v0.1.0.md) · tag `foundation-v0.1.0`
 
 ---
 
@@ -228,8 +228,10 @@ API scaffold (Day 12): [docs/api/api-scaffold.md](./docs/api/api-scaffold.md)
 | Document               | Description                                             |
 | ---------------------- | ------------------------------------------------------- |
 | `docs/LOCAL-DEV.md`    | **Fresh clone** — Docker, migrate, dev, smoke, troubleshooting |
+| `docs/FOUNDATION-SIGNOFF.md` | **Executive summary** — what v0.1 proved / excluded |
 | `docs/BACKEND-FOUNDATION-CHECKLIST.md` | **Phase 1 sign-off** — Days 6–15, pre-tag verification |
 | `docs/releases/foundation-v0.1.0.md` | **Release notes** — tag `foundation-v0.1.0` |
+| `docs/adr/README.md` | **ADR index** — 001 RLS, 002 identity, 003 audit |
 | `docs/PHASE-2-PLAN.md` | **Properties** — Days 16–25 roadmap |
 | `docs/REQUIREMENTS.md` | **v1 product scope** — flows, AI, fields, MVP lock      |
 | `docs/architecture.md` | Actors, brokerage flow, **RLS diagrams** (Foundation v0.1) |

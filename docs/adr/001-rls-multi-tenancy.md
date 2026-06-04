@@ -10,7 +10,7 @@
 
 PropAI OS will isolate tenant-owned business data using:
 
-1. **`tenant_id UUID NOT NULL`** on every business table (FK to `tenants.id`).
+1. **`tenant_id UUID NOT NULL`** on every business table (FK to `organization.id`).
 2. **PostgreSQL RLS** with a session variable: `app.current_tenant`.
 3. **Application code** sets tenant scope per request/transaction via `set_config('app.current_tenant', …, true)` (transaction-local).
 4. **Non-superuser DB role** for runtime queries (`propai_app` locally; dedicated Neon role in cloud).
@@ -100,11 +100,11 @@ Script: `packages/db/scripts/rls-poc-test.ts`
 | Layer | Responsibility |
 | ----- | -------------- |
 | Better Auth session | `session.activeOrganizationId` (organization plugin) |
-| `resolveTenantId()` | Maps organization UUID → `tenants.id` (1:1 until mapping table exists) |
+| `resolveTenantId()` | Maps `activeOrganizationId` → `organization.id` (tenant root for RLS) |
 | Fastify middleware | Sets `request.tenantId` from session only — never from request body/query |
 | Route handlers | All tenant DB work via `runInTenantContext(request.tenantId, …)` |
 
-Better Auth is configured in `apps/api/src/auth/better-auth.ts` (organization plugin). Full auth schema + login UI are deferred; integration tests use `Authorization: Bearer mock-session:<org-uuid>` when `NODE_ENV=test`.
+Better Auth is configured in `apps/api/src/modules/auth/better-auth.ts` (organization plugin). Dashboard login UI in `apps/web` is deferred; integration tests use `Authorization: Bearer mock-session:<org-uuid>` when `NODE_ENV=test`.
 
 ### Request flow
 
@@ -118,7 +118,7 @@ sequenceDiagram
   Client->>API: GET /v1/test-items + session
   API->>Auth: resolve session
   Auth-->>API: activeOrganizationId
-  API->>API: resolveTenantId → tenants.id
+  API->>API: resolveTenantId → organization.id
   API->>DB: runInTenantContext + set_config
   DB-->>API: tenant-scoped rows only
   API-->>Client: 200 JSON
@@ -182,5 +182,8 @@ Tests (`apps/api/src/test-items.integration.test.ts`):
 - `packages/db/drizzle/0006_audit_logs.sql` — `audit_logs` + RLS (see [ADR 003](./003-audit-logs.md))
 - `packages/db/src/tenant-context.ts` — TypeScript helper
 - `apps/api/src/plugins/tenant-context.ts` — Fastify middleware
+- `apps/api/src/modules/auth/resolve-tenant-id.ts` — session → `organization.id`
+- `apps/api/src/modules/auth/better-auth.ts` — Better Auth config
 - [ADR 002 — Identity & roles](./002-identity-organizations-roles.md)
+- [ADR index](./README.md)
 - [PostgreSQL RLS documentation](https://www.postgresql.org/docs/current/ddl-rowsecurity.html)

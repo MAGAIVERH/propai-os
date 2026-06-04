@@ -282,8 +282,10 @@ The Fastify app in `apps/api` exposes **liveness** (`GET /health`) and **readine
 | [LOCAL-DEV.md](./LOCAL-DEV.md)       | Fresh clone, Docker, `pnpm dev`, smoke |
 | [api/api-scaffold.md](./api/api-scaffold.md) | Day 12 API structure, `/health` vs `/ready`, ops probes |
 | [AUTH-POC-FEEDBACK.md](./AUTH-POC-FEEDBACK.md) | Day 11 auth POC — **GO** |
+| [adr/README.md](./adr/README.md) | ADR index (001–003 + template for 004+) |
 | [adr/001-rls-multi-tenancy.md](./adr/001-rls-multi-tenancy.md) | RLS decision + POC results |
 | [adr/002-identity-organizations-roles.md](./adr/002-identity-organizations-roles.md) | Organizations + roles |
 | [adr/003-audit-logs.md](./adr/003-audit-logs.md) | Tenant-scoped audit trail |
+| [FOUNDATION-SIGNOFF.md](./FOUNDATION-SIGNOFF.md) | Executive Phase 1 summary (portfolio / interview) |
 | [dev-setup.md](./dev-setup.md)       | Editor, cloud, extended setup                                  |
 | [../README.md](../README.md)         | Product pitch, stack, monorepo layout                          |

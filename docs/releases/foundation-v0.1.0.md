@@ -69,6 +69,16 @@ Full guide: [LOCAL-DEV.md](../LOCAL-DEV.md)
 
 ---
 
+## Documentation (Day 15)
+
+| Doc | Purpose |
+| --- | ------- |
+| [FOUNDATION-SIGNOFF.md](../FOUNDATION-SIGNOFF.md) | Executive one-pager |
+| [adr/README.md](../adr/README.md) | ADR index + template 004+ |
+| [BACKEND-FOUNDATION-CHECKLIST.md](../BACKEND-FOUNDATION-CHECKLIST.md) | Full Phase 1 checklist |
+
+---
+
 ## Not included (Phase 2+)
 
 - Properties CRUD, R2 photo uploads, properties UI

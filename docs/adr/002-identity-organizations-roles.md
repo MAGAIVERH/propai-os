@@ -34,7 +34,7 @@ PropAI OS uses **Better Auth** for identity and the **organization plugin** for 
 | `tenant_settings` | PropAI custom | Timezone, currency, logo (FK → `organization`) |
 | `test_items` | PropAI POC | RLS demo (`tenant_id` → `organization.id`) |
 
-Auth tables are defined in Drizzle (`packages/db/src/schema/auth.ts`) and passed to `drizzleAdapter` in `apps/api/src/auth/better-auth.ts`.
+Auth tables are defined in Drizzle (`packages/db/src/schema/auth.ts`) and passed to `drizzleAdapter` in `apps/api/src/modules/auth/better-auth.ts`.
 
 ---
 
@@ -65,13 +65,13 @@ Defined in `packages/shared/src/roles/permissions.ts`:
 
 Database constraint: `member_role_check` on `member.role`.
 
-Unit tests for `hasPermission` / `parseBrokerageRole` live in `packages/shared/src/roles/permissions.test.ts` (Day 11). Fastify permission middleware will call `hasPermission(member.role, permission)` — **Day 12**, not Day 11.
+Unit tests for `hasPermission` / `parseBrokerageRole` live in `packages/shared/src/roles/permissions.test.ts` (Day 11). Fastify permission hooks call `hasPermission(member.role, permission)` via `apps/api/src/plugins/require-member-role.ts` — **done (Day 13+)** on audit routes; extend to CRM/properties in Phase 2.
 
 ---
 
 ## Day 10 — Better Auth API wiring
 
-### Configuration (`apps/api/src/auth/better-auth.ts`)
+### Configuration (`apps/api/src/modules/auth/better-auth.ts`)
 
 - `emailAndPassword.enabled: true`
 - Organization plugin with `creatorRole: "owner"`

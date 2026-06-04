@@ -102,11 +102,22 @@ Auth POC meets Day 11 exit criteria:
 
 ---
 
-## Next steps (Day 12)
+## Foundation follow-up (Days 12–15) — completed
 
-1. Wire dashboard (`apps/web`) to Better Auth session cookies + `activeOrganizationId`.
-2. Add permission middleware using `@propai/shared` `hasPermission` on protected CRM routes.
-3. Configure Resend (or equivalent) for `sendInvitationEmail` in staging/production.
-4. Extend CI with `pnpm test:api` (Postgres service container) on pull requests.
+| Item | Status | Notes |
+| ---- | ------ | ----- |
+| Fastify API scaffold (`/health`, `/ready`, modules, plugins) | **Done** | Day 12 — [api-scaffold.md](./api/api-scaffold.md) |
+| Permission hooks (`hasPermission` / `require-member-role`) | **Done** | Day 13+ on `/v1/audit-logs`; extend in Phase 2 |
+| Tenant-scoped audit logs | **Done** | Day 13 — [ADR 003](./adr/003-audit-logs.md) |
+| Local Docker dev + smoke | **Done** | Day 14 — [LOCAL-DEV.md](./LOCAL-DEV.md) |
+| CI `pnpm test:api` on PRs | **Done** | `.github/workflows/ci.yml` — required job (Foundation v0.1) |
+| Foundation tag + docs | **Done** | `foundation-v0.1.0` — [releases/foundation-v0.1.0.md](./releases/foundation-v0.1.0.md) |
+
+## Next steps (Phase 2+)
+
+1. **Properties domain** — schema, RLS, CRUD API — [PHASE-2-PLAN.md](./PHASE-2-PLAN.md) (Days 16–25).
+2. Wire dashboard (`apps/web`) to Better Auth session cookies + `activeOrganizationId` (product login UX).
+3. Extend `require-member-role` to properties and CRM routes as they ship.
+4. Configure Resend (or equivalent) for `sendInvitationEmail` in staging/production.
 5. Neon branch validation when staging URL is available (repeat Vitest + manual M1–M6).
 6. Defer production deploy until full project completion (per team agreement).

@@ -40,13 +40,12 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
-  # API integration tests need Postgres. If this job flakes (timeouts, auth DB),
-  # re-run the workflow; see docs/api/api-scaffold.md and docs/dev-setup.md.
+  # API integration tests need Postgres (required since foundation-v0.1.0).
+  # See docs/BACKEND-FOUNDATION-CHECKLIST.md and docs/dev-setup.md.
   test-api:
     name: API tests (Postgres)
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    continue-on-error: true
 
     services:
       postgres:

@@ -1,6 +1,7 @@
 # Development setup
 
-> **Onboarding:** For a fresh clone (Docker, migrate, `pnpm dev`, health checks, troubleshooting), use **[LOCAL-DEV.md](./LOCAL-DEV.md)** first.
+> **Onboarding:** For a fresh clone (Docker, migrate, `pnpm dev`, health checks, troubleshooting), use **[LOCAL-DEV.md](./LOCAL-DEV.md)** first.  
+> **Foundation v0.1:** Phase 1 (Days 6–15) complete — [FOUNDATION-SIGNOFF.md](./FOUNDATION-SIGNOFF.md) · tag `foundation-v0.1.0` · next [PHASE-2-PLAN.md](./PHASE-2-PLAN.md).
 
 ## Prerequisites
 
@@ -196,12 +197,17 @@ pnpm db:rls-test       # RLS POC: test_items + audit_logs isolation
 
 Sign-off template: `docs/AUTH-POC-FEEDBACK.md` · Manual steps: `docs/api/auth-flow.md` (Day 11).
 
-## CI — API tests with Postgres (optional job)
+## CI — API tests with Postgres (required on PR)
 
-GitHub Actions runs `test-api` with a Postgres 16 service container (`continue-on-error: true` so flaky integration tests do not block merge). Locally mirror CI:
+GitHub Actions job **`test-api`** runs on every PR and push to `main`: Postgres 16 service container, `pnpm db:migrate`, then `pnpm test:api` (**required** — no `continue-on-error` since Foundation v0.1 sign-off).
+
+Locally mirror CI:
 
 ```bash
 pnpm docker:up
 pnpm db:migrate
 pnpm test:api
+pnpm test:shared
 ```
+
+See [BACKEND-FOUNDATION-CHECKLIST.md](./BACKEND-FOUNDATION-CHECKLIST.md#pre-tag-verification-t15-4-release-gate) for the full pre-tag gate.
