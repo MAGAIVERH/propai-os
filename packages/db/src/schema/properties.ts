@@ -1,4 +1,5 @@
 import {
+  boolean,
   index,
   integer,
   numeric,
@@ -6,6 +7,7 @@ import {
   pgTable,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 
@@ -76,5 +78,51 @@ export const properties = pgTable(
       table.state,
     ),
     index("properties_geo_idx").on(table.latitude, table.longitude),
+  ],
+);
+
+/** Key-value features per listing (e.g. pool, garage). One key per property in v1. */
+export const propertyFeatures = pgTable(
+  "property_features",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    propertyId: uuid("property_id")
+      .notNull()
+      .references(() => properties.id, { onDelete: "cascade" }),
+    featureKey: text("feature_key").notNull(),
+    featureValue: text("feature_value").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("property_features_property_id_idx").on(table.propertyId),
+    uniqueIndex("property_features_property_key_uidx").on(
+      table.propertyId,
+      table.featureKey,
+    ),
+  ],
+);
+
+/** Ordered photos per listing; storage_key points to R2/S3 object (Day 19+). */
+export const propertyImages = pgTable(
+  "property_images",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    propertyId: uuid("property_id")
+      .notNull()
+      .references(() => properties.id, { onDelete: "cascade" }),
+    storageKey: text("storage_key").notNull(),
+    sortOrder: integer("sort_order").notNull().default(0),
+    isPrimary: boolean("is_primary").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("property_images_property_id_sort_idx").on(
+      table.propertyId,
+      table.sortOrder,
+    ),
   ],
 );

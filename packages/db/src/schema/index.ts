@@ -33,6 +33,8 @@ export {
 export { auditLogs } from "./audit-logs.js";
 export {
   properties,
+  propertyFeatures,
+  propertyImages,
   propertyStatusEnum,
   propertyTypeEnum,
   rentOrSaleEnum,
