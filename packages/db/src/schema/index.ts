@@ -31,6 +31,12 @@ export {
   verification,
 };
 export { auditLogs } from "./audit-logs.js";
+export {
+  properties,
+  propertyStatusEnum,
+  propertyTypeEnum,
+  rentOrSaleEnum,
+} from "./properties.js";
 export { tenantSettings } from "./tenant-settings.js";
 export { testItems } from "./test-items.js";
 
