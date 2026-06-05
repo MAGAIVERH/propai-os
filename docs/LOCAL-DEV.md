@@ -176,7 +176,8 @@ Copy from `.env.example`. Minimum for daily dev:
 | `REDIS_URL` | `redis://localhost:6379` |
 | `BETTER_AUTH_SECRET` | Session signing — **min 32 chars** |
 | `BETTER_AUTH_URL` | `http://localhost:3333` (must match API origin) |
-| `API_URL` | Web → API (`http://localhost:3333`) |
+| `API_URL` | Server/middleware → API (`http://localhost:3333`) |
+| `NEXT_PUBLIC_API_URL` | Browser fetch → API (`http://localhost:3333`) |
 | `NEXT_PUBLIC_APP_URL` | `http://localhost:3000` |
 | `PORT` / `HOST` | API bind (`3333` / `0.0.0.0`) |
 
@@ -277,6 +278,7 @@ Or use `pnpm dev:smoke --spawn-api` after `pnpm setup:local` (no second terminal
 | ----- | -------------------- |
 | `BETTER_AUTH_URL` | `http://localhost:3333` |
 | `API_URL` | `http://localhost:3333` |
+| `NEXT_PUBLIC_API_URL` | `http://localhost:3333` |
 | `NEXT_PUBLIC_APP_URL` | `http://localhost:3000` |
 
 Better Auth validates the request **Origin** against the API base URL. Do not point the dashboard at a different host/port than configured in `.env` without updating these variables.
