@@ -9,6 +9,7 @@ import {
 } from "./lib/logger.js";
 import { registerAuditModule } from "./modules/audit/index.js";
 import { registerHealthModule } from "./modules/health/index.js";
+import { registerPropertiesModule } from "./modules/properties/index.js";
 import { registerTenantsModule } from "./modules/tenants/index.js";
 import { registerTestItemsModule } from "./modules/test-items/index.js";
 import { authPlugin } from "./plugins/auth.js";
@@ -51,6 +52,7 @@ export async function buildApp(
       await registerTenantsModule(v1);
       await registerTestItemsModule(v1);
       await registerAuditModule(v1);
+      await registerPropertiesModule(v1);
     },
     { prefix: "/v1" },
   );

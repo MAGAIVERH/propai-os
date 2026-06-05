@@ -26,6 +26,7 @@ export {
   invitation,
   member,
   organization,
+  properties,
   session,
   tenantSettings,
   tenants,
