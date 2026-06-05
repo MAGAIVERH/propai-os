@@ -38,8 +38,8 @@ Phase 2 delivers the **Properties** domain: schema, tenant-scoped CRUD API, obje
 | Day | Focus | Deliverables | Verification |
 | --- | ----- | ------------ | ------------ |
 | **[x] 16** | Properties schema | Drizzle tables: `properties` (US fields: address, city, state, ZIP, sq ft, price cents, status enum), `property_features`, `property_images`, `tenant_id`, indexes; migration + RLS policies | `pnpm db:migrate`; extend `pnpm db:rls-test` — task pack: [tasks/PHASE-2-DAY-16.md](./tasks/PHASE-2-DAY-16.md) |
-| **17** | Shared contracts | Zod create/update/list schemas in `@propai/shared`; types exported to API + web | `pnpm typecheck`; unit tests on schema edge cases |
-| **18** | CRUD API | `modules/properties/` — `GET/POST/PATCH/DELETE /v1/properties`, list filters, `select` explicit; permission `properties:write` | `pnpm test:api` — isolation + RBAC cases |
+| **17** | Properties CRUD API | Zod in `@propai/shared`; `GET/POST/PATCH/DELETE /v1/properties`; cursor + filters; RBAC agent scope; Insomnia collection | `pnpm test:shared && pnpm test:api` — task pack: [tasks/PHASE-2-DAY-17.md](./tasks/PHASE-2-DAY-17.md) |
+| **18** | _(absorbed into Day 17)_ | — | — |
 | **19** | Object storage setup | R2 bucket config, env vars, presigned PUT/GET helper in `apps/api` | Manual curl upload; no secrets in repo |
 | **20** | Property photos schema | `property_photos` (order, url/key, property FK, tenant_id + RLS) | Migration + RLS test |
 | **21** | Photo API | `POST /v1/properties/:id/photos` (presign + confirm), reorder, delete; audit events | Integration tests + audit log assertions |

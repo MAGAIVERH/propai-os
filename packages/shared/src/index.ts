@@ -24,3 +24,26 @@ export {
   type Permission,
 } from "./roles/permissions.js";
 export { APP_NAME, PRODUCT_TAGLINE } from "./constants.js";
+export {
+  createPropertySchema,
+  PROPERTY_STATUSES,
+  PROPERTY_TYPES,
+  propertyCreateResponseSchema,
+  propertyListQuerySchema,
+  propertyListResponseSchema,
+  propertyResponseSchema,
+  propertyStatusSchema,
+  propertyTypeSchema,
+  RENT_OR_SALE_VALUES,
+  rentOrSaleSchema,
+  updatePropertySchema,
+  type CreatePropertyInput,
+  type PropertyCreateResponse,
+  type PropertyListQuery,
+  type PropertyListResponse,
+  type PropertyResponse,
+  type PropertyStatus,
+  type PropertyType,
+  type RentOrSale,
+  type UpdatePropertyInput,
+} from "./properties/property.js";
