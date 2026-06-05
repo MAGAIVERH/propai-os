@@ -1,6 +1,6 @@
 # Phase 2 Plan — Properties (Days 16–25)
 
-**Status:** In progress (Day 16)  
+**Status:** In progress (Day 17+)  
 **Prerequisite:** Phase 1 foundation signed off — [BACKEND-FOUNDATION-CHECKLIST.md](./BACKEND-FOUNDATION-CHECKLIST.md) (tag `foundation-v0.1.0`)  
 **Product context:** [REQUIREMENTS.md](./REQUIREMENTS.md) — US property fields, photos, marketplace linkage (later phases)
 
@@ -37,7 +37,7 @@ Phase 2 delivers the **Properties** domain: schema, tenant-scoped CRUD API, obje
 
 | Day | Focus | Deliverables | Verification |
 | --- | ----- | ------------ | ------------ |
-| **16** | Properties schema | Drizzle tables: `properties` (US fields: address, city, state, ZIP, sq ft, price cents, status enum), `property_features`, `property_images`, `tenant_id`, indexes; migration + RLS policies | `pnpm db:migrate`; extend `pnpm db:rls-test` — task pack: [tasks/PHASE-2-DAY-16.md](./tasks/PHASE-2-DAY-16.md) |
+| **[x] 16** | Properties schema | Drizzle tables: `properties` (US fields: address, city, state, ZIP, sq ft, price cents, status enum), `property_features`, `property_images`, `tenant_id`, indexes; migration + RLS policies | `pnpm db:migrate`; extend `pnpm db:rls-test` — task pack: [tasks/PHASE-2-DAY-16.md](./tasks/PHASE-2-DAY-16.md) |
 | **17** | Shared contracts | Zod create/update/list schemas in `@propai/shared`; types exported to API + web | `pnpm typecheck`; unit tests on schema edge cases |
 | **18** | CRUD API | `modules/properties/` — `GET/POST/PATCH/DELETE /v1/properties`, list filters, `select` explicit; permission `properties:write` | `pnpm test:api` — isolation + RBAC cases |
 | **19** | Object storage setup | R2 bucket config, env vars, presigned PUT/GET helper in `apps/api` | Manual curl upload; no secrets in repo |

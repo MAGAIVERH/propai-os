@@ -2,7 +2,7 @@
 
 Drizzle ORM schema, migrations, and database client for PropAI OS.
 
-See `docs/adr/001-rls-multi-tenancy.md` (RLS) and `docs/adr/002-identity-organizations-roles.md` (identity).
+See `docs/adr/001-rls-multi-tenancy.md` (RLS), `docs/adr/002-identity-organizations-roles.md` (identity), and `docs/adr/004-properties-schema.md` (properties).
 
 ## Schema
 
@@ -14,8 +14,11 @@ See `docs/adr/001-rls-multi-tenancy.md` (RLS) and `docs/adr/002-identity-organiz
 | `tenant_settings` | Per-org settings (FK → `organization.id`) |
 | `test_items` | RLS POC (`tenant_id` → `organization.id`) |
 | `audit_logs` | Immutable audit trail (`tenant_id` → `organization.id`; Day 13) |
+| `properties` | US listing core (`tenant_id` → `organization.id`; Day 16) |
+| `property_features` | Key-value amenities per listing (FK → `properties.id`, parent-scoped RLS) |
+| `property_images` | Ordered photo metadata + `storage_key` (FK → `properties.id`, parent-scoped RLS) |
 
-**RLS:** `tenant_id` columns reference `organization.id`. Session scope uses `app.current_tenant`. See `docs/adr/003-audit-logs.md`.
+**RLS:** `tenant_id` columns reference `organization.id`. Child tables (`property_features`, `property_images`) inherit tenant scope via parent `properties` row. Session scope uses `app.current_tenant`. See `docs/adr/003-audit-logs.md` and `docs/adr/004-properties-schema.md`.
 
 ## Roles (local Docker)
 
@@ -68,4 +71,4 @@ const items = await runInTenantContext(orgId!, async (tx) => {
 | `authSchema` | Better Auth Drizzle adapter table map |
 | `seedDevIdentity()` | Dev seed: org + owner member + settings |
 
-`pnpm db:rls-test` validates RLS for **`test_items`** and **`audit_logs`** (tenant A/B isolation, no context, cross-tenant filter).
+`pnpm db:rls-test` validates RLS for **`test_items`**, **`audit_logs`**, **`properties`**, **`property_features`**, and **`property_images`** (tenant A/B isolation, no context, cross-tenant read/insert).
