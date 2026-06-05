@@ -10,7 +10,7 @@
       "modified": 1749081600000,
       "created": 1749081600000,
       "name": "PropAI OS API",
-      "description": "Day 12–17 — health, auth, audit logs, properties CRUD. Enable cookie jar; run P1 sign-up before protected routes.",
+      "description": "Day 12–18 — health, auth, audit logs, properties CRUD, presigned uploads. Enable cookie jar; run P1 sign-up before protected routes.",
       "scope": "collection",
       "_type": "workspace"
     },
@@ -22,10 +22,13 @@
       "name": "Local",
       "data": {
         "baseUrl": "http://localhost:3333",
-        "propertyId": ""
+        "propertyId": "",
+        "uploadUrl": "",
+        "objectKey": "",
+        "downloadUrl": ""
       },
       "dataPropertyOrder": {
-        "&": ["baseUrl", "propertyId"]
+        "&": ["baseUrl", "propertyId", "uploadUrl", "objectKey", "downloadUrl"]
       },
       "color": null,
       "isPrivate": false,
@@ -255,6 +258,135 @@
       "isPrivate": false,
       "settingStoreCookies": true,
       "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "fld_day18_uploads",
+      "parentId": "wrk_propai_os_api",
+      "modified": 1749168000000,
+      "created": 1749168000000,
+      "name": "Day 18 — Uploads",
+      "description": "Presigned photo upload/download. Prerequisite: S3_* env + MinIO or R2. Run Day 17 P1–P2 first (propertyId + cookie). Copy uploadUrl/objectKey/downloadUrl from responses into env for U2–U4.",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1749168000000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_upload_u1_presign",
+      "parentId": "fld_day18_uploads",
+      "modified": 1749168000000,
+      "created": 1749168000000,
+      "url": "{{ _.baseUrl }}/v1/uploads/presign",
+      "name": "U1 — Presign Upload",
+      "description": "200 + `{ uploadUrl, key, expiresAt, headers }`. Copy `uploadUrl` and `key` to env. Requires `propertyId` from Day 17 P2.",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"propertyId\": \"{{ _.propertyId }}\",\n  \"contentType\": \"image/jpeg\",\n  \"contentLength\": 12345\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json",
+          "id": "pair_upload_presign_ct"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1749167999000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_upload_u2_put_storage",
+      "parentId": "fld_day18_uploads",
+      "modified": 1749168000000,
+      "created": 1749168000000,
+      "url": "{{ _.uploadUrl }}",
+      "name": "U2 — PUT Image to Storage",
+      "description": "Direct PUT to presigned uploadUrl (MinIO/R2). Body: pick a local JPEG file. Header Content-Type must match U1 (`image/jpeg`). Expect 200/204.",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/octet-stream",
+        "fileName": "photo.jpg"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "image/jpeg",
+          "id": "pair_upload_put_ct"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1749167998000,
+      "isPrivate": false,
+      "settingStoreCookies": false,
+      "settingSendCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_upload_u3_presign_download",
+      "parentId": "fld_day18_uploads",
+      "modified": 1749168000000,
+      "created": 1749168000000,
+      "url": "{{ _.baseUrl }}/v1/uploads/presign-download",
+      "name": "U3 — Presign Download",
+      "description": "200 + `{ downloadUrl, expiresAt }`. Query `key` = objectKey from U1. Copy downloadUrl to env for U4.",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "key",
+          "value": "{{ _.objectKey }}",
+          "description": "Full object key from U1 presign response",
+          "id": "pair_upload_download_key"
+        }
+      ],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1749167997000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_upload_u4_get_storage",
+      "parentId": "fld_day18_uploads",
+      "modified": 1749168000000,
+      "created": 1749168000000,
+      "url": "{{ _.downloadUrl }}",
+      "name": "U4 — GET Image from Storage",
+      "description": "Direct GET from presigned downloadUrl (U3). Save response body as file; should match U2 upload bytes.",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1749167996000,
+      "isPrivate": false,
+      "settingStoreCookies": false,
+      "settingSendCookies": false,
       "settingDisableRenderRequestBody": false,
       "settingEncodeUrl": true,
       "settingRebuildPath": true,

@@ -16,7 +16,8 @@ apps/api/src/
 │   ├── test-items/     # RLS demo routes (/v1/test-items)
 │   ├── health/         # GET /health, GET /ready
 │   ├── audit/          # GET /v1/audit-logs (owner/manager, paginated)
-│   └── properties/     # CRUD /v1/properties (Day 17)
+│   ├── properties/     # CRUD /v1/properties (Day 17)
+│   └── uploads/        # Presigned photo upload/download (Day 18)
 └── plugins/
     ├── auth.ts         # Better Auth + brokerage registration
     ├── zod-validator.ts
@@ -155,6 +156,82 @@ Audit actions: `property.created`, `property.updated`, `property.deleted`.
 4. Invite viewer → GET `/v1/properties` → `403`.
 5. DELETE property → no longer in GET list.
 
+## Day 18 — Uploads (presigned photos)
+
+Module: `apps/api/src/modules/uploads/` (`index.ts`, `routes.ts`). Shared Zod contracts in `@propai/shared` (`presignUploadRequestSchema`, `presignDownloadQuerySchema`, etc.). Binary data goes **directly** to object storage — never through Fastify.
+
+**Prerequisite:** `S3_*` env vars configured. See [object-storage.md](../infra/object-storage.md). Without storage, routes return **503**.
+
+| Endpoint | Method | Auth | RBAC |
+| -------- | ------ | ---- | ---- |
+| `/v1/uploads/presign` | POST | Session cookie | `properties:write` (owner, manager, agent) |
+| `/v1/uploads/presign-download` | GET | Session cookie | `properties:write`; key must belong to tenant |
+
+### RBAC and scope
+
+Same property access rules as Day 17: agent can presign only for properties where `createdBy = self`; manager/owner for any tenant property; viewer gets **403**. Cross-tenant or out-of-scope property/key returns **404**.
+
+### Upload request / response
+
+**POST body:**
+
+```json
+{
+  "propertyId": "uuid",
+  "contentType": "image/jpeg",
+  "contentLength": 12345
+}
+```
+
+| Field | Rules |
+| ----- | ----- |
+| `contentType` | Must be `image/*` |
+| `contentLength` | Integer 1–10_485_760 (10 MB) |
+
+**Response (200):**
+
+```json
+{
+  "uploadUrl": "https://…",
+  "key": "tenant/{tenantId}/property/{propertyId}/{uuid}.jpg",
+  "expiresAt": "2026-06-05T12:15:00.000Z",
+  "headers": { "Content-Type": "image/jpeg" }
+}
+```
+
+Client PUTs image bytes to `uploadUrl` with the exact `Content-Type` header returned in `headers`.
+
+### Download query / response
+
+**GET query:** `?key=tenant/{tenantId}/property/{propertyId}/{uuid}.jpg`
+
+**Response (200):**
+
+```json
+{
+  "downloadUrl": "https://…",
+  "expiresAt": "2026-06-05T12:15:00.000Z"
+}
+```
+
+Client GETs image bytes from `downloadUrl`.
+
+### Error summary
+
+| Status | When |
+| ------ | ---- |
+| 400 | Invalid body/query (non-image type, oversize, bad UUID) |
+| 401 | No session |
+| 403 | Viewer role or missing active org |
+| 404 | Property not found / out of agent scope; invalid or cross-tenant key |
+| 503 | `S3_*` not configured |
+
+**Note:** `property_images` rows are **not** persisted yet (Day 19+ confirm flow).
+
+**Collections:** folder “Day 18 — Uploads” in `propai-api.postman_collection.json` and `propai-api.insomnia.json`. Manual curl: [upload-curl.md](./upload-curl.md).
+
+**ADR:** [005-object-storage-r2.md](../adr/005-object-storage-r2.md)
+
 ## `/health` vs `/ready`
 
 | Endpoint | Purpose | Auth | Depends on |
@@ -234,7 +311,7 @@ healthcheck:
   start_period: 15s
 ```
 
-## Local validation (Day 12–17 checklist)
+## Local validation (Day 12–18 checklist)
 
 ```bash
 pnpm docker:up

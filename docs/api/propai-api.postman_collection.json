@@ -1,8 +1,8 @@
 {
   "info": {
     "_postman_id": "propai-api-day12",
-    "name": "PropAI OS API — Day 12–17",
-    "description": "Day 12 ops: /health and /ready. Day 13 audit logs. Day 17 properties CRUD. Day 11 auth POC (M1–M6) and Day 10 reference requests included.",
+    "name": "PropAI OS API — Day 12–18",
+    "description": "Day 12 ops: /health and /ready. Day 13 audit logs. Day 17 properties CRUD. Day 18 presigned uploads. Day 11 auth POC (M1–M6) and Day 10 reference requests included.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -40,6 +40,18 @@
     },
     {
       "key": "propertyId",
+      "value": ""
+    },
+    {
+      "key": "uploadUrl",
+      "value": ""
+    },
+    {
+      "key": "objectKey",
+      "value": ""
+    },
+    {
+      "key": "downloadUrl",
       "value": ""
     }
   ],
@@ -408,6 +420,144 @@
             "method": "DELETE",
             "header": [],
             "url": "{{baseUrl}}/v1/properties/{{propertyId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Day 18 — Uploads",
+      "description": "Presigned property photo upload/download. Prerequisite: S3_* env + MinIO (`docker compose --profile storage up -d`) or R2. Run Day 17 P1–P2 first (sets propertyId + session cookie). U2/U4 PUT/GET go direct to storage URLs — not the API.",
+      "item": [
+        {
+          "name": "U1 — Presign Upload",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.test('uploadUrl present', function () {",
+                  "  pm.expect(body.uploadUrl).to.be.a('string').and.not.empty;",
+                  "});",
+                  "pm.test('key matches tenant/property pattern', function () {",
+                  "  pm.expect(body.key).to.match(/^tenant\\/[0-9a-f-]{36}\\/property\\/[0-9a-f-]{36}\\/[0-9a-f-]{36}\\.(jpg|jpeg|png|webp)$/);",
+                  "});",
+                  "pm.collectionVariables.set('uploadUrl', body.uploadUrl);",
+                  "pm.collectionVariables.set('objectKey', body.key);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"propertyId\": \"{{propertyId}}\",\n  \"contentType\": \"image/jpeg\",\n  \"contentLength\": 12345\n}"
+            },
+            "url": "{{baseUrl}}/v1/uploads/presign"
+          }
+        },
+        {
+          "name": "U2 — PUT Image to Storage",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 204', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "image/jpeg",
+                "description": "Must match value sent in U1"
+              }
+            ],
+            "body": {
+              "mode": "file",
+              "file": {}
+            },
+            "url": "{{uploadUrl}}",
+            "description": "Select a local JPEG file in Body → binary. Content-Type must match U1. URL is the presigned uploadUrl from U1 (MinIO/R2, not the API)."
+          }
+        },
+        {
+          "name": "U3 — Presign Download",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.test('downloadUrl present', function () {",
+                  "  pm.expect(body.downloadUrl).to.be.a('string').and.not.empty;",
+                  "});",
+                  "pm.collectionVariables.set('downloadUrl', body.downloadUrl);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/uploads/presign-download?key={{objectKey}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "uploads", "presign-download"],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "{{objectKey}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "U4 — GET Image from Storage",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Content-Type is image', function () {",
+                  "  pm.expect(pm.response.headers.get('Content-Type')).to.match(/^image\\//);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{downloadUrl}}",
+            "description": "Direct GET from presigned downloadUrl (U3). Save response as file to verify bytes match U2 upload."
           }
         }
       ]

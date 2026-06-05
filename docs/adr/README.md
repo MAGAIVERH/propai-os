@@ -14,12 +14,12 @@ Index of accepted decisions for PropAI OS. New ADRs use the template below and i
 | [002](./002-identity-organizations-roles.md) | Identity, organizations, and brokerage roles | Accepted | 2026-06-02 | Better Auth organization plugin; `organization` as tenant root; roles in `@propai/shared` |
 | [003](./003-audit-logs.md) | Tenant-scoped audit logs | Accepted | 2026-06-04 | Append-only `audit_logs` with RLS; `GET /v1/audit-logs`; `audit:read` RBAC |
 | [004](./004-properties-schema.md) | Properties schema and RLS | Accepted | 2026-06-05 | `properties` + child tables; direct vs parent-scoped RLS; US fields; migration `0007_properties` |
+| [005](./005-object-storage-r2.md) | Object storage (R2) for listing photos | Accepted | 2026-06-05 | Private bucket; presigned PUT/GET; key `tenant/{id}/property/{id}/{uuid}.ext`; 10 MB image/* |
 
 ### Planned (Phase 2+)
 
 | ADR | Title | Status | Target phase |
 | --- | ----- | ------ | ------------ |
-| 005 | Object storage (R2) for listing photos | Proposed | Phase 2 — Days 19–21 |
 | 006 | AI workers & feature flags | Proposed | Phase 3+ |
 
 See [PHASE-2-PLAN.md](../PHASE-2-PLAN.md) and [FOUNDATION-SIGNOFF.md](../FOUNDATION-SIGNOFF.md).
