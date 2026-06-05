@@ -182,6 +182,25 @@ Copy from `.env.example`. Minimum for daily dev:
 
 Cloud placeholders (Neon, Upstash, R2, Stripe, etc.) can stay empty for local CRM/API work.
 
+### Object storage (optional — Day 18+ uploads)
+
+Property photo uploads use a **private** S3-compatible bucket (R2 in cloud, MinIO locally). Leave `S3_*` empty until you work on upload features — the API returns **503** when storage is unset.
+
+**Full runbook:** [infra/object-storage.md](./infra/object-storage.md)
+
+| Variable | Local MinIO (`--profile storage`) |
+| -------- | --------------------------------- |
+| `S3_ENDPOINT` | `http://localhost:9000` |
+| `S3_REGION` | `us-east-1` |
+| `S3_BUCKET` | `propai-uploads` |
+| `S3_ACCESS_KEY_ID` | `minioadmin` |
+| `S3_SECRET_ACCESS_KEY` | `minioadmin` |
+| `S3_PRESIGN_EXPIRES_SECONDS` | `900` (optional) |
+
+```bash
+docker compose --profile storage up -d   # MinIO :9000 (API) / :9001 (console)
+```
+
 ---
 
 ## Docker Compose
@@ -193,10 +212,12 @@ docker compose up -d
 # or: pnpm docker:up
 ```
 
-| Service | Host port | Health |
-| ------- | --------- | ------ |
-| PostgreSQL 16 | 5432 | `pg_isready` |
-| Redis 7 | 6379 | `redis-cli ping` |
+| Service | Host port | Health | Profile |
+| ------- | --------- | ------ | ------- |
+| PostgreSQL 16 | 5432 | `pg_isready` | default |
+| Redis 7 | 6379 | `redis-cli ping` | default |
+| MinIO (S3 API) | 9000 | HTTP `/minio/health/live` | `storage` |
+| MinIO Console | 9001 | — | `storage` |
 
 On a **brand-new Postgres volume**, `docker/postgres/init/01-roles.sql` creates the `propai_app` login role before you run migrations. Schemas, tables, grants, and RLS still require `pnpm db:migrate` (Drizzle migrations, including `0002_propai_app_role.sql`).
 
@@ -207,6 +228,14 @@ docker compose --profile api up -d --build
 ```
 
 Inside the `api` profile, use hostnames `postgres` and `redis` in `.env` (documented in `.env.example`).
+
+Optional MinIO (local uploads — Day 18):
+
+```bash
+docker compose --profile storage up -d
+```
+
+Bucket `propai-uploads` is created automatically (private + CORS for `http://localhost:3000`). Console: http://localhost:9001 (`minioadmin` / `minioadmin`).
 
 ---
 
@@ -277,6 +306,7 @@ Ensure the `propai-redis` container is running: `docker compose ps`. Run `pnpm d
 | Doc | Topic |
 | --- | ----- |
 | [dev-setup.md](./dev-setup.md) | Editor, cloud accounts, API auth tables, CI |
+| [infra/object-storage.md](./infra/object-storage.md) | R2 / MinIO private bucket, CORS, `S3_*` env |
 | [api/api-scaffold.md](./api/api-scaffold.md) | Fastify layout, probes |
 | [api/auth-flow.md](./api/auth-flow.md) | Better Auth manual flow |
 | `.env.example` | Full variable reference |

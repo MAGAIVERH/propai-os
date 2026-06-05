@@ -39,10 +39,8 @@ Phase 2 delivers the **Properties** domain: schema, tenant-scoped CRUD API, obje
 | --- | ----- | ------------ | ------------ |
 | **[x] 16** | Properties schema | Drizzle tables: `properties` (US fields: address, city, state, ZIP, sq ft, price cents, status enum), `property_features`, `property_images`, `tenant_id`, indexes; migration + RLS policies | `pnpm db:migrate`; extend `pnpm db:rls-test` — task pack: [tasks/PHASE-2-DAY-16.md](./tasks/PHASE-2-DAY-16.md) |
 | **17** | Properties CRUD API | Zod in `@propai/shared`; `GET/POST/PATCH/DELETE /v1/properties`; cursor + filters; RBAC agent scope; Insomnia collection | `pnpm test:shared && pnpm test:api` — task pack: [tasks/PHASE-2-DAY-17.md](./tasks/PHASE-2-DAY-17.md) |
-| **18** | _(absorbed into Day 17)_ | — | — |
-| **19** | Object storage setup | R2 bucket config, env vars, presigned PUT/GET helper in `apps/api` | Manual curl upload; no secrets in repo |
-| **20** | Property photos schema | `property_photos` (order, url/key, property FK, tenant_id + RLS) | Migration + RLS test |
-| **21** | Photo API | `POST /v1/properties/:id/photos` (presign + confirm), reorder, delete; audit events | Integration tests + audit log assertions |
+| **18** | Image upload (R2/S3 presigned) | Private bucket + CORS; `POST/GET /v1/uploads/presign*`; key `tenant/{id}/property/{id}/{uuid}.ext`; 10MB image/* | curl upload + download — task pack: [tasks/PHASE-2-DAY-18.md](./tasks/PHASE-2-DAY-18.md) |
+| **19** | Property photos confirm API | Persist `property_images`; confirm after upload; audit | `pnpm test:api` |
 | **22** | Web module shell | `src/modules/properties/` — layout, nav entry, empty list page (Server Component + queries stub) | `pnpm dev` — route loads |
 | **23** | Properties list UI | Table/cards, filters (status), shadcn components, tokens only | Manual UX pass |
 | **24** | Property detail + form | Create/edit with React Hook Form + Zod; Server Actions or API client per project convention | Create → list → edit flow |
