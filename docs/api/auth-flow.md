@@ -389,9 +389,11 @@ Use **Credentials: Include** in browser clients.
 
 ---
 
-## Postman collection
+## API collections (Postman / Insomnia)
 
-Import `docs/api/propai-api.postman_collection.json`.
+**Postman:** import `docs/api/propai-api.postman_collection.json`.
+
+**Insomnia:** import `docs/api/propai-api.insomnia.json` (Application → Import). Select environment **Local** (`baseUrl` = `http://localhost:3333`). Enable the cookie jar; run folder **Day 17 — Properties** P1 sign-up before protected routes. After P2 create, copy `property.id` into env var `propertyId` for P4–P6.
 
 | Variable | Default |
 | -------- | ------- |
@@ -402,8 +404,9 @@ Import `docs/api/propai-api.postman_collection.json`.
 | `testPassword` | `password123` |
 | `invitationId` | Set by M3 invite test script |
 | `organizationIdA` | Set by Owner A sign-up script |
+| `propertyId` | Set by Day 17 P2 create script |
 
-Run folder **Day 11 — Manual POC** in order (M1 → M6).
+Run folder **Day 11 — Manual POC** in order (M1 → M6), or **Day 17 — Properties** (P1 → P6) for listings CRUD.
 
 ---
 

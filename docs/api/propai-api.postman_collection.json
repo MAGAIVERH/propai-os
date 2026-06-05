@@ -1,8 +1,8 @@
 {
   "info": {
     "_postman_id": "propai-api-day12",
-    "name": "PropAI OS API — Day 12–13",
-    "description": "Day 12 ops: /health and /ready. Day 13 audit logs. Day 11 auth POC (M1–M6) and Day 10 reference requests included.",
+    "name": "PropAI OS API — Day 12–17",
+    "description": "Day 12 ops: /health and /ready. Day 13 audit logs. Day 17 properties CRUD. Day 11 auth POC (M1–M6) and Day 10 reference requests included.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -37,6 +37,10 @@
     {
       "key": "testEmail",
       "value": "owner@acme-brokerage.test"
+    },
+    {
+      "key": "propertyId",
+      "value": ""
     }
   ],
   "item": [
@@ -170,6 +174,240 @@
                 }
               ]
             }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Day 17 — Properties",
+      "description": "Run P1 sign-up first (session cookie). Then P2–P6 in order. RBAC: owner/manager see all tenant listings; agent sees only `createdBy = self`; viewer gets 403 on all routes. Enable Postman cookies for localhost:3333.",
+      "item": [
+        {
+          "name": "P1 — Brokerage Sign-Up (owner)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('organizationIdA', body.organization.id);",
+                  "pm.test('activeOrganizationId matches org', function () {",
+                  "  pm.expect(body.session.activeOrganizationId).to.eql(body.organization.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"prop-owner-{{$guid}}@test.propai-os.local\",\n  \"password\": \"{{testPassword}}\",\n  \"name\": \"Property Owner\",\n  \"organizationName\": \"Austin Brokerage {{$guid}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/brokerage-sign-up"
+          }
+        },
+        {
+          "name": "P2 — Create Property",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('propertyId', body.property.id);",
+                  "pm.test('createdBy is set', function () {",
+                  "  pm.expect(body.property.createdBy).to.be.a('string').and.not.empty;",
+                  "});",
+                  "pm.test('tenantId matches org', function () {",
+                  "  pm.expect(body.property.tenantId).to.eql(pm.collectionVariables.get('organizationIdA'));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Austin Ranch Home\",\n  \"description\": \"Spacious single-family near downtown.\",\n  \"type\": \"single_family\",\n  \"status\": \"active\",\n  \"priceUsdCents\": 45000000,\n  \"rentOrSale\": \"sale\",\n  \"bedrooms\": 3,\n  \"bathrooms\": \"2.5\",\n  \"sqFt\": 2100,\n  \"yearBuilt\": 2015,\n  \"hoaFeeUsd\": 250,\n  \"addressLine1\": \"123 Congress Ave\",\n  \"city\": \"Austin\",\n  \"state\": \"TX\",\n  \"zipCode\": \"78701\",\n  \"latitude\": 30.2672,\n  \"longitude\": -97.7431\n}"
+            },
+            "url": "{{baseUrl}}/v1/properties"
+          }
+        },
+        {
+          "name": "P3 — List Properties (filtered)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "const propertyId = pm.collectionVariables.get('propertyId');",
+                  "pm.test('includes created property', function () {",
+                  "  const found = body.items.some(function (item) {",
+                  "    return item.id === propertyId;",
+                  "  });",
+                  "  pm.expect(found).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/properties?status=active&state=TX&minPriceUsdCents=10000000&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "properties"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "active"
+                },
+                {
+                  "key": "state",
+                  "value": "TX"
+                },
+                {
+                  "key": "minPriceUsdCents",
+                  "value": "10000000"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "cursor",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "type",
+                  "value": "single_family",
+                  "disabled": true
+                },
+                {
+                  "key": "city",
+                  "value": "Austin",
+                  "disabled": true
+                },
+                {
+                  "key": "maxPriceUsdCents",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "P4 — Get Property by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.test('property id matches', function () {",
+                  "  pm.expect(body.property.id).to.eql(pm.collectionVariables.get('propertyId'));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/v1/properties/{{propertyId}}"
+          }
+        },
+        {
+          "name": "P5 — Update Property",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.test('title updated', function () {",
+                  "  pm.expect(body.property.title).to.eql('Austin Ranch Home — Updated');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Austin Ranch Home — Updated\",\n  \"priceUsdCents\": 47500000,\n  \"status\": \"under_contract\"\n}"
+            },
+            "url": "{{baseUrl}}/v1/properties/{{propertyId}}"
+          }
+        },
+        {
+          "name": "P6 — Delete Property (soft)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.test('softDeletedAt is set', function () {",
+                  "  pm.expect(body.property.softDeletedAt).to.not.be.null;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/v1/properties/{{propertyId}}"
           }
         }
       ]
