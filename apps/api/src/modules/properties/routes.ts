@@ -1,8 +1,11 @@
 import { properties, runInTenantContext, TenantContextRequiredError } from "@propai/db";
 import {
+  createPropertySchema,
   propertyCreateResponseSchema,
   propertyListQuerySchema,
+  updatePropertySchema,
   type PropertyListResponse,
+  type UpdatePropertyInput,
 } from "@propai/shared";
 import {
   and,
@@ -25,11 +28,14 @@ import { mapPropertyRow, type PropertyRow } from "../../lib/map-property-row.js"
 import {
   assertPropertyAccess,
   resolveListScope,
+  type PropertyAccessResult,
 } from "../../lib/property-access.js";
 import {
   decodePropertyCursor,
   encodePropertyCursor,
 } from "../../lib/property-cursor.js";
+import { writeAuditEventSafe } from "../../lib/write-audit-event.js";
+import { MOCK_SESSION_DEFAULT_USER_ID } from "../auth/session.js";
 import { createRequirePermissionHook } from "../../plugins/require-member-role.js";
 
 const propertySelectFields = {
@@ -87,6 +93,95 @@ function requireMemberRole(request: FastifyRequest) {
   }
 
   return request.memberRole;
+}
+
+function resolveActorId(request: FastifyRequest): string | null {
+  const sessionUserId = request.session?.user.id ?? null;
+
+  if (
+    process.env.NODE_ENV === "test" &&
+    sessionUserId === MOCK_SESSION_DEFAULT_USER_ID
+  ) {
+    return null;
+  }
+
+  return sessionUserId;
+}
+
+function sendPropertyAccessFailure(
+  reply: FastifyReply,
+  access: PropertyAccessResult,
+): boolean {
+  if (access.allowed) {
+    return false;
+  }
+
+  if (access.reason === "forbidden") {
+    void reply
+      .status(403)
+      .send(apiError("Forbidden", "Insufficient permissions for this action."));
+    return true;
+  }
+
+  void reply.status(404).send(apiError("Not Found", "Property not found."));
+  return true;
+}
+
+function toOptionalNumericString(value: number | undefined): string | undefined {
+  return value !== undefined ? String(value) : undefined;
+}
+
+function buildPropertyUpdateSet(body: UpdatePropertyInput): {
+  updatedAt: Date;
+  title?: string;
+  description?: string;
+  type?: PropertyRow["type"];
+  status?: PropertyRow["status"];
+  priceUsdCents?: number;
+  rentOrSale?: PropertyRow["rentOrSale"];
+  bedrooms?: number;
+  bathrooms?: string;
+  sqFt?: number;
+  yearBuilt?: number;
+  hoaFeeUsd?: number;
+  addressLine1?: string;
+  addressLine2?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  latitude?: string;
+  longitude?: string;
+} {
+  const set = {
+    updatedAt: new Date(),
+  } as ReturnType<typeof buildPropertyUpdateSet>;
+
+  if (body.title !== undefined) set.title = body.title;
+  if (body.description !== undefined) set.description = body.description;
+  if (body.type !== undefined) set.type = body.type;
+  if (body.status !== undefined) set.status = body.status;
+  if (body.priceUsdCents !== undefined) set.priceUsdCents = body.priceUsdCents;
+  if (body.rentOrSale !== undefined) set.rentOrSale = body.rentOrSale;
+  if (body.bedrooms !== undefined) set.bedrooms = body.bedrooms;
+  if (body.bathrooms !== undefined) set.bathrooms = body.bathrooms;
+  if (body.sqFt !== undefined) set.sqFt = body.sqFt;
+  if (body.yearBuilt !== undefined) set.yearBuilt = body.yearBuilt;
+  if (body.hoaFeeUsd !== undefined) set.hoaFeeUsd = body.hoaFeeUsd;
+  if (body.addressLine1 !== undefined) set.addressLine1 = body.addressLine1;
+  if (body.addressLine2 !== undefined) set.addressLine2 = body.addressLine2;
+  if (body.city !== undefined) set.city = body.city;
+  if (body.state !== undefined) set.state = body.state;
+  if (body.zipCode !== undefined) set.zipCode = body.zipCode;
+  if (body.latitude !== undefined) set.latitude = String(body.latitude);
+  if (body.longitude !== undefined) set.longitude = String(body.longitude);
+
+  return set;
+}
+
+function listChangedFields(body: UpdatePropertyInput): string[] {
+  return (Object.keys(body) as (keyof UpdatePropertyInput)[]).filter(
+    (key) => body[key] !== undefined,
+  );
 }
 
 function buildListFilters(
@@ -224,20 +319,214 @@ export async function registerPropertiesRoutes(
       const row = rows[0];
       const access = assertPropertyAccess(role, userId, row);
 
-      if (!access.allowed) {
-        if (access.reason === "forbidden") {
-          return reply
-            .status(403)
-            .send(apiError("Forbidden", "Insufficient permissions for this action."));
-        }
-
-        return reply
-          .status(404)
-          .send(apiError("Not Found", "Property not found."));
+      if (sendPropertyAccessFailure(reply, access)) {
+        return;
       }
 
       return reply.status(200).send({
         property: mapPropertyRow(row),
+      });
+    },
+  );
+
+  zodApp.post(
+    "/properties",
+    {
+      schema: {
+        body: createPropertySchema,
+        response: {
+          201: propertyCreateResponseSchema,
+        },
+      },
+      preHandler: requirePropertiesWrite,
+    },
+    async (request, reply: FastifyReply) => {
+      const tenantId = requireTenantId(request);
+      const userId = requireSessionUserId(request);
+      const body = createPropertySchema.parse(request.body);
+
+      const rows = await runInTenantContext(tenantId, async (tx) => {
+        return tx
+          .insert(properties)
+          .values({
+            tenantId,
+            createdBy: userId,
+            title: body.title,
+            description: body.description,
+            type: body.type,
+            status: body.status ?? "draft",
+            priceUsdCents: body.priceUsdCents,
+            rentOrSale: body.rentOrSale,
+            bedrooms: body.bedrooms,
+            bathrooms: body.bathrooms,
+            sqFt: body.sqFt,
+            yearBuilt: body.yearBuilt,
+            hoaFeeUsd: body.hoaFeeUsd,
+            addressLine1: body.addressLine1,
+            addressLine2: body.addressLine2,
+            city: body.city,
+            state: body.state,
+            zipCode: body.zipCode,
+            latitude: toOptionalNumericString(body.latitude),
+            longitude: toOptionalNumericString(body.longitude),
+          })
+          .returning(propertySelectFields);
+      });
+
+      const created = rows[0];
+
+      if (!created) {
+        return reply
+          .status(500)
+          .send(apiError("Internal Server Error", "Failed to create property."));
+      }
+
+      await writeAuditEventSafe({
+        tenantId,
+        actorId: resolveActorId(request),
+        action: "property.created",
+        entityType: "property",
+        entityId: created.id,
+        metadata: { title: created.title, status: created.status },
+        ip: request.ip,
+      });
+
+      return reply.status(201).send({
+        property: mapPropertyRow(created),
+      });
+    },
+  );
+
+  zodApp.patch(
+    "/properties/:id",
+    {
+      schema: {
+        params: propertyIdParamsSchema,
+        body: updatePropertySchema,
+        response: {
+          200: propertyCreateResponseSchema,
+        },
+      },
+      preHandler: requirePropertiesWrite,
+    },
+    async (request, reply: FastifyReply) => {
+      const tenantId = requireTenantId(request);
+      const { id } = propertyIdParamsSchema.parse(request.params);
+      const body = updatePropertySchema.parse(request.body);
+      const role = requireMemberRole(request);
+      const userId = requireSessionUserId(request);
+
+      const existingRows = await runInTenantContext(tenantId, async (tx) => {
+        return tx
+          .select(propertySelectFields)
+          .from(properties)
+          .where(eq(properties.id, id))
+          .limit(1);
+      });
+
+      const existing = existingRows[0];
+      const access = assertPropertyAccess(role, userId, existing);
+
+      if (sendPropertyAccessFailure(reply, access)) {
+        return;
+      }
+
+      const updatedRows = await runInTenantContext(tenantId, async (tx) => {
+        return tx
+          .update(properties)
+          .set(buildPropertyUpdateSet(body))
+          .where(eq(properties.id, id))
+          .returning(propertySelectFields);
+      });
+
+      const updated = updatedRows[0];
+
+      if (!updated) {
+        return reply
+          .status(500)
+          .send(apiError("Internal Server Error", "Failed to update property."));
+      }
+
+      await writeAuditEventSafe({
+        tenantId,
+        actorId: resolveActorId(request),
+        action: "property.updated",
+        entityType: "property",
+        entityId: updated.id,
+        metadata: { changedFields: listChangedFields(body) },
+        ip: request.ip,
+      });
+
+      return reply.status(200).send({
+        property: mapPropertyRow(updated),
+      });
+    },
+  );
+
+  zodApp.delete(
+    "/properties/:id",
+    {
+      schema: {
+        params: propertyIdParamsSchema,
+        response: {
+          200: propertyCreateResponseSchema,
+        },
+      },
+      preHandler: requirePropertiesWrite,
+    },
+    async (request, reply: FastifyReply) => {
+      const tenantId = requireTenantId(request);
+      const { id } = propertyIdParamsSchema.parse(request.params);
+      const role = requireMemberRole(request);
+      const userId = requireSessionUserId(request);
+
+      const existingRows = await runInTenantContext(tenantId, async (tx) => {
+        return tx
+          .select(propertySelectFields)
+          .from(properties)
+          .where(eq(properties.id, id))
+          .limit(1);
+      });
+
+      const existing = existingRows[0];
+      const access = assertPropertyAccess(role, userId, existing);
+
+      if (sendPropertyAccessFailure(reply, access)) {
+        return;
+      }
+
+      const now = new Date();
+      const deletedRows = await runInTenantContext(tenantId, async (tx) => {
+        return tx
+          .update(properties)
+          .set({
+            softDeletedAt: now,
+            updatedAt: now,
+          })
+          .where(eq(properties.id, id))
+          .returning(propertySelectFields);
+      });
+
+      const deleted = deletedRows[0];
+
+      if (!deleted) {
+        return reply
+          .status(500)
+          .send(apiError("Internal Server Error", "Failed to delete property."));
+      }
+
+      await writeAuditEventSafe({
+        tenantId,
+        actorId: resolveActorId(request),
+        action: "property.deleted",
+        entityType: "property",
+        entityId: deleted.id,
+        metadata: { title: deleted.title },
+        ip: request.ip,
+      });
+
+      return reply.status(200).send({
+        property: mapPropertyRow(deleted),
       });
     },
   );
