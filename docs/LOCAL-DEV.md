@@ -36,6 +36,7 @@ Optional: [GitHub CLI](https://cli.github.com/) (`gh`) for PRs — not required 
 - [ ] `curl http://localhost:3333/ready` → HTTP **200** (not 503)
 - [ ] `curl` / browser — http://localhost:3000 responds (200 or 307)
 - [ ] `pnpm dev:smoke` → all checks **PASS** (recommended)
+- [ ] `pnpm web-build-smoke` → typecheck + `@propai/web` build **PASS** (Day 19 regression)
 - [ ] Day 19 dashboard auth — see [web/dashboard-auth.md](./web/dashboard-auth.md) QA checklist
 
 **Done when:** clone → compose up → `pnpm dev` → `/health` ok.
@@ -45,6 +46,7 @@ Optional: [GitHub CLI](https://cli.github.com/) (`gh`) for PRs — not required 
 - [x] `docker-compose.yml` — Postgres 16 + Redis (+ optional `api` profile)
 - [x] `.env.example` (EN), `DATABASE_APP_URL` documented
 - [x] `pnpm dev` — `@propai/api` + `@propai/web` (use `pnpm dev:all` for marketplace)
+- [x] `@propai/shared` — compiled to `dist/` before dev (Turbo `dev` → `^build`; required by Next.js/Turbopack)
 - [x] `docs/LOCAL-DEV.md` — this guide
 - [x] `pnpm setup:local` + `pnpm dev:smoke`
 - [x] `predev` — TCP check on Postgres `:5432` before `pnpm dev`
@@ -81,14 +83,16 @@ Optional regression: `pnpm auth:poc` (Days 11–13).
 
 After `pnpm dev` (API `:3333` + web `:3000`), confirm the auth shell. Full runbook: **[web/dashboard-auth.md](./web/dashboard-auth.md)**.
 
-**Required `.env` for web auth:**
+**Required `.env` for web auth** (all four must match `.env.example` for local dev):
 
-| Variable | Local value |
-| -------- | ----------- |
-| `NEXT_PUBLIC_API_URL` | `http://localhost:3333` |
-| `API_URL` | `http://localhost:3333` |
-| `BETTER_AUTH_URL` | `http://localhost:3333` |
-| `BETTER_AUTH_SECRET` | ≥ 32 characters |
+| Variable | Local value | Common mistake |
+| -------- | ----------- | -------------- |
+| `NEXT_PUBLIC_API_URL` | `http://localhost:3333` | Missing — browser auth calls fail in dev |
+| `API_URL` | `http://localhost:3333` | — |
+| `BETTER_AUTH_URL` | `http://localhost:3333` | Set to `:3000` (dashboard) instead of API |
+| `BETTER_AUTH_SECRET` | ≥ 32 characters | Too short — regenerate with `openssl rand -base64 32` |
+
+Restart `pnpm dev` after changing any `NEXT_PUBLIC_*` or auth variable.
 
 **Manual QA (tick when validated):**
 
@@ -169,10 +173,12 @@ curl -s http://localhost:3333/ready
 | `pnpm docker:up` | Start Postgres + Redis only |
 | `pnpm docker:down` | Stop containers |
 | `pnpm db:migrate` | Apply Drizzle migrations (`DATABASE_URL` in `.env`) |
-| `pnpm dev` | Turbo — API (`:3333`) + dashboard (`:3000`) |
-| `pnpm dev:all` | API + dashboard + marketplace (`:3001`) |
+| `pnpm dev` | Turbo — builds workspace deps (`@propai/shared` → `dist/`), then API (`:3333`) + dashboard (`:3000`) |
+| `pnpm dev:all` | Same prebuild, then API + dashboard + marketplace (`:3001`) |
 | `pnpm dev:smoke` | Smoke: infra + `GET /health` + `GET /ready` (API must be running) |
 | `pnpm dev:smoke --spawn-api` | Same, but starts temporary API via `pnpm --filter @propai/api start` |
+| `pnpm build:web` | Build `@propai/shared` → `dist/` then `@propai/web` (Turbo `^build`) |
+| `pnpm web-build-smoke` | Typecheck + shared build + web build — regression guard for Day 19 hotfix |
 | `pnpm auth:poc` | Day 11 auth isolation smoke (needs Postgres + migrations) |
 
 `pnpm dev` runs a fast **predev** check (~1.5s max on Windows if Postgres is down): TCP probe on `localhost:5432`. If it fails:
@@ -182,6 +188,8 @@ Run: pnpm docker:up && pnpm db:migrate
 ```
 
 Skip when using a remote database: `SKIP_PREDEV=1 pnpm dev`.
+
+**`@propai/shared`:** Turbo runs `build` on workspace dependencies before starting dev servers. Next.js apps consume compiled `packages/shared/dist/` (not raw TypeScript). After editing shared source, restart `pnpm dev` or run `pnpm --filter @propai/shared build` in another terminal.
 
 ### VS Code / Cursor tasks
 
@@ -327,6 +335,16 @@ Wait until `docker compose ps` shows Postgres **healthy**, then run `pnpm db:mig
 ### Redis smoke fails
 
 Ensure the `propai-redis` container is running: `docker compose ps`. Run `pnpm docker:up`.
+
+### Next.js — `Can't resolve './…​.js'` from `@propai/shared`
+
+The dashboard imports compiled output from `packages/shared/dist/`. Turbo builds shared automatically when you run `pnpm dev` or `pnpm dev:all`.
+
+| Symptom | Fix |
+| ------- | --- |
+| Error on `/login` or first page using `@propai/shared` | Run `pnpm --filter @propai/shared build`, then restart `pnpm dev` |
+| After editing `packages/shared/src/**` | Re-run `pnpm --filter @propai/shared build` or restart dev (Turbo rebuilds deps on start) |
+| CI / smoke without dev | `pnpm --filter @propai/shared build && pnpm --filter @propai/web build` |
 
 ---
 

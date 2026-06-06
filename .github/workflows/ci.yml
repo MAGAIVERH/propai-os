@@ -40,6 +40,32 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+  web-build:
+    name: Web build (@propai/shared + @propai/web)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.5.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared and web
+        run: pnpm build:web
+
   # API integration tests need Postgres (required since foundation-v0.1.0).
   # See docs/BACKEND-FOUNDATION-CHECKLIST.md and docs/dev-setup.md.
   test-api:

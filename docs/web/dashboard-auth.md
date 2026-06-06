@@ -139,14 +139,15 @@ Use when the API is deployed but you run the web app locally (or staging web + s
 
 | Symptom | Likely cause | Fix |
 | ------- | ------------ | --- |
+| `/login` or `/signup` **500** — `Can't resolve '@propai/shared'` | `@propai/shared` `dist/` missing; dev started before build | Restart `pnpm dev` (Turbo runs `@propai/shared` build first). Or: `pnpm --filter @propai/shared build` |
 | Login succeeds but `/dashboard` redirects to `/login` | Middleware session fetch failed; cookies not forwarded | Confirm `API_URL` in `.env`; middleware calls `GET ${API_URL}/api/auth/get-session` with `Cookie` header |
 | CORS error in browser console | Web origin not trusted | API allows `http://localhost:3000`; add staging web URL to `TRUSTED_ORIGINS` |
 | `401` after sign-up on `/v1/organization/me` | Cookie not sent | All API fetches must use `credentials: "include"` (already in `apiFetch`) |
-| Session null / invalid cookie | `BETTER_AUTH_URL` mismatch | Must equal the URL used for auth requests (e.g. `http://localhost:3333`) |
+| Session null / invalid cookie | `BETTER_AUTH_URL` mismatch | Must equal the **API** origin (e.g. `http://localhost:3333`), **not** the dashboard (`:3000`) |
 | Sign-up `500` / DB errors | Postgres down or migrations missing | `pnpm docker:up && pnpm db:migrate` |
 | Sign-up `409` | Email or org slug taken | Use new email and organization name |
 | `403` on `/v1/organization/me` | No active organization | Use brokerage sign-up (sets `activeOrganizationId`), not plain email sign-up |
-| `NEXT_PUBLIC_API_URL is not set` (dev) | Missing env | Copy `.env.example` → `.env`; set `NEXT_PUBLIC_API_URL=http://localhost:3333` |
+| `NEXT_PUBLIC_API_URL is not set` (dev) | Missing env | Copy `.env.example` → `.env`; set `NEXT_PUBLIC_API_URL=http://localhost:3333`. Restart `pnpm dev` after editing — Next inlines `NEXT_PUBLIC_*` at dev start |
 | Missing / weak `BETTER_AUTH_SECRET` | API rejects or unstable sessions | Generate 32+ chars: `openssl rand -base64 32` |
 | Cookies blocked | Browser privacy / third-party rules | Use same-site dev setup (`localhost:3000` + `localhost:3333`); avoid mixing IP vs hostname |
 
