@@ -36,6 +36,7 @@ Optional: [GitHub CLI](https://cli.github.com/) (`gh`) for PRs — not required 
 - [ ] `curl http://localhost:3333/ready` → HTTP **200** (not 503)
 - [ ] `curl` / browser — http://localhost:3000 responds (200 or 307)
 - [ ] `pnpm dev:smoke` → all checks **PASS** (recommended)
+- [ ] Day 19 dashboard auth — see [web/dashboard-auth.md](./web/dashboard-auth.md) QA checklist
 
 **Done when:** clone → compose up → `pnpm dev` → `/health` ok.
 
@@ -73,6 +74,32 @@ pnpm dev:smoke
 ```
 
 Optional regression: `pnpm auth:poc` (Days 11–13).
+
+---
+
+## Day 19 — Dashboard auth verification
+
+After `pnpm dev` (API `:3333` + web `:3000`), confirm the auth shell. Full runbook: **[web/dashboard-auth.md](./web/dashboard-auth.md)**.
+
+**Required `.env` for web auth:**
+
+| Variable | Local value |
+| -------- | ----------- |
+| `NEXT_PUBLIC_API_URL` | `http://localhost:3333` |
+| `API_URL` | `http://localhost:3333` |
+| `BETTER_AUTH_URL` | `http://localhost:3333` |
+| `BETTER_AUTH_SECRET` | ≥ 32 characters |
+
+**Manual QA (tick when validated):**
+
+- [ ] http://localhost:3000/signup — create brokerage → lands on `/dashboard` with sidebar + org name
+- [ ] Hard refresh `/dashboard` — session persists
+- [ ] Incognito `/dashboard` → redirects to `/login`
+- [ ] Login with same credentials → `/dashboard`
+- [ ] Sign out → `/login`; protected routes blocked again
+- [ ] `/login` while authenticated → redirects to `/dashboard`
+
+**Staging API from local web:** set `NEXT_PUBLIC_API_URL` and `API_URL` to the staging API URL; add your web origin to API trusted origins. See [dashboard-auth.md — staging QA](./web/dashboard-auth.md#manual-qa--staging-api).
 
 ---
 
@@ -308,6 +335,7 @@ Ensure the `propai-redis` container is running: `docker compose ps`. Run `pnpm d
 | Doc | Topic |
 | --- | ----- |
 | [dev-setup.md](./dev-setup.md) | Editor, cloud accounts, API auth tables, CI |
+| [web/dashboard-auth.md](./web/dashboard-auth.md) | Dashboard login/signup, cookies, middleware, QA |
 | [infra/object-storage.md](./infra/object-storage.md) | R2 / MinIO private bucket, CORS, `S3_*` env |
 | [api/api-scaffold.md](./api/api-scaffold.md) | Fastify layout, probes |
 | [api/auth-flow.md](./api/auth-flow.md) | Better Auth manual flow |
