@@ -19,7 +19,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { SESSION_QUERY_KEY } from "@/hooks/use-session";
-import { AuthClientError, signUpBrokerage } from "@/lib/auth-client";
+import { signUpBrokerage } from "@/lib/auth-client";
+import { getAuthFormErrorMessage } from "@/modules/auth/lib/auth-form-error";
 import {
   brokerageSignUpSchema,
   type BrokerageSignUpInput,
@@ -52,12 +53,12 @@ export function SignUpForm() {
           router.refresh();
         }, 400);
       } catch (error) {
-        const message =
-          error instanceof AuthClientError
-            ? error.message
-            : "Unable to create your account. Please try again.";
-
-        toast.error(message);
+        toast.error(
+          getAuthFormErrorMessage(
+            error,
+            "Unable to create your account. Check that the API is running (pnpm dev) and try again.",
+          ),
+        );
       }
     });
   }

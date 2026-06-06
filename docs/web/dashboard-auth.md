@@ -84,6 +84,13 @@ Set in root `.env` (see `.env.example`). Both web and API read from the monorepo
 
 ## Manual QA — local
 
+**Dev credentials:** There is **no fixed login/password** in the repo. Create an account at http://localhost:3000/signup (or use credentials you created earlier). Optional `pnpm db:seed-dev` seeds DB rows only — **not** a Better Auth password.
+
+**If sign-up fails:**
+- **Email already registered** → use `/login` with the same email, or pick a new email.
+- **Organization slug already taken** → change the brokerage name (e.g. add your city).
+- **Generic error** → confirm API is up (`curl http://localhost:3333/health`) and `NEXT_PUBLIC_API_URL=http://localhost:3333` in `.env`; restart `pnpm dev` after editing `.env`.
+
 **Setup:**
 
 ```bash

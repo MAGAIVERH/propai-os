@@ -174,4 +174,42 @@ describe("Brokerage auth flow", () => {
 
     await app.close();
   });
+
+  it("returns 409 when email is already registered", async () => {
+    const app = await buildApp();
+    const suffix = randomUUID().slice(0, 8);
+    const email = `duplicate-${suffix}@test.propai-os.local`;
+
+    const firstResponse = await app.inject({
+      method: "POST",
+      url: "/api/auth/brokerage-sign-up",
+      payload: {
+        email,
+        password: "password123",
+        name: "First Owner",
+        organizationName: `First Brokerage ${suffix}`,
+      },
+    });
+
+    expect(firstResponse.statusCode).toBe(201);
+
+    const secondResponse = await app.inject({
+      method: "POST",
+      url: "/api/auth/brokerage-sign-up",
+      payload: {
+        email,
+        password: "password123",
+        name: "Second Owner",
+        organizationName: `Second Brokerage ${suffix}`,
+      },
+    });
+
+    expect(secondResponse.statusCode).toBe(409);
+    expect(secondResponse.json()).toMatchObject({
+      error: "Conflict",
+      message: "Email already registered.",
+    });
+
+    await app.close();
+  });
 });
