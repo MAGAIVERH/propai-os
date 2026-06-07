@@ -3,8 +3,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   assertKeyBelongsToTenant,
+  assertKeyMatchesTenantProperty,
   buildObjectKey,
   contentTypeToExtension,
+  mimeTypeMatchesExtension,
   parseObjectKey,
 } from "./object-key.js";
 
@@ -113,5 +115,44 @@ describe("assertKeyBelongsToTenant", () => {
 
   it("returns false for invalid keys", () => {
     expect(assertKeyBelongsToTenant("invalid-key", tenantId)).toBe(false);
+  });
+});
+
+describe("assertKeyMatchesTenantProperty", () => {
+  const validKey = `tenant/${tenantId}/property/${propertyId}/${fileId}.png`;
+
+  it("returns true when tenant and property match", () => {
+    expect(assertKeyMatchesTenantProperty(validKey, tenantId, propertyId)).toBe(
+      true,
+    );
+  });
+
+  it("returns false on property mismatch", () => {
+    const otherProperty = "11111111-1111-4111-8111-111111111111";
+
+    expect(
+      assertKeyMatchesTenantProperty(validKey, tenantId, otherProperty),
+    ).toBe(false);
+  });
+
+  it("returns false on tenant mismatch", () => {
+    const otherTenant = "22222222-2222-4222-8222-222222222222";
+
+    expect(
+      assertKeyMatchesTenantProperty(validKey, otherTenant, propertyId),
+    ).toBe(false);
+  });
+});
+
+describe("mimeTypeMatchesExtension", () => {
+  it("matches mime type to extension", () => {
+    expect(mimeTypeMatchesExtension("image/jpeg", "jpg")).toBe(true);
+    expect(mimeTypeMatchesExtension("image/jpeg", "jpeg")).toBe(true);
+    expect(mimeTypeMatchesExtension("image/png", "png")).toBe(true);
+  });
+
+  it("rejects mismatched mime and extension", () => {
+    expect(mimeTypeMatchesExtension("image/png", "jpg")).toBe(false);
+    expect(mimeTypeMatchesExtension("application/pdf", "jpg")).toBe(false);
   });
 });

@@ -226,7 +226,24 @@ Client GETs image bytes from `downloadUrl`.
 | 404 | Property not found / out of agent scope; invalid or cross-tenant key |
 | 503 | `S3_*` not configured |
 
-**Note:** `property_images` rows are **not** persisted yet (Day 19+ confirm flow).
+### Image confirm (Day 21)
+
+**POST** `/v1/properties/:id/images/confirm` — persist `property_images` after presigned PUT. RBAC: `properties:write`. Audit: `photo.uploaded`.
+
+**Body:**
+
+```json
+{
+  "objectKey": "tenant/{tenantId}/property/{propertyId}/{uuid}.jpg",
+  "mimeType": "image/jpeg",
+  "sizeBytes": 12345,
+  "sortOrder": 0
+}
+```
+
+**Response (201):** `{ "image": { "id", "propertyId", "storageKey", "sortOrder", "isPrimary", "createdAt" } }`
+
+Manual curl: [upload-confirm.md](./upload-confirm.md).
 
 **Collections:** folder “Day 18 — Uploads” in `propai-api.postman_collection.json` and `propai-api.insomnia.json`. Manual curl: [upload-curl.md](./upload-curl.md).
 

@@ -8,6 +8,7 @@ export const AUDIT_ACTIONS = [
   "property.created",
   "property.updated",
   "property.deleted",
+  "photo.uploaded",
 ] as const;
 
 export const auditActionSchema = z.enum(AUDIT_ACTIONS);
