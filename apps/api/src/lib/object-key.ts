@@ -13,9 +13,9 @@ export type BuildObjectKeyInput = {
   contentType: string;
 };
 
-const ALLOWED_EXTENSIONS = ["jpg", "jpeg", "png", "webp"] as const;
+const _ALLOWED_EXTENSIONS = ["jpg", "jpeg", "png", "webp"] as const;
 
-export type ObjectKeyExtension = (typeof ALLOWED_EXTENSIONS)[number];
+export type ObjectKeyExtension = (typeof _ALLOWED_EXTENSIONS)[number];
 
 const CONTENT_TYPE_TO_EXTENSION: Record<string, ObjectKeyExtension> = {
   "image/jpeg": "jpg",
@@ -31,9 +31,7 @@ function normalizeContentType(contentType: string): string {
   return contentType.toLowerCase().split(";")[0]?.trim() ?? "";
 }
 
-export function contentTypeToExtension(
-  contentType: string,
-): ObjectKeyExtension | null {
+export function contentTypeToExtension(contentType: string): ObjectKeyExtension | null {
   const normalized = normalizeContentType(contentType);
   return CONTENT_TYPE_TO_EXTENSION[normalized] ?? null;
 }

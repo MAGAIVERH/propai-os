@@ -1,4 +1,4 @@
-import { getApiUrl } from "@/lib/env";
+import { getPublicApiUrl } from "@/lib/env";
 
 export type ApiErrorBody = {
   error: string;
@@ -79,7 +79,7 @@ export async function apiFetch(
     requestHeaders.set("Content-Type", "application/json");
   }
 
-  return fetch(`${getApiUrl()}${path}`, {
+  return fetch(`${getPublicApiUrl()}${path}`, {
     ...rest,
     credentials: "include",
     headers: requestHeaders,
