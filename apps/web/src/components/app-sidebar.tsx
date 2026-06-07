@@ -1,7 +1,7 @@
 "use client";
 
 import { APP_NAME } from "@propai/shared";
-import { Building2, LayoutDashboard, Building } from "lucide-react";
+import { Building2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -17,27 +17,10 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useOrganizationQuery } from "@/hooks/use-organization";
-
-type NavItem = {
-  title: string;
-  href: string;
-  icon: typeof LayoutDashboard;
-  disabled?: boolean;
-};
-
-const NAV_ITEMS: NavItem[] = [
-  {
-    title: "Dashboard",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Properties",
-    href: "#",
-    icon: Building,
-    disabled: true,
-  },
-];
+import {
+  DASHBOARD_NAV_ITEMS,
+  isDashboardNavActive,
+} from "@/modules/dashboard/data/nav-items";
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -70,26 +53,16 @@ export function AppSidebar() {
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {NAV_ITEMS.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  {item.disabled ? (
-                    <SidebarMenuButton
-                      disabled
-                      tooltip="Coming soon"
-                      className="opacity-60"
-                    >
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </SidebarMenuButton>
-                  ) : (
-                    <SidebarMenuButton
-                      render={<Link href={item.href} />}
-                      isActive={pathname === item.href}
-                    >
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </SidebarMenuButton>
-                  )}
+              {DASHBOARD_NAV_ITEMS.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    render={<Link href={item.href} />}
+                    isActive={isDashboardNavActive(pathname, item.href)}
+                    tooltip={item.title}
+                  >
+                    <item.icon />
+                    <span>{item.title}</span>
+                  </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>

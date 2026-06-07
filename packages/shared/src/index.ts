@@ -37,6 +37,14 @@ export {
   type PresignUploadResponse,
 } from "./uploads/presign.js";
 export {
+  imageConfirmRequestSchema,
+  imageConfirmResponseSchema,
+  propertyImageResponseSchema,
+  type ImageConfirmRequest,
+  type ImageConfirmResponse,
+  type PropertyImageResponse,
+} from "./properties/image-confirm.js";
+export {
   createPropertySchema,
   PROPERTY_STATUSES,
   PROPERTY_TYPES,

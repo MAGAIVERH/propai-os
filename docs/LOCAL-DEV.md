@@ -355,6 +355,8 @@ The dashboard imports compiled output from `packages/shared/dist/`. Turbo builds
 | [dev-setup.md](./dev-setup.md) | Editor, cloud accounts, API auth tables, CI |
 | [web/dashboard-auth.md](./web/dashboard-auth.md) | Dashboard login/signup, cookies, middleware, QA |
 | [infra/object-storage.md](./infra/object-storage.md) | R2 / MinIO private bucket, CORS, `S3_*` env |
+| [api/upload-confirm.md](./api/upload-confirm.md) | Presign → PUT → confirm `property_images` (Day 21) |
+| [web/properties-module.md](./web/properties-module.md) | Dashboard properties list (Day 22) |
 | [api/api-scaffold.md](./api/api-scaffold.md) | Fastify layout, probes |
 | [api/auth-flow.md](./api/auth-flow.md) | Better Auth manual flow |
 | `.env.example` | Full variable reference |

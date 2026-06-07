@@ -27,6 +27,7 @@ export {
   member,
   organization,
   properties,
+  propertyImages,
   session,
   tenantSettings,
   tenants,

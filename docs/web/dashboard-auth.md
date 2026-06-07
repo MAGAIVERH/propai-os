@@ -69,6 +69,7 @@ Set in root `.env` (see `.env.example`). Both web and API read from the monorepo
 | `/login` | Guest | Sign in form; authenticated users → `/dashboard` |
 | `/signup` | Guest | Brokerage sign-up; authenticated users → `/dashboard` |
 | `/dashboard` | Required | Sidebar shell + org name from `GET /v1/organization/me` |
+| `/properties` | Required | Properties list from `GET /v1/properties` (Day 22) |
 
 ---
 
@@ -175,9 +176,13 @@ Use when the API is deployed but you run the web app locally (or staging web + s
 
 ---
 
+## Related modules
+
+- [properties-module.md](./properties-module.md) — Day 22 list page (`GET /v1/properties`)
+
 ## Out of scope (Day 19)
 
-- Properties list/detail UI (Day 22+)
+- Property detail, filters, and forms (Day 23+)
 - Invite accept UI
 - E2E Playwright login (optional later)
 - Next.js rewrite proxy for `/api/auth` (only if cookie issues persist)

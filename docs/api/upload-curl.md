@@ -38,8 +38,9 @@ Restart the API after setting `S3_*`.
 2. Create a property (`POST /v1/properties`)
 3. Request upload presign (`POST /v1/uploads/presign`)
 4. PUT image bytes to `uploadUrl` (direct to storage)
-5. Request download presign (`GET /v1/uploads/presign-download?key=...`)
-6. GET image from `downloadUrl` (direct from storage)
+5. Confirm upload (`POST /v1/properties/:id/images/confirm`) — see [upload-confirm.md](./upload-confirm.md)
+6. Request download presign (`GET /v1/uploads/presign-download?key=...`)
+7. GET image from `downloadUrl` (direct from storage)
 
 ---
 
@@ -213,7 +214,7 @@ Get-Item out.jpg | Select-Object Length
 
 - Presigned URLs expire after **900 seconds** (15 min) by default — set `S3_PRESIGN_EXPIRES_SECONDS` to override.
 - Upload routes require **`properties:write`** (owner, manager, agent — not viewer).
-- The API does **not** persist `property_images` rows yet (Day 19+ confirm flow).
+- After upload, call **confirm** to persist `property_images` — see [upload-confirm.md](./upload-confirm.md).
 - CORS is required for browser uploads from the dashboard; curl bypasses CORS.
 
 **Related:** [object-storage.md](../infra/object-storage.md) · [PHASE-2-DAY-18.md](../tasks/PHASE-2-DAY-18.md) · [auth-flow.md](./auth-flow.md)

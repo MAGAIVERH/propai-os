@@ -100,3 +100,46 @@ export function assertKeyBelongsToTenant(key: string, tenantId: string): boolean
 
   return parsed.tenantId === tenantId.toLowerCase();
 }
+
+export function assertKeyMatchesTenantProperty(
+  key: string,
+  tenantId: string,
+  propertyId: string,
+): boolean {
+  const parsed = parseObjectKey(key);
+
+  if (!parsed) {
+    return false;
+  }
+
+  return (
+    parsed.tenantId === tenantId.toLowerCase() &&
+    parsed.propertyId === propertyId.toLowerCase()
+  );
+}
+
+export function mimeTypeMatchesExtension(
+  mimeType: string,
+  extension: string,
+): boolean {
+  const mapped = contentTypeToExtension(mimeType);
+
+  if (!mapped) {
+    return false;
+  }
+
+  const normalizedExt = extension.toLowerCase();
+
+  if (mapped === normalizedExt) {
+    return true;
+  }
+
+  if (
+    (mapped === "jpg" && normalizedExt === "jpeg") ||
+    (mapped === "jpeg" && normalizedExt === "jpg")
+  ) {
+    return true;
+  }
+
+  return false;
+}
