@@ -1,78 +1,61 @@
 name: CI
-
 on:
   pull_request:
     branches: [main]
   push:
     branches: [main]
-
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
 jobs:
   lint-and-typecheck:
     name: Lint & typecheck
     runs-on: ubuntu-latest
     timeout-minutes: 15
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 11.5.0
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
+      - name: Build shared
+        run: pnpm --filter @propai/shared build
       - name: Lint
         run: pnpm lint
-
       - name: Typecheck
         run: pnpm typecheck
-
   web-build:
     name: Web build (@propai/shared + @propai/web)
     runs-on: ubuntu-latest
     timeout-minutes: 15
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 11.5.0
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
       - name: Build shared and web
         run: pnpm build:web
-
-  # API integration tests need Postgres (required since foundation-v0.1.0).
-  # See docs/BACKEND-FOUNDATION-CHECKLIST.md and docs/dev-setup.md.
   test-api:
     name: API tests (Postgres)
     runs-on: ubuntu-latest
     timeout-minutes: 20
-
     services:
       postgres:
         image: postgres:16
@@ -87,33 +70,28 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
     env:
       NODE_ENV: test
       DATABASE_URL: postgresql://propai:propai@localhost:5432/propai
       BETTER_AUTH_URL: http://localhost:3333
       BETTER_AUTH_SECRET: ci-better-auth-secret-minimum-32-chars
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 11.5.0
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
+      - name: Build shared
+        run: pnpm --filter @propai/shared build
       - name: Apply database migrations
         run: pnpm db:migrate
-
       - name: Run API integration tests
         run: pnpm test:api
