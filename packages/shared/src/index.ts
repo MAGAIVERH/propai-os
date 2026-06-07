@@ -39,9 +39,11 @@ export {
 export {
   imageConfirmRequestSchema,
   imageConfirmResponseSchema,
+  propertyImageListResponseSchema,
   propertyImageResponseSchema,
   type ImageConfirmRequest,
   type ImageConfirmResponse,
+  type PropertyImageListResponse,
   type PropertyImageResponse,
 } from "./properties/image-confirm.js";
 export {

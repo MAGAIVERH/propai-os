@@ -30,3 +30,11 @@ export const imageConfirmResponseSchema = z.object({
 });
 
 export type ImageConfirmResponse = z.infer<typeof imageConfirmResponseSchema>;
+
+export const propertyImageListResponseSchema = z.object({
+  items: z.array(propertyImageResponseSchema),
+});
+
+export type PropertyImageListResponse = z.infer<
+  typeof propertyImageListResponseSchema
+>;
