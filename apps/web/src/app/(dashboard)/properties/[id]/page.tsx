@@ -40,15 +40,25 @@ export default async function PropertyDetailPage({
 }: PropertyDetailPageProps) {
   const { id } = await params;
 
+  let property: Awaited<ReturnType<typeof getPropertyById>>;
+  let images: Awaited<ReturnType<typeof getPropertyImages>>;
+
   try {
-    const [property, images] = await Promise.all([
+    [property, images] = await Promise.all([
       getPropertyById(id),
       getPropertyImages(id),
     ]);
+  } catch (error) {
+    if (error instanceof ApiClientError && error.status === 404) {
+      notFound();
+    }
 
-    const addressLabel = formatPropertyAddress(property);
+    throw error;
+  }
 
-    return (
+  const addressLabel = formatPropertyAddress(property);
+
+  return (
       <div className="space-y-6">
         <ModuleHeader
           label="Module"
@@ -119,11 +129,4 @@ export default async function PropertyDetailPage({
         <PropertyDetailMedia propertyId={property.id} initialImages={images} />
       </div>
     );
-  } catch (error) {
-    if (error instanceof ApiClientError && error.status === 404) {
-      notFound();
-    }
-
-    throw error;
-  }
 }

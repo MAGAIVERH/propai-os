@@ -15,23 +15,10 @@ export default async function EditPropertyPage({
 }: EditPropertyPageProps) {
   const { id } = await params;
 
-  try {
-    const property = await getPropertyById(id);
+  let property: Awaited<ReturnType<typeof getPropertyById>>;
 
-    return (
-      <div className="space-y-6">
-        <ModuleHeader
-          label="Module"
-          title="Edit property"
-          description="Update address, square footage, price, and status."
-        />
-        <PropertyForm
-          mode="edit"
-          propertyId={property.id}
-          defaultValues={mapPropertyToFormValues(property)}
-        />
-      </div>
-    );
+  try {
+    property = await getPropertyById(id);
   } catch (error) {
     if (error instanceof ApiClientError && error.status === 404) {
       notFound();
@@ -39,4 +26,19 @@ export default async function EditPropertyPage({
 
     throw error;
   }
+
+  return (
+    <div className="space-y-6">
+      <ModuleHeader
+        label="Module"
+        title="Edit property"
+        description="Update address, square footage, price, and status."
+      />
+      <PropertyForm
+        mode="edit"
+        propertyId={property.id}
+        defaultValues={mapPropertyToFormValues(property)}
+      />
+    </div>
+  );
 }
