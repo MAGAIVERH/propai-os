@@ -1,13 +1,14 @@
 "use client";
 
 import { APP_NAME } from "@propai/shared";
-import { Building2 } from "lucide-react";
+import { Building2, LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -17,6 +18,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useOrganizationQuery } from "@/hooks/use-organization";
+import { useSignOut } from "@/hooks/use-sign-out";
 import {
   DASHBOARD_NAV_ITEMS,
   isDashboardNavActive,
@@ -25,13 +27,18 @@ import {
 export function AppSidebar() {
   const pathname = usePathname();
   const { data: organization, isPending } = useOrganizationQuery();
+  const { handleSignOut, isPending: isSigningOut } = useSignOut();
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border">
-      <SidebarHeader>
-        <SidebarMenu>
+      <SidebarHeader className="flex h-14 shrink-0 flex-row items-center border-b border-border px-3 py-0">
+        <SidebarMenu className="w-full">
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" render={<Link href="/dashboard" />}>
+            <SidebarMenuButton
+              size="lg"
+              className="h-10 rounded-xl px-2"
+              render={<Link href="/dashboard" />}
+            >
               <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/15 text-primary">
                 <Building2 className="h-4 w-4" />
               </div>
@@ -48,20 +55,23 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
+      <SidebarContent className="gap-2 px-2 py-3">
+        <SidebarGroup className="p-0">
+          <SidebarGroupLabel className="px-3 text-xs font-semibold uppercase tracking-wide">
+            Navigation
+          </SidebarGroupLabel>
+          <SidebarGroupContent className="px-1">
+            <SidebarMenu className="gap-1.5">
               {DASHBOARD_NAV_ITEMS.map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     render={<Link href={item.href} />}
                     isActive={isDashboardNavActive(pathname, item.href)}
                     tooltip={item.title}
+                    className="h-10 rounded-xl px-3 transition-colors"
                   >
-                    <item.icon />
-                    <span>{item.title}</span>
+                    <item.icon className="size-4" />
+                    <span className="font-medium">{item.title}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -69,6 +79,25 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter className="mt-auto border-t border-border p-2">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              type="button"
+              disabled={isSigningOut}
+              onClick={handleSignOut}
+              tooltip="Sign out"
+              className="h-10 rounded-xl px-3 transition-colors"
+            >
+              <LogOut className="size-4" />
+              <span className="font-medium">
+                {isSigningOut ? "Signing out…" : "Sign out"}
+              </span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }

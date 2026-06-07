@@ -1,4 +1,4 @@
-import { getPublicApiUrl } from "@/lib/env";
+import { getApiUrl, getPublicApiUrl } from "@/lib/env";
 
 export type ApiErrorBody = {
   error: string;
@@ -67,6 +67,10 @@ type ApiFetchInit = Omit<RequestInit, "credentials"> & {
   json?: unknown;
 };
 
+function getFetchBaseUrl(): string {
+  return typeof window === "undefined" ? getApiUrl() : getPublicApiUrl();
+}
+
 /** Credentialed fetch against the PropAI API (cookies for Better Auth). */
 export async function apiFetch(
   path: string,
@@ -79,7 +83,17 @@ export async function apiFetch(
     requestHeaders.set("Content-Type", "application/json");
   }
 
-  return fetch(`${getPublicApiUrl()}${path}`, {
+  if (typeof window === "undefined") {
+    const { headers: nextHeaders } = await import("next/headers");
+    const headerStore = await nextHeaders();
+    const cookie = headerStore.get("cookie");
+
+    if (cookie) {
+      requestHeaders.set("cookie", cookie);
+    }
+  }
+
+  return fetch(`${getFetchBaseUrl()}${path}`, {
     ...rest,
     credentials: "include",
     headers: requestHeaders,

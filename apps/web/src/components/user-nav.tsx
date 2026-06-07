@@ -1,23 +1,16 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
-import { LogOut } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useTransition } from "react";
-import { toast } from "sonner";
+import { ChevronDown } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ORGANIZATION_QUERY_KEY } from "@/hooks/use-organization";
-import { SESSION_QUERY_KEY, useSessionQuery } from "@/hooks/use-session";
-import { AuthClientError, signOut } from "@/lib/auth-client";
+import { useSessionQuery } from "@/hooks/use-session";
+import { cn } from "@/lib/utils";
 
 function getUserInitials(name: string | undefined, email: string): string {
   if (name) {
@@ -33,40 +26,31 @@ function getUserInitials(name: string | undefined, email: string): string {
   return email.slice(0, 2).toUpperCase();
 }
 
+type UserAvatarProps = {
+  initials: string;
+  className?: string;
+};
+
+function UserAvatar({ initials, className }: UserAvatarProps) {
+  return (
+    <span
+      className={cn(
+        "flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-semibold leading-none text-primary",
+        className,
+      )}
+      aria-hidden
+    >
+      {initials}
+    </span>
+  );
+}
+
 export function UserNav() {
-  const router = useRouter();
-  const queryClient = useQueryClient();
-  const [isPending, startTransition] = useTransition();
   const { data: session } = useSessionQuery();
 
   const user = session?.user;
   const displayName = user?.name ?? user?.email ?? "Account";
   const initials = getUserInitials(user?.name, user?.email ?? "U");
-
-  function handleSignOut() {
-    startTransition(async () => {
-      try {
-        await signOut();
-
-        await queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEY });
-        await queryClient.invalidateQueries({
-          queryKey: ORGANIZATION_QUERY_KEY,
-        });
-
-        setTimeout(() => {
-          router.push("/login");
-          router.refresh();
-        }, 400);
-      } catch (error) {
-        const message =
-          error instanceof AuthClientError
-            ? error.message
-            : "Unable to sign out. Please try again.";
-
-        toast.error(message);
-      }
-    });
-  }
 
   return (
     <DropdownMenu>
@@ -75,38 +59,32 @@ export function UserNav() {
           <Button
             type="button"
             variant="outline"
-            size="sm"
-            className="rounded-xl gap-2"
+            className="h-9 max-w-[220px] gap-0 overflow-hidden rounded-full p-0 pr-2.5"
           />
         }
       >
-        <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-primary/15 text-xs font-semibold text-primary">
-          {initials}
-        </span>
-        <span className="hidden max-w-32 truncate text-sm sm:inline">
+        <UserAvatar initials={initials} className="size-9 text-sm" />
+        <span className="hidden min-w-0 truncate px-2.5 text-sm font-medium sm:inline">
           {displayName}
         </span>
+        <ChevronDown className="hidden size-4 shrink-0 text-muted-foreground sm:inline" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56 rounded-xl">
         <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col gap-1">
-            <span className="text-sm font-medium text-foreground">
-              {displayName}
-            </span>
-            {user?.email ? (
-              <span className="text-xs text-muted-foreground">{user.email}</span>
-            ) : null}
+          <div className="flex items-center gap-3">
+            <UserAvatar initials={initials} className="size-9 text-sm" />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-foreground">
+                {displayName}
+              </p>
+              {user?.email ? (
+                <p className="truncate text-xs text-muted-foreground">
+                  {user.email}
+                </p>
+              ) : null}
+            </div>
           </div>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          disabled={isPending}
-          onClick={handleSignOut}
-          className="rounded-lg"
-        >
-          <LogOut />
-          {isPending ? "Signing out…" : "Sign out"}
-        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

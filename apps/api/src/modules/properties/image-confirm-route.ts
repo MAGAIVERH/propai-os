@@ -7,8 +7,9 @@ import {
 import {
   imageConfirmRequestSchema,
   imageConfirmResponseSchema,
+  propertyImageListResponseSchema,
 } from "@propai/shared";
-import { eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
@@ -116,6 +117,69 @@ export async function registerPropertyImageConfirmRoute(
 ): Promise<void> {
   const zodApp = app.withTypeProvider<ZodTypeProvider>();
   const requirePropertiesWrite = createRequirePermissionHook("properties:write");
+
+  zodApp.get(
+    "/properties/:id/images",
+    {
+      schema: {
+        params: propertyIdParamsSchema,
+        response: {
+          200: propertyImageListResponseSchema,
+        },
+      },
+      preHandler: requirePropertiesWrite,
+    },
+    async (request, reply: FastifyReply) => {
+      const tenantId = requireTenantId(request);
+      const userId = requireSessionUserId(request);
+      const role = requireMemberRole(request);
+      const { id: propertyId } = propertyIdParamsSchema.parse(request.params);
+
+      const existingRows = await runInTenantContext(tenantId, async (tx) => {
+        return tx
+          .select({
+            createdBy: properties.createdBy,
+            softDeletedAt: properties.softDeletedAt,
+          })
+          .from(properties)
+          .where(eq(properties.id, propertyId))
+          .limit(1);
+      });
+
+      const existing = existingRows[0];
+      const access = assertPropertyAccess(role, userId, existing);
+
+      if (sendPropertyAccessFailure(reply, access)) {
+        return;
+      }
+
+      const rows = await runInTenantContext(tenantId, async (tx) => {
+        return tx
+          .select({
+            id: propertyImages.id,
+            propertyId: propertyImages.propertyId,
+            storageKey: propertyImages.storageKey,
+            sortOrder: propertyImages.sortOrder,
+            isPrimary: propertyImages.isPrimary,
+            createdAt: propertyImages.createdAt,
+          })
+          .from(propertyImages)
+          .where(eq(propertyImages.propertyId, propertyId))
+          .orderBy(asc(propertyImages.sortOrder), asc(propertyImages.createdAt));
+      });
+
+      return reply.status(200).send({
+        items: rows.map((row) => ({
+          id: row.id,
+          propertyId: row.propertyId,
+          storageKey: row.storageKey,
+          sortOrder: row.sortOrder,
+          isPrimary: row.isPrimary,
+          createdAt: row.createdAt.toISOString(),
+        })),
+      });
+    },
+  );
 
   zodApp.post(
     "/properties/:id/images/confirm",

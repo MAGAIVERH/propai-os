@@ -17,16 +17,16 @@ export function PropertiesTableSkeleton() {
         <TableHeader>
           <TableRow className="border-b border-border bg-muted hover:bg-muted">
             <TableHead className="px-6 py-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Imóvel
+              Property
             </TableHead>
             <TableHead className="px-6 py-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Localização
+              Address
             </TableHead>
             <TableHead className="px-6 py-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Tipo
+              Location
             </TableHead>
             <TableHead className="px-6 py-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Preço
+              Price
             </TableHead>
             <TableHead className="px-6 py-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Status
@@ -43,7 +43,7 @@ export function PropertiesTableSkeleton() {
                 <Skeleton className="h-4 w-28" />
               </TableCell>
               <TableCell className="px-6 py-4">
-                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-32" />
               </TableCell>
               <TableCell className="px-6 py-4">
                 <Skeleton className="h-4 w-20" />

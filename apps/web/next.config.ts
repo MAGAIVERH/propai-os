@@ -48,6 +48,10 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_API_URL: monorepoEnv.NEXT_PUBLIC_API_URL || "http://localhost:3333",
     NEXT_PUBLIC_APP_URL: monorepoEnv.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+    NEXT_PUBLIC_MAP_PROVIDER: monorepoEnv.NEXT_PUBLIC_MAP_PROVIDER || "",
+    NEXT_PUBLIC_MAPBOX_TOKEN: monorepoEnv.NEXT_PUBLIC_MAPBOX_TOKEN || "",
+    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY:
+      monorepoEnv.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
   },
 };
 
