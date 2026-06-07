@@ -1,4 +1,5 @@
-import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+
 import {
   Table,
   TableBody,
@@ -7,26 +8,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { PropertyStatusBadge } from "@/modules/properties/components/property-status-badge";
 import type { PropertyListItem } from "@/modules/properties/types/property";
-import type { PropertyStatus } from "@propai/shared";
 
 type PropertiesTableProps = {
   items: PropertyListItem[];
 };
-
-function getStatusBadgeVariant(
-  status: PropertyStatus,
-): "default" | "secondary" | "outline" {
-  if (status === "active") {
-    return "default";
-  }
-
-  if (status === "draft") {
-    return "secondary";
-  }
-
-  return "outline";
-}
 
 export function PropertiesTable({ items }: PropertiesTableProps) {
   return (
@@ -38,10 +25,10 @@ export function PropertiesTable({ items }: PropertiesTableProps) {
               Imóvel
             </TableHead>
             <TableHead className="px-6 py-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Localização
+              Endereço
             </TableHead>
             <TableHead className="px-6 py-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Tipo
+              Localização
             </TableHead>
             <TableHead className="px-6 py-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Preço
@@ -55,27 +42,30 @@ export function PropertiesTable({ items }: PropertiesTableProps) {
           {items.map((property) => (
             <TableRow key={property.id} className="border-border">
               <TableCell className="px-6 py-4">
-                <div className="space-y-1">
-                  <p className="font-medium text-foreground">{property.title}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {property.rentOrSaleLabel} · {property.bedrooms} quartos ·{" "}
-                    {property.bathrooms} banh. · {property.sqFt.toLocaleString("en-US")} sq ft
-                  </p>
-                </div>
+                <Link
+                  href={`/properties/${property.id}`}
+                  className="font-medium text-foreground hover:text-primary"
+                >
+                  {property.title}
+                </Link>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {property.typeLabel} · {property.rentOrSaleLabel}
+                </p>
+              </TableCell>
+              <TableCell className="px-6 py-4 text-muted-foreground">
+                {property.addressLine1}
               </TableCell>
               <TableCell className="px-6 py-4 text-muted-foreground">
                 {property.city}, {property.state}
-              </TableCell>
-              <TableCell className="px-6 py-4 text-muted-foreground">
-                {property.typeLabel}
               </TableCell>
               <TableCell className="px-6 py-4 font-medium text-foreground">
                 {property.priceDisplay}
               </TableCell>
               <TableCell className="px-6 py-4">
-                <Badge variant={getStatusBadgeVariant(property.status)}>
-                  {property.statusLabel}
-                </Badge>
+                <PropertyStatusBadge
+                  status={property.status}
+                  label={property.statusLabel}
+                />
               </TableCell>
             </TableRow>
           ))}

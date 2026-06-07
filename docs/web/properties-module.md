@@ -1,10 +1,10 @@
-# Properties module — `apps/web` (Day 22)
+# Properties module — `apps/web` (Day 22–23)
 
-Dashboard list page wired to `GET /v1/properties` via TanStack Query. Replaces the Day 20 empty-state placeholder with loading, error, empty, and table states.
+Dashboard list page wired to `GET /v1/properties` via TanStack Query. Day 22 added the module shell; Day 23 adds status filters, metrics cards, and responsive table/cards layout.
 
 **Prerequisite:** Day 19 dashboard auth + Day 17 properties API (`pnpm test:api`).
 
-**Related:** [dashboard-auth.md](./dashboard-auth.md) · [tasks/PHASE-2-DAY-22.md](../tasks/PHASE-2-DAY-22.md)
+**Related:** [dashboard-auth.md](./dashboard-auth.md) · [tasks/PHASE-2-DAY-22.md](../tasks/PHASE-2-DAY-22.md) · [tasks/PHASE-2-DAY-23.md](../tasks/PHASE-2-DAY-23.md)
 
 ---
 
@@ -13,19 +13,20 @@ Dashboard list page wired to `GET /v1/properties` via TanStack Query. Replaces t
 | Layer | Path | Role |
 | ----- | ---- | ---- |
 | Types | `apps/web/src/modules/properties/types/property.ts` | `PropertyListItem` with `priceDisplay` and PT labels |
-| Schemas | `apps/web/src/modules/properties/schemas/property-list.ts` | Re-exports `propertyListQuerySchema` from `@propai/shared` (filters in Day 23+) |
+| Schemas | `apps/web/src/modules/properties/schemas/` | `property-list.ts` (API query) · `list-filters.ts` (URL `?status=` filter) |
 | Query | `apps/web/src/modules/properties/queries/get-properties.ts` | `getProperties()` — `apiFetch` + Zod parse + cents → display |
 | Hook | `apps/web/src/modules/properties/hooks/use-properties.ts` | `usePropertiesQuery` with stable `PROPERTIES_QUERY_KEY` |
 | UI | `apps/web/src/modules/properties/components/` | Table, skeleton, page content |
-| Page | `apps/web/src/app/(dashboard)/properties/page.tsx` | Renders `PropertiesPageContent` |
+| Page | `apps/web/src/app/(dashboard)/properties/page.tsx` | Server Component — validates `searchParams`, passes filters to client |
+| Detail stub | `apps/web/src/app/(dashboard)/properties/[id]/page.tsx` | Placeholder until Day 24+ |
 
 Data flow:
 
-1. Client component calls `usePropertiesQuery()`.
-2. `getProperties()` fetches `GET /v1/properties` with `credentials: "include"`.
-3. Response validated with `propertyListResponseSchema` (`@propai/shared`).
-4. Each row mapped to `PropertyListItem` (`formatPriceUsdCents`, status/type labels in PT).
-5. Page shows skeleton → table or empty state; errors surface via Sonner toast.
+1. Server page parses `?status=` via `parsePropertiesListFilters`.
+2. Client calls `usePropertiesQuery` twice — unfiltered for metrics, filtered for list.
+3. `getProperties()` fetches `GET /v1/properties` with `credentials: "include"`.
+4. Response validated with `propertyListResponseSchema` (`@propai/shared`).
+5. UI: metrics row → status filter buttons → table (desktop) or cards (mobile).
 
 ---
 
@@ -57,19 +58,21 @@ curl -s -b cookies.txt -X POST "http://localhost:3333/v1/properties" \
   }'
 ```
 
-5. Reload `/properties` — table shows title, location, type, formatted price, status badge
-6. Stop API → reload page → error toast (Sonner)
+5. Reload `/properties` — metrics row, table with address/price/status, links to `/properties/[id]`
+6. Filter: http://localhost:3000/properties?status=active — list updates; metrics stay global
+7. Resize to mobile width — cards layout replaces table
+8. Stop API → reload page → error toast (Sonner)
 
 **Typecheck:** `pnpm --filter @propai/web typecheck`
 
 ---
 
-## Out of scope (Day 22)
+## Out of scope (Day 23)
 
-- Filters and pagination UI (Day 23+)
+- Pagination cursor UI
 - Create / edit forms (Day 24)
 - Photo upload gallery (Day 25)
-- Property detail page (`/properties/[id]`)
+- Full property detail page (stub only at `/properties/[id]`)
 
 ---
 

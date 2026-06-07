@@ -9,6 +9,7 @@ import type {
 export type PropertyListItem = {
   id: string;
   title: string;
+  addressLine1: string;
   city: string;
   state: string;
   type: PropertyType;

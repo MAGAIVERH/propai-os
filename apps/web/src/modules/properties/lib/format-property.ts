@@ -53,6 +53,7 @@ export function mapPropertyToListItem(property: PropertyResponse): PropertyListI
   return {
     id: property.id,
     title: property.title,
+    addressLine1: property.addressLine1,
     city: property.city,
     state: property.state,
     type: property.type,
