@@ -1,11 +1,13 @@
 "use client";
 
-import { Building } from "lucide-react";
+import { Building, Plus } from "lucide-react";
+import Link from "next/link";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
 import { EmptyState } from "@/components/empty-state";
 import { ModuleHeader } from "@/components/module-header";
+import { Button } from "@/components/ui/button";
 import { ApiClientError } from "@/lib/api-client";
 import { PropertiesList } from "@/modules/properties/components/properties-list";
 import { PropertiesMetrics } from "@/modules/properties/components/properties-metrics";
@@ -60,11 +62,20 @@ export function PropertiesPageContent({ filters }: PropertiesPageContentProps) {
 
   return (
     <div className="space-y-6">
-      <ModuleHeader
-        label="Módulo"
-        title="Imóveis"
-        description="Gerencie anúncios, fotos e detalhes dos imóveis da sua imobiliária."
-      />
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <ModuleHeader
+          label="Módulo"
+          title="Imóveis"
+          description="Gerencie anúncios, fotos e detalhes dos imóveis da sua imobiliária."
+        />
+        <Button
+          className="shrink-0 rounded-xl"
+          render={<Link href="/properties/new" />}
+        >
+          <Plus className="size-4" />
+          Novo imóvel
+        </Button>
+      </div>
 
       {!isPending && !isError && metricsData ? (
         <PropertiesMetrics metrics={metrics} />
