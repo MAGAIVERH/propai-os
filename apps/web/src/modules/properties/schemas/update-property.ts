@@ -38,6 +38,8 @@ export function mapPropertyToFormValues(property: {
   city: string;
   state: string;
   zipCode: string;
+  latitude?: number | null;
+  longitude?: number | null;
 }): CreatePropertyFormValues {
   return {
     title: property.title,
@@ -54,5 +56,7 @@ export function mapPropertyToFormValues(property: {
     city: property.city,
     state: property.state,
     zipCode: property.zipCode,
+    latitude: property.latitude ?? undefined,
+    longitude: property.longitude ?? undefined,
   };
 }

@@ -72,6 +72,16 @@ function parseNumericField(value: string): number {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function parseOptionalNumericField(value: string): number | undefined {
+  if (value.trim() === "") {
+    return undefined;
+  }
+
+  const parsed = Number(value);
+
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
 export function PropertyForm(props: PropertyFormProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -364,6 +374,64 @@ export function PropertyForm(props: PropertyFormProps) {
                       placeholder="78701"
                       className="rounded-xl"
                       {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="latitude"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Latitude (opcional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="any"
+                      inputMode="decimal"
+                      placeholder="30.2672"
+                      className="rounded-xl"
+                      name={field.name}
+                      ref={field.ref}
+                      onBlur={field.onBlur}
+                      value={field.value ?? ""}
+                      onChange={(event) => {
+                        field.onChange(
+                          parseOptionalNumericField(event.target.value),
+                        );
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="longitude"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Longitude (opcional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="any"
+                      inputMode="decimal"
+                      placeholder="-97.7431"
+                      className="rounded-xl"
+                      name={field.name}
+                      ref={field.ref}
+                      onBlur={field.onBlur}
+                      value={field.value ?? ""}
+                      onChange={(event) => {
+                        field.onChange(
+                          parseOptionalNumericField(event.target.value),
+                        );
+                      }}
                     />
                   </FormControl>
                   <FormMessage />

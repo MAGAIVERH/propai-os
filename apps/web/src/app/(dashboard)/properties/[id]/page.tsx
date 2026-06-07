@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { ModuleHeader } from "@/components/module-header";
 import { Button } from "@/components/ui/button";
 import { ApiClientError } from "@/lib/api-client";
+import { PropertyDetailMedia } from "@/modules/properties/components/property-detail-media";
+import { PropertyMap } from "@/modules/properties/components/property-map";
 import { PropertyStatusBadge } from "@/modules/properties/components/property-status-badge";
 import {
   formatPriceUsdCents,
@@ -12,10 +14,26 @@ import {
   getRentOrSaleLabel,
 } from "@/modules/properties/lib/format-property";
 import { getPropertyById } from "@/modules/properties/queries/get-property-by-id";
+import { getPropertyImages } from "@/modules/properties/queries/get-property-images";
 
 type PropertyDetailPageProps = {
   params: Promise<{ id: string }>;
 };
+
+function formatPropertyAddress(property: {
+  addressLine1: string;
+  addressLine2: string | null;
+  city: string;
+  state: string;
+  zipCode: string;
+}): string {
+  const line2 = property.addressLine2?.trim();
+  const street = line2
+    ? `${property.addressLine1}, ${line2}`
+    : property.addressLine1;
+
+  return `${street}, ${property.city}, ${property.state} ${property.zipCode}`;
+}
 
 export default async function PropertyDetailPage({
   params,
@@ -23,14 +41,19 @@ export default async function PropertyDetailPage({
   const { id } = await params;
 
   try {
-    const property = await getPropertyById(id);
+    const [property, images] = await Promise.all([
+      getPropertyById(id),
+      getPropertyImages(id),
+    ]);
+
+    const addressLabel = formatPropertyAddress(property);
 
     return (
       <div className="space-y-6">
         <ModuleHeader
           label="Módulo"
           title={property.title}
-          description={`${property.addressLine1}, ${property.city}, ${property.state} ${property.zipCode}`}
+          description={addressLabel}
         />
 
         <section className="rounded-2xl border border-border bg-card p-6">
@@ -62,7 +85,10 @@ export default async function PropertyDetailPage({
           ) : null}
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <Button className="rounded-xl" render={<Link href={`/properties/${property.id}/edit`} />}>
+            <Button
+              className="rounded-xl"
+              render={<Link href={`/properties/${property.id}/edit`} />}
+            >
               Editar imóvel
             </Button>
             <Button
@@ -74,6 +100,24 @@ export default async function PropertyDetailPage({
             </Button>
           </div>
         </section>
+
+        <section className="space-y-4">
+          <div>
+            <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">
+              Mapa
+            </p>
+            <h2 className="mt-1 text-lg font-semibold text-foreground">
+              Localização
+            </h2>
+          </div>
+          <PropertyMap
+            latitude={property.latitude}
+            longitude={property.longitude}
+            addressLabel={addressLabel}
+          />
+        </section>
+
+        <PropertyDetailMedia propertyId={property.id} initialImages={images} />
       </div>
     );
   } catch (error) {
