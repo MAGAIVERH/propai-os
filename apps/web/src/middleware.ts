@@ -1,8 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
 
+import { isProtectedDashboardPath } from "@/modules/dashboard/data/protected-routes";
+
 const DEFAULT_API_URL = "http://localhost:3333";
 
-const PROTECTED_PREFIX = "/dashboard";
 const AUTH_PATHS = new Set(["/login", "/signup"]);
 
 /**
@@ -72,7 +73,7 @@ function redirectTo(request: NextRequest, pathname: string): NextResponse {
 export async function middleware(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
   const isAuthenticated = await fetchHasSession(request);
-  const isProtected = pathname.startsWith(PROTECTED_PREFIX);
+  const isProtected = isProtectedDashboardPath(pathname);
   const isAuthPage = AUTH_PATHS.has(pathname);
   const isRoot = pathname === "/";
 
@@ -95,5 +96,15 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login", "/signup", "/"],
+  matcher: [
+    "/dashboard/:path*",
+    "/properties/:path*",
+    "/leads/:path*",
+    "/visits/:path*",
+    "/analytics/:path*",
+    "/settings/:path*",
+    "/login",
+    "/signup",
+    "/",
+  ],
 };

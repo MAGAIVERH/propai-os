@@ -41,11 +41,12 @@ Phase 2 delivers the **Properties** domain: schema, tenant-scoped CRUD API, obje
 | **17** | Properties CRUD API | Zod in `@propai/shared`; `GET/POST/PATCH/DELETE /v1/properties`; cursor + filters; RBAC agent scope; Insomnia collection | `pnpm test:shared && pnpm test:api` — task pack: [tasks/PHASE-2-DAY-17.md](./tasks/PHASE-2-DAY-17.md) |
 | **18** | Image upload (R2/S3 presigned) | Private bucket + CORS; `POST/GET /v1/uploads/presign*`; key `tenant/{id}/property/{id}/{uuid}.ext`; 10MB image/* | curl upload + download — task pack: [tasks/PHASE-2-DAY-18.md](./tasks/PHASE-2-DAY-18.md) |
 | **[x] 19** | Web app scaffold (dashboard) | `apps/web` auth layout, sidebar, TanStack Query, middleware, login/signup → API | [web/dashboard-auth.md](./web/dashboard-auth.md) — task pack: [tasks/PHASE-2-DAY-19.md](./tasks/PHASE-2-DAY-19.md) |
-| **20** | Property photos confirm API | Persist `property_images`; confirm after upload; audit | `pnpm test:api` |
-| **22** | Properties module shell | `src/modules/properties/` — nav entry, empty list page | `pnpm dev` — route loads |
-| **23** | Properties list UI | Table/cards, filters (status), shadcn components, tokens only | Manual UX pass |
-| **24** | Property detail + form | Create/edit with React Hook Form + Zod; Server Actions or API client per project convention | Create → list → edit flow |
-| **25** | Map + photos UI | Map component (lat/lng from property), gallery, upload via presigned URL; Phase 2 checklist doc | End-to-end demo on local Docker |
+| **20** | Dashboard layout + navigation | Full sidebar (6 sections), header, theme toggle, empty states per route | `pnpm dev` — task pack: [tasks/PHASE-2-DAY-20.md](./tasks/PHASE-2-DAY-20.md) |
+| **21** | Property photos confirm API | Persist `property_images`; confirm after upload; audit | `pnpm test:api` — task pack: [tasks/PHASE-2-DAY-21.md](./tasks/PHASE-2-DAY-21.md) |
+| **22** | Properties module shell | `src/modules/properties/` — list wired to API | `pnpm dev` — task pack: [tasks/PHASE-2-DAY-22.md](./tasks/PHASE-2-DAY-22.md) |
+| **23** | Properties list UI | Table/cards, filters (status), shadcn components, tokens only | Manual UX pass — task pack: [tasks/PHASE-2-DAY-23.md](./tasks/PHASE-2-DAY-23.md) |
+| **24** | Property detail + form | Create/edit with React Hook Form + Zod; API client mutations | Create → list → edit flow — task pack: [tasks/PHASE-2-DAY-24.md](./tasks/PHASE-2-DAY-24.md) |
+| **25** | Map + photos UI | Map component (lat/lng from property), gallery, upload via presigned URL; Phase 2 checklist doc | End-to-end demo on local Docker — task pack: [tasks/PHASE-2-DAY-25.md](./tasks/PHASE-2-DAY-25.md) |
 
 ---
 
