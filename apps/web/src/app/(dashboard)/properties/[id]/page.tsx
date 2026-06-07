@@ -51,7 +51,7 @@ export default async function PropertyDetailPage({
     return (
       <div className="space-y-6">
         <ModuleHeader
-          label="Módulo"
+          label="Module"
           title={property.title}
           description={addressLabel}
         />
@@ -60,7 +60,7 @@ export default async function PropertyDetailPage({
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">
-                Resumo
+                Summary
               </p>
               <p className="mt-2 text-2xl font-bold text-foreground">
                 {formatPriceUsdCents(property.priceUsdCents)}
@@ -68,8 +68,7 @@ export default async function PropertyDetailPage({
               <p className="mt-1 text-sm text-muted-foreground">
                 {getPropertyTypeLabel(property.type)} ·{" "}
                 {getRentOrSaleLabel(property.rentOrSale)} · {property.sqFt}{" "}
-                sq ft · {property.bedrooms} quartos · {property.bathrooms}{" "}
-                banheiros
+                sq ft · {property.bedrooms} bed · {property.bathrooms} bath
               </p>
             </div>
             <PropertyStatusBadge
@@ -89,14 +88,14 @@ export default async function PropertyDetailPage({
               className="rounded-xl"
               render={<Link href={`/properties/${property.id}/edit`} />}
             >
-              Editar imóvel
+              Edit property
             </Button>
             <Button
               variant="outline"
               className="rounded-xl"
               render={<Link href="/properties" />}
             >
-              Voltar para a lista
+              Back to list
             </Button>
           </div>
         </section>
@@ -104,10 +103,10 @@ export default async function PropertyDetailPage({
         <section className="space-y-4">
           <div>
             <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">
-              Mapa
+              Map
             </p>
             <h2 className="mt-1 text-lg font-semibold text-foreground">
-              Localização
+              Location
             </h2>
           </div>
           <PropertyMap

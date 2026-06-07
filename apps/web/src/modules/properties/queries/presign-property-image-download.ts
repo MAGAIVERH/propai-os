@@ -29,7 +29,7 @@ export async function presignPropertyImageDownload(
 
   if (!parsed.success) {
     throw new ApiClientError(
-      "Resposta inválida ao gerar URL de download da foto.",
+      "Invalid presign download response.",
       500,
       "Internal Server Error",
     );

@@ -8,8 +8,8 @@ export const createPropertyFormSchema = createPropertySchema
   .omit({ priceUsdCents: true })
   .extend({
     priceUsd: z
-      .number({ error: "Informe um preço válido." })
-      .positive("O preço deve ser maior que zero."),
+      .number({ error: "Enter a valid price." })
+      .positive("Price must be greater than zero."),
   });
 
 export type CreatePropertyFormValues = z.infer<typeof createPropertyFormSchema>;

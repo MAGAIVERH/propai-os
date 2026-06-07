@@ -35,7 +35,7 @@ function PropertyGalleryImage({ image, index }: PropertyGalleryImageProps) {
         {isError || (!isPending && !data) ? (
           <div className="flex aspect-video items-center justify-center bg-muted px-4 text-center">
             <p className="text-xs text-muted-foreground">
-              Não foi possível carregar esta foto.
+              Unable to load this photo.
             </p>
           </div>
         ) : null}
@@ -44,7 +44,7 @@ function PropertyGalleryImage({ image, index }: PropertyGalleryImageProps) {
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={data.downloadUrl}
-            alt={`Foto ${index + 1} do imóvel`}
+            alt={`Property photo ${index + 1}`}
             className="aspect-video w-full object-cover"
           />
         ) : null}
@@ -60,11 +60,9 @@ export function PropertyGallery({ images }: PropertyGalleryProps) {
         <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
           <ImageIcon className="size-4" />
         </div>
-        <p className="mt-4 text-sm font-medium text-foreground">
-          Nenhuma foto cadastrada
-        </p>
+        <p className="mt-4 text-sm font-medium text-foreground">No photos yet</p>
         <p className="mt-1 text-sm text-muted-foreground">
-          Envie a primeira imagem usando o botão acima.
+          Use the upload button above to add the first image.
         </p>
       </div>
     );

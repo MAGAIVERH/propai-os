@@ -72,7 +72,7 @@ export async function getProperties(
 
   if (!parsed.success) {
     throw new ApiClientError(
-      "Resposta inválida da listagem de imóveis.",
+      "Invalid properties list response.",
       500,
       "Internal Server Error",
     );

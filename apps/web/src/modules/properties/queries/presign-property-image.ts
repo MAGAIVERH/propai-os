@@ -27,7 +27,7 @@ export async function presignPropertyImage(
 
   if (!parsed.success) {
     throw new ApiClientError(
-      "Resposta inválida ao preparar upload da foto.",
+      "Invalid presign upload response.",
       500,
       "Internal Server Error",
     );

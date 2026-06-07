@@ -31,7 +31,7 @@ export async function confirmPropertyImage(
 
   if (!parsed.success) {
     throw new ApiClientError(
-      "Resposta inválida ao confirmar upload da foto.",
+      "Invalid image confirm response.",
       500,
       "Internal Server Error",
     );

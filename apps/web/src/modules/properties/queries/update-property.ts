@@ -28,7 +28,7 @@ export async function updateProperty(
 
   if (!parsed.success) {
     throw new ApiClientError(
-      "Resposta inválida ao atualizar imóvel.",
+      "Invalid update property response.",
       500,
       "Internal Server Error",
     );

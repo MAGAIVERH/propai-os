@@ -27,7 +27,7 @@ function MapFrame({ latitude, longitude, title, src }: MapFrameProps) {
         className="h-80 w-full border-0 bg-muted"
         loading="lazy"
         referrerPolicy="no-referrer-when-downgrade"
-        aria-label={`Mapa do imóvel em ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`}
+        aria-label={`Property map at ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`}
       />
     </div>
   );
@@ -52,7 +52,7 @@ function AddressFallback({
         <MapPin className="h-4 w-4" />
       </div>
       <div className="min-w-0 space-y-1">
-        <p className="text-sm font-medium text-foreground">Localização</p>
+        <p className="text-sm font-medium text-foreground">Location</p>
         <p className="text-sm leading-6 text-muted-foreground">{addressLabel}</p>
         {latitude !== null &&
         latitude !== undefined &&
@@ -110,7 +110,7 @@ export function PropertyMap({
     return (
       <AddressFallback
         addressLabel={addressLabel}
-        hint="Adicione latitude e longitude na edição do imóvel para exibir o mapa."
+        hint="Add latitude and longitude when editing the property to display the map."
       />
     );
   }
@@ -121,7 +121,7 @@ export function PropertyMap({
         addressLabel={addressLabel}
         latitude={latitude}
         longitude={longitude}
-        hint="Defina NEXT_PUBLIC_MAP_PROVIDER (osm, mapbox ou google) e o token correspondente para ver o mapa interativo."
+        hint="Set NEXT_PUBLIC_MAP_PROVIDER (osm, mapbox, or google) and the matching token to enable the interactive map."
       />
     );
   }
@@ -144,7 +144,7 @@ export function PropertyMap({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={embedSrc}
-          alt={`Mapa do imóvel: ${addressLabel}`}
+          alt={`Map for ${addressLabel}`}
           className="h-80 w-full object-cover"
         />
       </div>
@@ -155,7 +155,7 @@ export function PropertyMap({
     <MapFrame
       latitude={latitude}
       longitude={longitude}
-      title={`Mapa — ${addressLabel}`}
+      title={`Map — ${addressLabel}`}
       src={embedSrc}
     />
   );

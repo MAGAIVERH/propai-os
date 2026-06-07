@@ -25,7 +25,7 @@ export async function getPropertyImages(
 
   if (!parsed.success) {
     throw new ApiClientError(
-      "Resposta inválida das fotos do imóvel.",
+      "Invalid property images response.",
       500,
       "Internal Server Error",
     );

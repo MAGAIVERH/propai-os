@@ -29,7 +29,7 @@ function getPropertiesErrorMessage(error: unknown): string {
     return error.message;
   }
 
-  return "Não foi possível carregar os imóveis. Verifique se a API está em execução.";
+  return "Unable to load properties. Check that the API is running.";
 }
 
 export function PropertiesPageContent({ filters }: PropertiesPageContentProps) {
@@ -64,16 +64,16 @@ export function PropertiesPageContent({ filters }: PropertiesPageContentProps) {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <ModuleHeader
-          label="Módulo"
-          title="Imóveis"
-          description="Gerencie anúncios, fotos e detalhes dos imóveis da sua imobiliária."
+          label="Module"
+          title="Properties"
+          description="Manage listings, photos, and property details for your brokerage."
         />
         <Button
           className="shrink-0 rounded-xl"
           render={<Link href="/properties/new" />}
         >
           <Plus className="size-4" />
-          Novo imóvel
+          New property
         </Button>
       </div>
 
@@ -90,13 +90,13 @@ export function PropertiesPageContent({ filters }: PropertiesPageContentProps) {
           icon={Building}
           title={
             filters.status
-              ? "Nenhum imóvel com este status"
-              : "Nenhum imóvel cadastrado"
+              ? "No properties with this status"
+              : "No properties yet"
           }
           description={
             filters.status
-              ? "Tente outro filtro de status ou cadastre um novo anúncio."
-              : "Crie seu primeiro anúncio para começar a gerenciar inventário, fotos e preços em um só lugar."
+              ? "Try another status filter or create a new listing."
+              : "Create your first listing to manage inventory, photos, and pricing in one place."
           }
         />
       ) : null}

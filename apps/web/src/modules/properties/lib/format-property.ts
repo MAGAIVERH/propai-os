@@ -14,23 +14,23 @@ const usdFormatter = new Intl.NumberFormat("en-US", {
 });
 
 const PROPERTY_TYPE_LABELS: Record<PropertyType, string> = {
-  single_family: "Casa unifamiliar",
-  condo: "Condomínio",
+  single_family: "Single family",
+  condo: "Condo",
   townhouse: "Townhouse",
-  multi_family: "Multifamiliar",
+  multi_family: "Multi-family",
 };
 
 const PROPERTY_STATUS_LABELS: Record<PropertyStatus, string> = {
-  draft: "Rascunho",
-  active: "Ativo",
-  under_contract: "Em contrato",
-  sold: "Vendido",
-  rented: "Alugado",
+  draft: "Draft",
+  active: "Active",
+  under_contract: "Under contract",
+  sold: "Sold",
+  rented: "Rented",
 };
 
 const RENT_OR_SALE_LABELS: Record<RentOrSale, string> = {
-  sale: "Venda",
-  rent: "Aluguel",
+  sale: "For sale",
+  rent: "For rent",
 };
 
 export function formatPriceUsdCents(cents: number): string {

@@ -20,7 +20,7 @@ export async function getPropertyById(id: string): Promise<PropertyResponse> {
 
   if (!parsed.success) {
     throw new ApiClientError(
-      "Resposta inválida do imóvel.",
+      "Invalid property response.",
       500,
       "Internal Server Error",
     );

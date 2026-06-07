@@ -50,7 +50,7 @@ export function PropertiesCards({ items }: PropertiesCardsProps) {
             </p>
             <p className="text-xs text-muted-foreground">
               {property.typeLabel} · {property.rentOrSaleLabel} ·{" "}
-              {property.bedrooms} quartos · {property.bathrooms} banh.
+              {property.bedrooms} bed · {property.bathrooms} bath
             </p>
           </CardContent>
         </Card>

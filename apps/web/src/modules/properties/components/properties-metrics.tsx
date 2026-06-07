@@ -19,7 +19,7 @@ function MetricCard({ label, value, icon: Icon }: MetricCardProps) {
         <div className="space-y-1">
           <p className="text-sm text-muted-foreground">{label}</p>
           <p className="text-2xl font-bold tracking-tight text-foreground">
-            {value.toLocaleString("pt-BR")}
+            {value.toLocaleString("en-US")}
           </p>
         </div>
         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/15 text-primary">
@@ -34,9 +34,9 @@ export function PropertiesMetrics({ metrics }: PropertiesMetricsProps) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <MetricCard label="Total" value={metrics.total} icon={Building2} />
-      <MetricCard label="Ativos" value={metrics.active} icon={Home} />
-      <MetricCard label="Pendentes" value={metrics.pending} icon={Clock} />
-      <MetricCard label="Vendidos" value={metrics.sold} icon={CircleDollarSign} />
+      <MetricCard label="Active" value={metrics.active} icon={Home} />
+      <MetricCard label="Pending" value={metrics.pending} icon={Clock} />
+      <MetricCard label="Sold" value={metrics.sold} icon={CircleDollarSign} />
     </div>
   );
 }

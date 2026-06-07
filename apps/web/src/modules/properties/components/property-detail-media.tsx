@@ -25,12 +25,12 @@ export function PropertyDetailMedia({
     <section className="space-y-4 rounded-2xl border border-border bg-card p-6">
       <div>
         <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">
-          Fotos
+          Photos
         </p>
-        <h2 className="mt-1 text-lg font-semibold text-foreground">Galeria</h2>
+        <h2 className="mt-1 text-lg font-semibold text-foreground">Gallery</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Envie fotos do imóvel. O arquivo vai direto para o storage via URL
-          assinada.
+          Upload listing photos here. Files go directly to secure storage via a
+          presigned URL — this is separate from the create/edit form.
         </p>
       </div>
 

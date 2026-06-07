@@ -21,9 +21,9 @@ export default async function EditPropertyPage({
     return (
       <div className="space-y-6">
         <ModuleHeader
-          label="Módulo"
-          title="Editar imóvel"
-          description="Atualize endereço, metragem, preço e status do anúncio."
+          label="Module"
+          title="Edit property"
+          description="Update address, square footage, price, and status."
         />
         <PropertyForm
           mode="edit"

@@ -106,7 +106,7 @@ export function PropertyForm(props: PropertyFormProps) {
 
           await queryClient.invalidateQueries({ queryKey: PROPERTIES_QUERY_KEY });
 
-          toast.success("Imóvel atualizado com sucesso.");
+          toast.success("Property updated successfully.");
 
           setTimeout(() => {
             router.push(`/properties/${updated.id}`);
@@ -120,10 +120,10 @@ export function PropertyForm(props: PropertyFormProps) {
 
         await queryClient.invalidateQueries({ queryKey: PROPERTIES_QUERY_KEY });
 
-        toast.success("Imóvel cadastrado com sucesso.");
+        toast.success("Property created successfully.");
 
         setTimeout(() => {
-          router.push("/properties");
+          router.push(`/properties/${created.id}`);
           router.refresh();
         }, 400);
       } catch (error) {
@@ -131,8 +131,8 @@ export function PropertyForm(props: PropertyFormProps) {
           getPropertyFormErrorMessage(
             error,
             isEdit
-              ? "Não foi possível atualizar o imóvel. Tente novamente."
-              : "Não foi possível cadastrar o imóvel. Tente novamente.",
+              ? "Unable to update the property. Please try again."
+              : "Unable to create the property. Please try again.",
           ),
         );
       }
@@ -148,10 +148,10 @@ export function PropertyForm(props: PropertyFormProps) {
       >
         <section className="rounded-2xl border border-border bg-card p-6">
           <h2 className="text-lg font-semibold text-foreground">
-            Informações básicas
+            Basic information
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Título, tipo e finalidade do anúncio.
+            Title, type, and listing purpose.
           </p>
 
           <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -160,10 +160,10 @@ export function PropertyForm(props: PropertyFormProps) {
               name="title"
               render={({ field }) => (
                 <FormItem className="md:col-span-2">
-                  <FormLabel>Título</FormLabel>
+                  <FormLabel>Title</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Casa com vista para o lago"
+                      placeholder="Lakeview ranch home"
                       className="rounded-xl"
                       {...field}
                     />
@@ -178,7 +178,7 @@ export function PropertyForm(props: PropertyFormProps) {
               name="type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tipo</FormLabel>
+                  <FormLabel>Type</FormLabel>
                   <Select
                     value={field.value}
                     onValueChange={field.onChange}
@@ -186,7 +186,7 @@ export function PropertyForm(props: PropertyFormProps) {
                   >
                     <FormControl>
                       <SelectTrigger className="w-full rounded-xl">
-                        <SelectValue placeholder="Selecione o tipo" />
+                        <SelectValue placeholder="Select type" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -207,7 +207,7 @@ export function PropertyForm(props: PropertyFormProps) {
               name="rentOrSale"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Finalidade</FormLabel>
+                  <FormLabel>Purpose</FormLabel>
                   <Select
                     value={field.value}
                     onValueChange={field.onChange}
@@ -215,7 +215,7 @@ export function PropertyForm(props: PropertyFormProps) {
                   >
                     <FormControl>
                       <SelectTrigger className="w-full rounded-xl">
-                        <SelectValue placeholder="Venda ou aluguel" />
+                        <SelectValue placeholder="Sale or rent" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -244,7 +244,7 @@ export function PropertyForm(props: PropertyFormProps) {
                   >
                     <FormControl>
                       <SelectTrigger className="w-full rounded-xl">
-                        <SelectValue placeholder="Selecione o status" />
+                        <SelectValue placeholder="Select status" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -265,10 +265,10 @@ export function PropertyForm(props: PropertyFormProps) {
               name="description"
               render={({ field }) => (
                 <FormItem className="md:col-span-2">
-                  <FormLabel>Descrição (opcional)</FormLabel>
+                  <FormLabel>Description (optional)</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Destaques do imóvel"
+                      placeholder="Property highlights"
                       className="rounded-xl"
                       {...field}
                     />
@@ -281,9 +281,9 @@ export function PropertyForm(props: PropertyFormProps) {
         </section>
 
         <section className="rounded-2xl border border-border bg-card p-6">
-          <h2 className="text-lg font-semibold text-foreground">Endereço</h2>
+          <h2 className="text-lg font-semibold text-foreground">Address</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Localização do imóvel para listagem e busca.
+            Property location for search and map display.
           </p>
 
           <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -292,7 +292,7 @@ export function PropertyForm(props: PropertyFormProps) {
               name="addressLine1"
               render={({ field }) => (
                 <FormItem className="md:col-span-2">
-                  <FormLabel>Endereço</FormLabel>
+                  <FormLabel>Street address</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="123 Main St"
@@ -310,7 +310,7 @@ export function PropertyForm(props: PropertyFormProps) {
               name="addressLine2"
               render={({ field }) => (
                 <FormItem className="md:col-span-2">
-                  <FormLabel>Complemento (opcional)</FormLabel>
+                  <FormLabel>Unit / suite (optional)</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="Apt 4B"
@@ -328,7 +328,7 @@ export function PropertyForm(props: PropertyFormProps) {
               name="city"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Cidade</FormLabel>
+                  <FormLabel>City</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="Austin"
@@ -346,7 +346,7 @@ export function PropertyForm(props: PropertyFormProps) {
               name="state"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Estado</FormLabel>
+                  <FormLabel>State</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="TX"
@@ -368,7 +368,7 @@ export function PropertyForm(props: PropertyFormProps) {
               name="zipCode"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>CEP / ZIP</FormLabel>
+                  <FormLabel>ZIP code</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="78701"
@@ -386,7 +386,7 @@ export function PropertyForm(props: PropertyFormProps) {
               name="latitude"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Latitude (opcional)</FormLabel>
+                  <FormLabel>Latitude (optional)</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -415,7 +415,7 @@ export function PropertyForm(props: PropertyFormProps) {
               name="longitude"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Longitude (opcional)</FormLabel>
+                  <FormLabel>Longitude (optional)</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -442,9 +442,9 @@ export function PropertyForm(props: PropertyFormProps) {
         </section>
 
         <section className="rounded-2xl border border-border bg-card p-6">
-          <h2 className="text-lg font-semibold text-foreground">Detalhes</h2>
+          <h2 className="text-lg font-semibold text-foreground">Details</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Metragem, quartos, banheiros e preço em dólares (USD).
+            Square footage, beds, baths, and price in US dollars.
           </p>
 
           <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -453,7 +453,7 @@ export function PropertyForm(props: PropertyFormProps) {
               name="sqFt"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Área (sq ft)</FormLabel>
+                  <FormLabel>Square feet</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -480,7 +480,7 @@ export function PropertyForm(props: PropertyFormProps) {
               name="priceUsd"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Preço (USD)</FormLabel>
+                  <FormLabel>Price (USD)</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -508,7 +508,7 @@ export function PropertyForm(props: PropertyFormProps) {
               name="bedrooms"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Quartos</FormLabel>
+                  <FormLabel>Bedrooms</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -534,7 +534,7 @@ export function PropertyForm(props: PropertyFormProps) {
               name="bathrooms"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Banheiros</FormLabel>
+                  <FormLabel>Bathrooms</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="2.5"
@@ -557,11 +557,11 @@ export function PropertyForm(props: PropertyFormProps) {
           >
             {isPending
               ? isEdit
-                ? "Salvando…"
-                : "Cadastrando…"
+                ? "Saving…"
+                : "Creating…"
               : isEdit
-                ? "Salvar alterações"
-                : "Cadastrar imóvel"}
+                ? "Save changes"
+                : "Create property"}
           </Button>
           <Button
             type="button"
@@ -570,7 +570,7 @@ export function PropertyForm(props: PropertyFormProps) {
             disabled={isPending}
             render={<Link href={isEdit ? `/properties/${props.propertyId}` : "/properties"} />}
           >
-            Cancelar
+            Cancel
           </Button>
         </div>
       </form>

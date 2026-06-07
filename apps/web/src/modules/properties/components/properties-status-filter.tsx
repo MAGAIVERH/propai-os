@@ -32,7 +32,7 @@ export function PropertiesStatusFilter({ filters }: PropertiesStatusFilterProps)
         variant={activeStatus === undefined ? "default" : "outline"}
         onClick={() => navigateToStatus(undefined)}
       >
-        Todos
+        All
       </Button>
       {PROPERTY_STATUSES.map((status) => (
         <Button

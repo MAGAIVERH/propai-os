@@ -17,16 +17,16 @@ export function PropertiesTableSkeleton() {
         <TableHeader>
           <TableRow className="border-b border-border bg-muted hover:bg-muted">
             <TableHead className="px-6 py-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Imóvel
+              Property
             </TableHead>
             <TableHead className="px-6 py-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Endereço
+              Address
             </TableHead>
             <TableHead className="px-6 py-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Localização
+              Location
             </TableHead>
             <TableHead className="px-6 py-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Preço
+              Price
             </TableHead>
             <TableHead className="px-6 py-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Status

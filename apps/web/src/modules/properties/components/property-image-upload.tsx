@@ -44,13 +44,13 @@ export function PropertyImageUpload({
     }
 
     if (!isImageContentType(file.type)) {
-      toast.error("Selecione um arquivo de imagem (JPEG, PNG ou WebP).");
+      toast.error("Please select an image file (JPEG, PNG, or WebP).");
       return;
     }
 
     if (file.size > UPLOAD_MAX_BYTES) {
       toast.error(
-        `A imagem deve ter no máximo ${formatMaxUploadSize(UPLOAD_MAX_BYTES)}.`,
+        `Image must be ${formatMaxUploadSize(UPLOAD_MAX_BYTES)} or smaller.`,
       );
       return;
     }
@@ -83,12 +83,12 @@ export function PropertyImageUpload({
           queryKey: [...PROPERTY_IMAGES_QUERY_KEY, propertyId],
         });
 
-        toast.success("Foto enviada com sucesso.");
+        toast.success("Photo uploaded successfully.");
       } catch (error) {
         toast.error(
           getPropertyFormErrorMessage(
             error,
-            "Não foi possível enviar a foto. Verifique se o storage (MinIO/R2) está configurado.",
+            "Unable to upload photo. Check that object storage (MinIO/R2) is configured.",
           ),
         );
       } finally {
@@ -111,9 +111,9 @@ export function PropertyImageUpload({
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm font-medium text-foreground">Enviar foto</p>
+          <p className="text-sm font-medium text-foreground">Upload photo</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            JPEG, PNG ou WebP — até {formatMaxUploadSize(UPLOAD_MAX_BYTES)}.
+            JPEG, PNG, or WebP — up to {formatMaxUploadSize(UPLOAD_MAX_BYTES)}.
           </p>
         </div>
 
@@ -129,7 +129,7 @@ export function PropertyImageUpload({
           ) : (
             <ImagePlus className="size-4" />
           )}
-          {isUploading ? "Enviando…" : "Selecionar imagem"}
+          {isUploading ? "Uploading…" : "Choose image"}
         </Button>
       </div>
 
@@ -142,7 +142,7 @@ export function PropertyImageUpload({
             />
           </div>
           <p className="text-xs text-muted-foreground">
-            Enviando… {uploadProgress}%
+            Uploading… {uploadProgress}%
           </p>
         </div>
       ) : null}

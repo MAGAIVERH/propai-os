@@ -27,7 +27,7 @@ export async function createProperty(
 
   if (!parsed.success) {
     throw new ApiClientError(
-      "Resposta inválida ao criar imóvel.",
+      "Invalid create property response.",
       500,
       "Internal Server Error",
     );
