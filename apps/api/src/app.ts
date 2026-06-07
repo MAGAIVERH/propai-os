@@ -9,10 +9,13 @@ import {
 } from "./lib/logger.js";
 import { registerAuditModule } from "./modules/audit/index.js";
 import { registerHealthModule } from "./modules/health/index.js";
+import { registerPropertiesModule } from "./modules/properties/index.js";
 import { registerTenantsModule } from "./modules/tenants/index.js";
+import { registerUploadsModule } from "./modules/uploads/index.js";
 import { registerTestItemsModule } from "./modules/test-items/index.js";
 import { authPlugin } from "./plugins/auth.js";
 import { errorHandlerPlugin } from "./plugins/error-handler.js";
+import { memberRolePlugin } from "./plugins/require-member-role.js";
 import { securityPlugin } from "./plugins/security.js";
 import { tenantContextPlugin } from "./plugins/tenant-context.js";
 import { zodValidatorPlugin } from "./plugins/zod-validator.js";
@@ -46,11 +49,14 @@ export async function buildApp(
   await app.register(authPlugin, { mountAuthRoutes });
 
   await app.register(tenantContextPlugin);
+  await app.register(memberRolePlugin);
   await app.register(
     async (v1) => {
       await registerTenantsModule(v1);
       await registerTestItemsModule(v1);
       await registerAuditModule(v1);
+      await registerPropertiesModule(v1);
+      await registerUploadsModule(v1);
     },
     { prefix: "/v1" },
   );

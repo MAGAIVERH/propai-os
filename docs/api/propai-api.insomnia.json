@@ -1,0 +1,397 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-06-05T20:00:00.000Z",
+  "__export_source": "propai-os:docs/api",
+  "resources": [
+    {
+      "_id": "wrk_propai_os_api",
+      "parentId": null,
+      "modified": 1749081600000,
+      "created": 1749081600000,
+      "name": "PropAI OS API",
+      "description": "Day 12–18 — health, auth, audit logs, properties CRUD, presigned uploads. Enable cookie jar; run P1 sign-up before protected routes.",
+      "scope": "collection",
+      "_type": "workspace"
+    },
+    {
+      "_id": "env_propai_local",
+      "parentId": "wrk_propai_os_api",
+      "modified": 1749081600000,
+      "created": 1749081600000,
+      "name": "Local",
+      "data": {
+        "baseUrl": "http://localhost:3333",
+        "propertyId": "",
+        "uploadUrl": "",
+        "objectKey": "",
+        "downloadUrl": ""
+      },
+      "dataPropertyOrder": {
+        "&": ["baseUrl", "propertyId", "uploadUrl", "objectKey", "downloadUrl"]
+      },
+      "color": null,
+      "isPrivate": false,
+      "_type": "environment"
+    },
+    {
+      "_id": "fld_day17_properties",
+      "parentId": "wrk_propai_os_api",
+      "modified": 1749081600000,
+      "created": 1749081600000,
+      "name": "Day 17 — Properties",
+      "description": "Run P1 sign-up first (stores session cookie). Then POST → GET list → GET by id → PATCH → DELETE. RBAC: owner/manager see all listings; agent sees only `createdBy = self`; viewer gets 403.",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1749081600000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_prop_p1_signup",
+      "parentId": "fld_day17_properties",
+      "modified": 1749081600000,
+      "created": 1749081600000,
+      "url": "{{ _.baseUrl }}/api/auth/brokerage-sign-up",
+      "name": "P1 — Brokerage Sign-Up (owner)",
+      "description": "Creates org + owner session. Cookie is stored for subsequent requests.",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"prop-owner-manual@test.propai-os.local\",\n  \"password\": \"password123\",\n  \"name\": \"Property Owner\",\n  \"organizationName\": \"Austin Brokerage Manual\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json",
+          "id": "pair_prop_signup_ct"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1749081599000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_prop_p2_create",
+      "parentId": "fld_day17_properties",
+      "modified": 1749081600000,
+      "created": 1749081600000,
+      "url": "{{ _.baseUrl }}/v1/properties",
+      "name": "P2 — Create Property",
+      "description": "201 + `{ property }`. Sets `createdBy` from session. Copy `property.id` to env `propertyId` for P4–P6.",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"title\": \"Austin Ranch Home\",\n  \"description\": \"Spacious single-family near downtown.\",\n  \"type\": \"single_family\",\n  \"status\": \"active\",\n  \"priceUsdCents\": 45000000,\n  \"rentOrSale\": \"sale\",\n  \"bedrooms\": 3,\n  \"bathrooms\": \"2.5\",\n  \"sqFt\": 2100,\n  \"yearBuilt\": 2015,\n  \"hoaFeeUsd\": 250,\n  \"addressLine1\": \"123 Congress Ave\",\n  \"city\": \"Austin\",\n  \"state\": \"TX\",\n  \"zipCode\": \"78701\",\n  \"latitude\": 30.2672,\n  \"longitude\": -97.7431\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json",
+          "id": "pair_prop_create_ct"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1749081598000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_prop_p3_list_filtered",
+      "parentId": "fld_day17_properties",
+      "modified": 1749081600000,
+      "created": 1749081600000,
+      "url": "{{ _.baseUrl }}/v1/properties",
+      "name": "P3 — List Properties (filtered)",
+      "description": "Cursor pagination + filters. Agent scope: only rows where `createdBy` = session user.",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "status",
+          "value": "active",
+          "description": "draft | active | under_contract | sold | rented",
+          "id": "pair_prop_list_status"
+        },
+        {
+          "name": "state",
+          "value": "TX",
+          "description": "2-letter US state code",
+          "id": "pair_prop_list_state"
+        },
+        {
+          "name": "minPriceUsdCents",
+          "value": "10000000",
+          "description": "Inclusive minimum price in cents ($100,000)",
+          "id": "pair_prop_list_min_price"
+        },
+        {
+          "name": "limit",
+          "value": "20",
+          "description": "1–100, default 20",
+          "id": "pair_prop_list_limit"
+        },
+        {
+          "name": "cursor",
+          "value": "",
+          "description": "Optional: `createdAt|id` from previous page `nextCursor`",
+          "id": "pair_prop_list_cursor",
+          "disabled": true
+        },
+        {
+          "name": "type",
+          "value": "single_family",
+          "description": "single_family | condo | townhouse | multi_family",
+          "id": "pair_prop_list_type",
+          "disabled": true
+        },
+        {
+          "name": "city",
+          "value": "Austin",
+          "description": "Exact match (case-insensitive)",
+          "id": "pair_prop_list_city",
+          "disabled": true
+        },
+        {
+          "name": "maxPriceUsdCents",
+          "value": "",
+          "description": "Inclusive maximum price in cents",
+          "id": "pair_prop_list_max_price",
+          "disabled": true
+        }
+      ],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1749081597000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_prop_p4_get_by_id",
+      "parentId": "fld_day17_properties",
+      "modified": 1749081600000,
+      "created": 1749081600000,
+      "url": "{{ _.baseUrl }}/v1/properties/{{ _.propertyId }}",
+      "name": "P4 — Get Property by ID",
+      "description": "200 + `{ property }`. Agent: 404 if not creator. Cross-tenant: 404.",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1749081596000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_prop_p5_patch",
+      "parentId": "fld_day17_properties",
+      "modified": 1749081600000,
+      "created": 1749081600000,
+      "url": "{{ _.baseUrl }}/v1/properties/{{ _.propertyId }}",
+      "name": "P5 — Update Property",
+      "description": "Partial update. Agent can only PATCH own listings (404 otherwise).",
+      "method": "PATCH",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"title\": \"Austin Ranch Home — Updated\",\n  \"priceUsdCents\": 47500000,\n  \"status\": \"under_contract\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json",
+          "id": "pair_prop_patch_ct"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1749081595000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_prop_p6_delete",
+      "parentId": "fld_day17_properties",
+      "modified": 1749081600000,
+      "created": 1749081600000,
+      "url": "{{ _.baseUrl }}/v1/properties/{{ _.propertyId }}",
+      "name": "P6 — Delete Property (soft)",
+      "description": "Sets `softDeletedAt`; listing excluded from default GET list. Returns 200 + `{ property }`.",
+      "method": "DELETE",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1749081594000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "fld_day18_uploads",
+      "parentId": "wrk_propai_os_api",
+      "modified": 1749168000000,
+      "created": 1749168000000,
+      "name": "Day 18 — Uploads",
+      "description": "Presigned photo upload/download. Prerequisite: S3_* env + MinIO or R2. Run Day 17 P1–P2 first (propertyId + cookie). Copy uploadUrl/objectKey/downloadUrl from responses into env for U2–U4.",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1749168000000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_upload_u1_presign",
+      "parentId": "fld_day18_uploads",
+      "modified": 1749168000000,
+      "created": 1749168000000,
+      "url": "{{ _.baseUrl }}/v1/uploads/presign",
+      "name": "U1 — Presign Upload",
+      "description": "200 + `{ uploadUrl, key, expiresAt, headers }`. Copy `uploadUrl` and `key` to env. Requires `propertyId` from Day 17 P2.",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"propertyId\": \"{{ _.propertyId }}\",\n  \"contentType\": \"image/jpeg\",\n  \"contentLength\": 12345\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json",
+          "id": "pair_upload_presign_ct"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1749167999000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_upload_u2_put_storage",
+      "parentId": "fld_day18_uploads",
+      "modified": 1749168000000,
+      "created": 1749168000000,
+      "url": "{{ _.uploadUrl }}",
+      "name": "U2 — PUT Image to Storage",
+      "description": "Direct PUT to presigned uploadUrl (MinIO/R2). Body: pick a local JPEG file. Header Content-Type must match U1 (`image/jpeg`). Expect 200/204.",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/octet-stream",
+        "fileName": "photo.jpg"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "image/jpeg",
+          "id": "pair_upload_put_ct"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1749167998000,
+      "isPrivate": false,
+      "settingStoreCookies": false,
+      "settingSendCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_upload_u3_presign_download",
+      "parentId": "fld_day18_uploads",
+      "modified": 1749168000000,
+      "created": 1749168000000,
+      "url": "{{ _.baseUrl }}/v1/uploads/presign-download",
+      "name": "U3 — Presign Download",
+      "description": "200 + `{ downloadUrl, expiresAt }`. Query `key` = objectKey from U1. Copy downloadUrl to env for U4.",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "key",
+          "value": "{{ _.objectKey }}",
+          "description": "Full object key from U1 presign response",
+          "id": "pair_upload_download_key"
+        }
+      ],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1749167997000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_upload_u4_get_storage",
+      "parentId": "fld_day18_uploads",
+      "modified": 1749168000000,
+      "created": 1749168000000,
+      "url": "{{ _.downloadUrl }}",
+      "name": "U4 — GET Image from Storage",
+      "description": "Direct GET from presigned downloadUrl (U3). Save response body as file; should match U2 upload bytes.",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1749167996000,
+      "isPrivate": false,
+      "settingStoreCookies": false,
+      "settingSendCookies": false,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    }
+  ]
+}

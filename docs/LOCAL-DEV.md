@@ -36,6 +36,8 @@ Optional: [GitHub CLI](https://cli.github.com/) (`gh`) for PRs — not required 
 - [ ] `curl http://localhost:3333/ready` → HTTP **200** (not 503)
 - [ ] `curl` / browser — http://localhost:3000 responds (200 or 307)
 - [ ] `pnpm dev:smoke` → all checks **PASS** (recommended)
+- [ ] `pnpm web-build-smoke` → typecheck + `@propai/web` build **PASS** (Day 19 regression)
+- [ ] Day 19 dashboard auth — see [web/dashboard-auth.md](./web/dashboard-auth.md) QA checklist
 
 **Done when:** clone → compose up → `pnpm dev` → `/health` ok.
 
@@ -44,6 +46,7 @@ Optional: [GitHub CLI](https://cli.github.com/) (`gh`) for PRs — not required 
 - [x] `docker-compose.yml` — Postgres 16 + Redis (+ optional `api` profile)
 - [x] `.env.example` (EN), `DATABASE_APP_URL` documented
 - [x] `pnpm dev` — `@propai/api` + `@propai/web` (use `pnpm dev:all` for marketplace)
+- [x] `@propai/shared` — compiled to `dist/` before dev (Turbo `dev` → `^build`; required by Next.js/Turbopack)
 - [x] `docs/LOCAL-DEV.md` — this guide
 - [x] `pnpm setup:local` + `pnpm dev:smoke`
 - [x] `predev` — TCP check on Postgres `:5432` before `pnpm dev`
@@ -73,6 +76,34 @@ pnpm dev:smoke
 ```
 
 Optional regression: `pnpm auth:poc` (Days 11–13).
+
+---
+
+## Day 19 — Dashboard auth verification
+
+After `pnpm dev` (API `:3333` + web `:3000`), confirm the auth shell. Full runbook: **[web/dashboard-auth.md](./web/dashboard-auth.md)**.
+
+**Required `.env` for web auth** (all four must match `.env.example` for local dev):
+
+| Variable | Local value | Common mistake |
+| -------- | ----------- | -------------- |
+| `NEXT_PUBLIC_API_URL` | `http://localhost:3333` | Missing — browser auth calls fail in dev |
+| `API_URL` | `http://localhost:3333` | — |
+| `BETTER_AUTH_URL` | `http://localhost:3333` | Set to `:3000` (dashboard) instead of API |
+| `BETTER_AUTH_SECRET` | ≥ 32 characters | Too short — regenerate with `openssl rand -base64 32` |
+
+Restart `pnpm dev` after changing any `NEXT_PUBLIC_*` or auth variable.
+
+**Manual QA (tick when validated):**
+
+- [ ] http://localhost:3000/signup — create brokerage → lands on `/dashboard` with sidebar + org name
+- [ ] Hard refresh `/dashboard` — session persists
+- [ ] Incognito `/dashboard` → redirects to `/login`
+- [ ] Login with same credentials → `/dashboard`
+- [ ] Sign out → `/login`; protected routes blocked again
+- [ ] `/login` while authenticated → redirects to `/dashboard`
+
+**Staging API from local web:** set `NEXT_PUBLIC_API_URL` and `API_URL` to the staging API URL; add your web origin to API trusted origins. See [dashboard-auth.md — staging QA](./web/dashboard-auth.md#manual-qa--staging-api).
 
 ---
 
@@ -142,10 +173,12 @@ curl -s http://localhost:3333/ready
 | `pnpm docker:up` | Start Postgres + Redis only |
 | `pnpm docker:down` | Stop containers |
 | `pnpm db:migrate` | Apply Drizzle migrations (`DATABASE_URL` in `.env`) |
-| `pnpm dev` | Turbo — API (`:3333`) + dashboard (`:3000`) |
-| `pnpm dev:all` | API + dashboard + marketplace (`:3001`) |
+| `pnpm dev` | Turbo — builds workspace deps (`@propai/shared` → `dist/`), then API (`:3333`) + dashboard (`:3000`) |
+| `pnpm dev:all` | Same prebuild, then API + dashboard + marketplace (`:3001`) |
 | `pnpm dev:smoke` | Smoke: infra + `GET /health` + `GET /ready` (API must be running) |
 | `pnpm dev:smoke --spawn-api` | Same, but starts temporary API via `pnpm --filter @propai/api start` |
+| `pnpm build:web` | Build `@propai/shared` → `dist/` then `@propai/web` (Turbo `^build`) |
+| `pnpm web-build-smoke` | Typecheck + shared build + web build — regression guard for Day 19 hotfix |
 | `pnpm auth:poc` | Day 11 auth isolation smoke (needs Postgres + migrations) |
 
 `pnpm dev` runs a fast **predev** check (~1.5s max on Windows if Postgres is down): TCP probe on `localhost:5432`. If it fails:
@@ -155,6 +188,8 @@ Run: pnpm docker:up && pnpm db:migrate
 ```
 
 Skip when using a remote database: `SKIP_PREDEV=1 pnpm dev`.
+
+**`@propai/shared`:** Turbo runs `build` on workspace dependencies before starting dev servers. Next.js apps consume compiled `packages/shared/dist/` (not raw TypeScript). After editing shared source, restart `pnpm dev` or run `pnpm --filter @propai/shared build` in another terminal.
 
 ### VS Code / Cursor tasks
 
@@ -176,11 +211,31 @@ Copy from `.env.example`. Minimum for daily dev:
 | `REDIS_URL` | `redis://localhost:6379` |
 | `BETTER_AUTH_SECRET` | Session signing — **min 32 chars** |
 | `BETTER_AUTH_URL` | `http://localhost:3333` (must match API origin) |
-| `API_URL` | Web → API (`http://localhost:3333`) |
+| `API_URL` | Server/middleware → API (`http://localhost:3333`) |
+| `NEXT_PUBLIC_API_URL` | Browser fetch → API (`http://localhost:3333`) |
 | `NEXT_PUBLIC_APP_URL` | `http://localhost:3000` |
 | `PORT` / `HOST` | API bind (`3333` / `0.0.0.0`) |
 
 Cloud placeholders (Neon, Upstash, R2, Stripe, etc.) can stay empty for local CRM/API work.
+
+### Object storage (optional — Day 18+ uploads)
+
+Property photo uploads use a **private** S3-compatible bucket (R2 in cloud, MinIO locally). Leave `S3_*` empty until you work on upload features — the API returns **503** when storage is unset.
+
+**Full runbook:** [infra/object-storage.md](./infra/object-storage.md)
+
+| Variable | Local MinIO (`--profile storage`) |
+| -------- | --------------------------------- |
+| `S3_ENDPOINT` | `http://localhost:9000` |
+| `S3_REGION` | `us-east-1` |
+| `S3_BUCKET` | `propai-uploads` |
+| `S3_ACCESS_KEY_ID` | `minioadmin` |
+| `S3_SECRET_ACCESS_KEY` | `minioadmin` |
+| `S3_PRESIGN_EXPIRES_SECONDS` | `900` (optional) |
+
+```bash
+docker compose --profile storage up -d   # MinIO :9000 (API) / :9001 (console)
+```
 
 ---
 
@@ -193,10 +248,12 @@ docker compose up -d
 # or: pnpm docker:up
 ```
 
-| Service | Host port | Health |
-| ------- | --------- | ------ |
-| PostgreSQL 16 | 5432 | `pg_isready` |
-| Redis 7 | 6379 | `redis-cli ping` |
+| Service | Host port | Health | Profile |
+| ------- | --------- | ------ | ------- |
+| PostgreSQL 16 | 5432 | `pg_isready` | default |
+| Redis 7 | 6379 | `redis-cli ping` | default |
+| MinIO (S3 API) | 9000 | HTTP `/minio/health/live` | `storage` |
+| MinIO Console | 9001 | — | `storage` |
 
 On a **brand-new Postgres volume**, `docker/postgres/init/01-roles.sql` creates the `propai_app` login role before you run migrations. Schemas, tables, grants, and RLS still require `pnpm db:migrate` (Drizzle migrations, including `0002_propai_app_role.sql`).
 
@@ -207,6 +264,14 @@ docker compose --profile api up -d --build
 ```
 
 Inside the `api` profile, use hostnames `postgres` and `redis` in `.env` (documented in `.env.example`).
+
+Optional MinIO (local uploads — Day 18):
+
+```bash
+docker compose --profile storage up -d
+```
+
+Bucket `propai-uploads` is created automatically (private + CORS for `http://localhost:3000`). Console: http://localhost:9001 (`minioadmin` / `minioadmin`).
 
 ---
 
@@ -248,6 +313,7 @@ Or use `pnpm dev:smoke --spawn-api` after `pnpm setup:local` (no second terminal
 | ----- | -------------------- |
 | `BETTER_AUTH_URL` | `http://localhost:3333` |
 | `API_URL` | `http://localhost:3333` |
+| `NEXT_PUBLIC_API_URL` | `http://localhost:3333` |
 | `NEXT_PUBLIC_APP_URL` | `http://localhost:3000` |
 
 Better Auth validates the request **Origin** against the API base URL. Do not point the dashboard at a different host/port than configured in `.env` without updating these variables.
@@ -270,6 +336,16 @@ Wait until `docker compose ps` shows Postgres **healthy**, then run `pnpm db:mig
 
 Ensure the `propai-redis` container is running: `docker compose ps`. Run `pnpm docker:up`.
 
+### Next.js — `Can't resolve './…​.js'` from `@propai/shared`
+
+The dashboard imports compiled output from `packages/shared/dist/`. Turbo builds shared automatically when you run `pnpm dev` or `pnpm dev:all`.
+
+| Symptom | Fix |
+| ------- | --- |
+| Error on `/login` or first page using `@propai/shared` | Run `pnpm --filter @propai/shared build`, then restart `pnpm dev` |
+| After editing `packages/shared/src/**` | Re-run `pnpm --filter @propai/shared build` or restart dev (Turbo rebuilds deps on start) |
+| CI / smoke without dev | `pnpm --filter @propai/shared build && pnpm --filter @propai/web build` |
+
 ---
 
 ## Related docs
@@ -277,6 +353,8 @@ Ensure the `propai-redis` container is running: `docker compose ps`. Run `pnpm d
 | Doc | Topic |
 | --- | ----- |
 | [dev-setup.md](./dev-setup.md) | Editor, cloud accounts, API auth tables, CI |
+| [web/dashboard-auth.md](./web/dashboard-auth.md) | Dashboard login/signup, cookies, middleware, QA |
+| [infra/object-storage.md](./infra/object-storage.md) | R2 / MinIO private bucket, CORS, `S3_*` env |
 | [api/api-scaffold.md](./api/api-scaffold.md) | Fastify layout, probes |
 | [api/auth-flow.md](./api/auth-flow.md) | Better Auth manual flow |
 | `.env.example` | Full variable reference |

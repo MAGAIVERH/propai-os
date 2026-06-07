@@ -1,11 +1,32 @@
 type AuthHttpError = {
-  status: number;
+  status: number | string;
   message?: string;
-  statusCode?: number;
+  statusCode?: number | string;
   body?: {
     message?: string;
   };
 };
+
+/** Better Auth may expose string status codes (e.g. UNPROCESSABLE_ENTITY). */
+export function normalizeAuthHttpStatus(value: unknown): number {
+  if (typeof value === "number" && value >= 400 && value < 600) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    if (value === "UNPROCESSABLE_ENTITY") {
+      return 422;
+    }
+
+    const parsed = Number.parseInt(value, 10);
+
+    if (!Number.isNaN(parsed) && parsed >= 400 && parsed < 600) {
+      return parsed;
+    }
+  }
+
+  return 500;
+}
 
 export function isAuthHttpError(error: unknown): error is AuthHttpError {
   if (typeof error !== "object" || error === null) {
@@ -20,7 +41,7 @@ export function isAuthHttpError(error: unknown): error is AuthHttpError {
 }
 
 export function getAuthHttpErrorStatus(error: AuthHttpError): number {
-  return error.status ?? error.statusCode ?? 500;
+  return normalizeAuthHttpStatus(error.status ?? error.statusCode);
 }
 
 export function getAuthHttpErrorMessage(error: AuthHttpError): string {

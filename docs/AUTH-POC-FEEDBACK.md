@@ -113,10 +113,23 @@ Auth POC meets Day 11 exit criteria:
 | CI `pnpm test:api` on PRs | **Done** | `.github/workflows/ci.yml` — required job (Foundation v0.1) |
 | Foundation tag + docs | **Done** | `foundation-v0.1.0` — [releases/foundation-v0.1.0.md](./releases/foundation-v0.1.0.md) |
 
+## Dashboard login (Day 19) — done
+
+| Item | Status | Notes |
+| ---- | ------ | ----- |
+| Web auth client (`signIn`, `signUpBrokerage`, `getSession`, `signOut`) | **Done** | `apps/web/src/lib/auth-client.ts` — credentialed fetch to API `:3333` |
+| Login / signup pages + middleware | **Done** | `/login`, `/signup`, `/dashboard` — [web/dashboard-auth.md](./web/dashboard-auth.md) |
+| Sidebar + org profile | **Done** | `GET /v1/organization/me` in dashboard shell |
+| Manual QA runbook | **Done** | Local + staging `API_URL` checklist in dashboard-auth doc |
+
+**Validated:** 2026-06-05 — implementation complete on branch `feat/phase-2-properties`; human QA per [dashboard-auth.md](./web/dashboard-auth.md).
+
+---
+
 ## Next steps (Phase 2+)
 
 1. **Properties domain** — schema, RLS, CRUD API — [PHASE-2-PLAN.md](./PHASE-2-PLAN.md) (Days 16–25).
-2. Wire dashboard (`apps/web`) to Better Auth session cookies + `activeOrganizationId` (product login UX).
+2. ~~Wire dashboard (`apps/web`) to Better Auth session cookies + `activeOrganizationId`~~ — **Done (Day 19)** — [web/dashboard-auth.md](./web/dashboard-auth.md).
 3. Extend `require-member-role` to properties and CRM routes as they ship.
 4. Configure Resend (or equivalent) for `sendInvitationEmail` in staging/production.
 5. Neon branch validation when staging URL is available (repeat Vitest + manual M1–M6).

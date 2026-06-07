@@ -5,6 +5,9 @@ export const AUDIT_ACTIONS = [
   "test_item.created",
   "invitation.sent",
   "invitation.accepted",
+  "property.created",
+  "property.updated",
+  "property.deleted",
 ] as const;
 
 export const auditActionSchema = z.enum(AUDIT_ACTIONS);

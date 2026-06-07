@@ -115,6 +115,19 @@ Use this checklist to sign off Foundation v0.1. Each item includes a **verificat
 
 ---
 
+## Day 19 — Dashboard auth & web build regression
+
+| # | Deliverable | Status | Verification |
+| - | ----------- | ------ | ------------ |
+| 19.1 | `@propai/shared` builds to `dist/` for Next.js | [x] | `pnpm --filter @propai/shared build` |
+| 19.2 | Turbo `dev` prebuilds workspace deps | [x] | `pnpm dev` — no `Can't resolve './…​.js'` on `/login` |
+| 19.3 | Web build regression guard | [x] | `pnpm build:web` or `pnpm web-build-smoke` |
+| 19.4 | CI web build job | [x] | `.github/workflows/ci.yml` — job `web-build` |
+
+**Before Day 19 sign-off:** `pnpm web-build-smoke` must pass (catches `@propai/shared` changes that break Turbopack).
+
+---
+
 ## Day 15 — Foundation freeze & documentation
 
 | # | Deliverable | Status | Verification |
@@ -207,5 +220,6 @@ pnpm db:rls-test
 pnpm test:api
 pnpm test:shared
 pnpm auth:poc
+pnpm web-build-smoke
 pnpm dev:smoke --spawn-api
 ```

@@ -1,6 +1,6 @@
 # Phase 2 Plan — Properties (Days 16–25)
 
-**Status:** Planned (not started)  
+**Status:** In progress (Day 17+)  
 **Prerequisite:** Phase 1 foundation signed off — [BACKEND-FOUNDATION-CHECKLIST.md](./BACKEND-FOUNDATION-CHECKLIST.md) (tag `foundation-v0.1.0`)  
 **Product context:** [REQUIREMENTS.md](./REQUIREMENTS.md) — US property fields, photos, marketplace linkage (later phases)
 
@@ -29,7 +29,7 @@ Phase 2 delivers the **Properties** domain: schema, tenant-scoped CRUD API, obje
 | ---- | ---- | ----- | ------- |
 | 1 | 16–18 | Data model + API | `properties` in DB with RLS; CRUD `/v1/properties`; tests green |
 | 2 | 19–21 | Media + storage | R2 (or S3-compatible) presigned uploads; `property_photos`; audit on upload |
-| 3 | 22–25 | Dashboard UI | Properties shell in `apps/web`, list/detail, map pin, photo gallery |
+| 3 | 19–25 | Dashboard UI | Auth shell in `apps/web`, properties list/detail, map pin, photo gallery |
 
 ---
 
@@ -37,13 +37,12 @@ Phase 2 delivers the **Properties** domain: schema, tenant-scoped CRUD API, obje
 
 | Day | Focus | Deliverables | Verification |
 | --- | ----- | ------------ | ------------ |
-| **16** | Properties schema | Drizzle tables: `properties` (US fields: address, city, state, ZIP, sq ft, price cents, status enum), `tenant_id`, indexes; migration + RLS policies | `pnpm db:migrate`; extend `pnpm db:rls-test` or dedicated integration seed |
-| **17** | Shared contracts | Zod create/update/list schemas in `@propai/shared`; types exported to API + web | `pnpm typecheck`; unit tests on schema edge cases |
-| **18** | CRUD API | `modules/properties/` — `GET/POST/PATCH/DELETE /v1/properties`, list filters, `select` explicit; permission `properties:write` | `pnpm test:api` — isolation + RBAC cases |
-| **19** | Object storage setup | R2 bucket config, env vars, presigned PUT/GET helper in `apps/api` | Manual curl upload; no secrets in repo |
-| **20** | Property photos schema | `property_photos` (order, url/key, property FK, tenant_id + RLS) | Migration + RLS test |
-| **21** | Photo API | `POST /v1/properties/:id/photos` (presign + confirm), reorder, delete; audit events | Integration tests + audit log assertions |
-| **22** | Web module shell | `src/modules/properties/` — layout, nav entry, empty list page (Server Component + queries stub) | `pnpm dev` — route loads |
+| **[x] 16** | Properties schema | Drizzle tables: `properties` (US fields: address, city, state, ZIP, sq ft, price cents, status enum), `property_features`, `property_images`, `tenant_id`, indexes; migration + RLS policies | `pnpm db:migrate`; extend `pnpm db:rls-test` — task pack: [tasks/PHASE-2-DAY-16.md](./tasks/PHASE-2-DAY-16.md) |
+| **17** | Properties CRUD API | Zod in `@propai/shared`; `GET/POST/PATCH/DELETE /v1/properties`; cursor + filters; RBAC agent scope; Insomnia collection | `pnpm test:shared && pnpm test:api` — task pack: [tasks/PHASE-2-DAY-17.md](./tasks/PHASE-2-DAY-17.md) |
+| **18** | Image upload (R2/S3 presigned) | Private bucket + CORS; `POST/GET /v1/uploads/presign*`; key `tenant/{id}/property/{id}/{uuid}.ext`; 10MB image/* | curl upload + download — task pack: [tasks/PHASE-2-DAY-18.md](./tasks/PHASE-2-DAY-18.md) |
+| **[x] 19** | Web app scaffold (dashboard) | `apps/web` auth layout, sidebar, TanStack Query, middleware, login/signup → API | [web/dashboard-auth.md](./web/dashboard-auth.md) — task pack: [tasks/PHASE-2-DAY-19.md](./tasks/PHASE-2-DAY-19.md) |
+| **20** | Property photos confirm API | Persist `property_images`; confirm after upload; audit | `pnpm test:api` |
+| **22** | Properties module shell | `src/modules/properties/` — nav entry, empty list page | `pnpm dev` — route loads |
 | **23** | Properties list UI | Table/cards, filters (status), shadcn components, tokens only | Manual UX pass |
 | **24** | Property detail + form | Create/edit with React Hook Form + Zod; Server Actions or API client per project convention | Create → list → edit flow |
 | **25** | Map + photos UI | Map component (lat/lng from property), gallery, upload via presigned URL; Phase 2 checklist doc | End-to-end demo on local Docker |
