@@ -1,6 +1,7 @@
 import {
   MOCK_PROPERTY_IMAGE_ANALYSIS,
   propertyImageAnalysisSchema,
+  type AnalyzeImagesJobStatusResponse,
   type PropertyImageAnalysis,
 } from "@propai/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -12,7 +13,8 @@ import {
 } from "./lib/ai-vision-rate-limit.js";
 import { resolveMemberAccess } from "./lib/member-access.js";
 import { createMockSessionAuthorization } from "./modules/auth/session.js";
-import { analyzePropertyImages } from "./modules/ai/analyze-property-images-service.js";
+import { getJobStatus } from "./modules/ai/queries/get-job-status.js";
+import { enqueueAnalyzeImagesJob } from "./modules/ai/queues/analyze-images-queue.js";
 
 vi.mock("./modules/auth/resolve-tenant-id.js", () => ({
   resolveTenantId: vi.fn(
@@ -41,8 +43,12 @@ vi.mock("./lib/ai-vision-rate-limit.js", async (importOriginal) => {
   };
 });
 
-vi.mock("./modules/ai/analyze-property-images-service.js", () => ({
-  analyzePropertyImages: vi.fn(),
+vi.mock("./modules/ai/queues/analyze-images-queue.js", () => ({
+  enqueueAnalyzeImagesJob: vi.fn(),
+}));
+
+vi.mock("./modules/ai/queries/get-job-status.js", () => ({
+  getJobStatus: vi.fn(),
 }));
 
 const tenantId = "550e8400-e29b-41d4-a716-446655440000";
@@ -55,14 +61,23 @@ const mockPayload = {
 
 const validPresignedUrl = `http://localhost:9000/propai-uploads/tenant/${tenantId}/property/${propertyId}/${fileId}.jpg?X-Amz-Signature=abc`;
 
-const llmAnalysis: PropertyImageAnalysis = {
-  bedrooms: 4,
-  bathrooms: 2.5,
-  sqFt: 2100,
-  features: ["garage", "granite counters"],
-  description: "Updated ranch with open living space and attached garage.",
-  seoTitle: "4BR Ranch with Garage — Updated Kitchen",
-  suggestedPriceUSD: 410_000,
+const queuedJobStatus: AnalyzeImagesJobStatusResponse = {
+  jobId: "job-123",
+  status: "queued",
+};
+
+const completedJobStatus: AnalyzeImagesJobStatusResponse = {
+  jobId: "job-123",
+  status: "completed",
+  result: {
+    bedrooms: 4,
+    bathrooms: 2.5,
+    sqFt: 2100,
+    features: ["garage", "granite counters"],
+    description: "Updated ranch with open living space and attached garage.",
+    seoTitle: "4BR Ranch with Garage — Updated Kitchen",
+    suggestedPriceUSD: 410_000,
+  },
 };
 
 const originalEnv = { ...process.env };
@@ -89,7 +104,7 @@ function mockViewerAccess(): void {
   });
 }
 
-describe("Day 26–27 — AI analyze property images integration", () => {
+describe("Day 26–28 — AI analyze property images integration", () => {
   beforeEach(() => {
     process.env = { ...originalEnv };
     process.env.NODE_ENV = "test";
@@ -97,10 +112,12 @@ describe("Day 26–27 — AI analyze property images integration", () => {
     mockOwnerAccess();
     vi.mocked(checkAiVisionRateLimit).mockReset();
     vi.mocked(consumeAiVisionRateLimit).mockReset();
-    vi.mocked(analyzePropertyImages).mockReset();
+    vi.mocked(enqueueAnalyzeImagesJob).mockReset();
+    vi.mocked(getJobStatus).mockReset();
     vi.mocked(checkAiVisionRateLimit).mockResolvedValue({ allowed: true });
     vi.mocked(consumeAiVisionRateLimit).mockResolvedValue(undefined);
-    vi.mocked(analyzePropertyImages).mockResolvedValue(llmAnalysis);
+    vi.mocked(enqueueAnalyzeImagesJob).mockResolvedValue("job-123");
+    vi.mocked(getJobStatus).mockResolvedValue(queuedJobStatus);
   });
 
   afterEach(() => {
@@ -170,12 +187,12 @@ describe("Day 26–27 — AI analyze property images integration", () => {
       MOCK_PROPERTY_IMAGE_ANALYSIS.suggestedPriceUSD,
     );
     expect(checkAiVisionRateLimit).not.toHaveBeenCalled();
-    expect(analyzePropertyImages).not.toHaveBeenCalled();
+    expect(enqueueAnalyzeImagesJob).not.toHaveBeenCalled();
 
     await app.close();
   });
 
-  it("returns LLM analysis when ENABLE_AI_VISION is true", async () => {
+  it("returns 202 with jobId when ENABLE_AI_VISION is true", async () => {
     process.env.ENABLE_AI_VISION = "true";
     setStorageEnv();
 
@@ -191,14 +208,14 @@ describe("Day 26–27 — AI analyze property images integration", () => {
       payload: { imageUrls: [validPresignedUrl] },
     });
 
-    expect(response.statusCode).toBe(200);
-
-    const body = response.json() as PropertyImageAnalysis;
-
-    expect(propertyImageAnalysisSchema.parse(body)).toEqual(llmAnalysis);
+    expect(response.statusCode).toBe(202);
+    expect(response.json()).toEqual({ jobId: "job-123" });
     expect(checkAiVisionRateLimit).toHaveBeenCalledWith(tenantId);
     expect(consumeAiVisionRateLimit).toHaveBeenCalledWith(tenantId);
-    expect(analyzePropertyImages).toHaveBeenCalledWith([validPresignedUrl]);
+    expect(enqueueAnalyzeImagesJob).toHaveBeenCalledWith({
+      tenantId,
+      imageUrls: [validPresignedUrl],
+    });
 
     await app.close();
   });
@@ -220,7 +237,7 @@ describe("Day 26–27 — AI analyze property images integration", () => {
     });
 
     expect(response.statusCode).toBe(400);
-    expect(analyzePropertyImages).not.toHaveBeenCalled();
+    expect(enqueueAnalyzeImagesJob).not.toHaveBeenCalled();
     expect(consumeAiVisionRateLimit).not.toHaveBeenCalled();
 
     await app.close();
@@ -248,7 +265,7 @@ describe("Day 26–27 — AI analyze property images integration", () => {
 
     expect(response.statusCode).toBe(429);
     expect(response.headers["retry-after"]).toBe("900");
-    expect(analyzePropertyImages).not.toHaveBeenCalled();
+    expect(enqueueAnalyzeImagesJob).not.toHaveBeenCalled();
     expect(consumeAiVisionRateLimit).not.toHaveBeenCalled();
 
     await app.close();
@@ -282,7 +299,7 @@ describe("Day 26–27 — AI analyze property images integration", () => {
         payload: { imageUrls: [validPresignedUrl] },
       });
 
-      expect(allowedResponse.statusCode).toBe(200);
+      expect(allowedResponse.statusCode).toBe(202);
     }
 
     const blockedResponse = await app.inject({
@@ -298,6 +315,46 @@ describe("Day 26–27 — AI analyze property images integration", () => {
     expect(blockedResponse.statusCode).toBe(429);
     expect(blockedResponse.headers["retry-after"]).toBe("1200");
     expect(checkAiVisionRateLimit).toHaveBeenCalledTimes(11);
+
+    await app.close();
+  });
+
+  it("returns job status for GET /v1/ai/jobs/:jobId when flag is on", async () => {
+    process.env.ENABLE_AI_VISION = "true";
+    vi.mocked(getJobStatus).mockResolvedValue(completedJobStatus);
+
+    const app = await buildApp({ mountAuthRoutes: false });
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/v1/ai/jobs/job-123",
+      headers: {
+        authorization: createMockSessionAuthorization(tenantId),
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual(completedJobStatus);
+    expect(getJobStatus).toHaveBeenCalledWith(tenantId, "job-123");
+
+    await app.close();
+  });
+
+  it("returns 404 when job status is not found for the tenant", async () => {
+    process.env.ENABLE_AI_VISION = "true";
+    vi.mocked(getJobStatus).mockResolvedValue(null);
+
+    const app = await buildApp({ mountAuthRoutes: false });
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/v1/ai/jobs/missing-job",
+      headers: {
+        authorization: createMockSessionAuthorization(tenantId),
+      },
+    });
+
+    expect(response.statusCode).toBe(404);
 
     await app.close();
   });

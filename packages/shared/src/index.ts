@@ -3,10 +3,12 @@ export {
   AI_JOB_STATUSES,
   aiJobStatusSchema,
   analyzeImagesJobDataSchema,
+  analyzeImagesJobParamsSchema,
   analyzeImagesJobStatusResponseSchema,
   enqueueAnalyzeImagesJobResponseSchema,
   type AiJobStatus,
   type AnalyzeImagesJobData,
+  type AnalyzeImagesJobParams,
   type AnalyzeImagesJobStatusResponse,
   type EnqueueAnalyzeImagesJobResponse,
 } from "./ai/analyze-images-job.js";
