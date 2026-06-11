@@ -1,4 +1,5 @@
 import { buildApp } from "./app.js";
+import { closeAnalyzeImagesQueue } from "./modules/ai/queues/analyze-images-queue.js";
 import { closeBullMqConnections } from "./lib/redis-bullmq.js";
 import { closeRedisClient } from "./lib/redis.js";
 
@@ -13,7 +14,11 @@ export async function startServer(): Promise<void> {
   const shutdown = async (signal: string): Promise<void> => {
     app.log.info({ signal }, "shutting down");
     await app.close();
-    await Promise.all([closeRedisClient(), closeBullMqConnections()]);
+    await Promise.all([
+      closeRedisClient(),
+      closeAnalyzeImagesQueue(),
+      closeBullMqConnections(),
+    ]);
     process.exit(0);
   };
 

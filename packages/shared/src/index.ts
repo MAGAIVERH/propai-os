@@ -1,4 +1,16 @@
 export {
+  AI_ANALYZE_IMAGES_QUEUE_NAME,
+  AI_JOB_STATUSES,
+  aiJobStatusSchema,
+  analyzeImagesJobDataSchema,
+  analyzeImagesJobStatusResponseSchema,
+  enqueueAnalyzeImagesJobResponseSchema,
+  type AiJobStatus,
+  type AnalyzeImagesJobData,
+  type AnalyzeImagesJobStatusResponse,
+  type EnqueueAnalyzeImagesJobResponse,
+} from "./ai/analyze-images-job.js";
+export {
   analyzePropertyImagesRequestSchema,
   analyzePropertyImagesResponseSchema,
   MOCK_PROPERTY_IMAGE_ANALYSIS,
