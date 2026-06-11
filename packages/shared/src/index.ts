@@ -1,4 +1,13 @@
 export {
+  analyzePropertyImagesRequestSchema,
+  analyzePropertyImagesResponseSchema,
+  MOCK_PROPERTY_IMAGE_ANALYSIS,
+  propertyImageAnalysisSchema,
+  type AnalyzePropertyImagesRequest,
+  type AnalyzePropertyImagesResponse,
+  type PropertyImageAnalysis,
+} from "./ai/property-image-analysis.js";
+export {
   AUDIT_ACTIONS,
   auditActionSchema,
   auditLogEntrySchema,
