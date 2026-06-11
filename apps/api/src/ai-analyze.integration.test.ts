@@ -1,142 +1,106 @@
-import { randomUUID } from "node:crypto";
-
 import {
   MOCK_PROPERTY_IMAGE_ANALYSIS,
   propertyImageAnalysisSchema,
   type PropertyImageAnalysis,
 } from "@propai/shared";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { buildApp } from "./app.js";
-import { clearDevInvitations } from "./lib/invitation-dev-store.js";
-import { normalizeCookieHeader } from "./lib/forward-auth-cookies.js";
+import {
+  checkAiVisionRateLimit,
+  consumeAiVisionRateLimit,
+} from "./lib/ai-vision-rate-limit.js";
+import { resolveMemberAccess } from "./lib/member-access.js";
+import { createMockSessionAuthorization } from "./modules/auth/session.js";
+import { analyzePropertyImages } from "./modules/ai/analyze-property-images-service.js";
 
-type BrokerageSignUpResponse = {
-  user: { id: string; email: string };
-  organization: { id: string; slug: string };
-  session: { activeOrganizationId: string };
-};
+vi.mock("./modules/auth/resolve-tenant-id.js", () => ({
+  resolveTenantId: vi.fn(
+    async (session: { session: { activeOrganizationId: string | null } }) =>
+      session.session.activeOrganizationId,
+  ),
+}));
 
-type InvitationCreateResponse = {
-  invitation: {
-    id: string;
-    email: string;
-    role: string;
-    organizationId: string;
+vi.mock("./lib/member-access.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./lib/member-access.js")>();
+
+  return {
+    ...actual,
+    resolveMemberAccess: vi.fn(),
   };
-};
+});
 
-type AppInstance = Awaited<ReturnType<typeof buildApp>>;
+vi.mock("./lib/ai-vision-rate-limit.js", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("./lib/ai-vision-rate-limit.js")>();
 
-type SignedUpUser = {
-  userId: string;
-  organizationId: string;
-  cookie: string;
-};
+  return {
+    ...actual,
+    checkAiVisionRateLimit: vi.fn(),
+    consumeAiVisionRateLimit: vi.fn(),
+  };
+});
 
-const analyzePayload = {
+vi.mock("./modules/ai/analyze-property-images-service.js", () => ({
+  analyzePropertyImages: vi.fn(),
+}));
+
+const tenantId = "550e8400-e29b-41d4-a716-446655440000";
+const propertyId = "6ba7b810-9dad-11d1-80b4-00c04fd430c8";
+const fileId = "a1b2c3d4-e5f6-7890-abcd-ef1234567890";
+
+const mockPayload = {
   imageUrls: ["https://example.com/photo.jpg"],
 } as const;
 
+const validPresignedUrl = `http://localhost:9000/propai-uploads/tenant/${tenantId}/property/${propertyId}/${fileId}.jpg?X-Amz-Signature=abc`;
+
+const llmAnalysis: PropertyImageAnalysis = {
+  bedrooms: 4,
+  bathrooms: 2.5,
+  sqFt: 2100,
+  features: ["garage", "granite counters"],
+  description: "Updated ranch with open living space and attached garage.",
+  seoTitle: "4BR Ranch with Garage — Updated Kitchen",
+  suggestedPriceUSD: 410_000,
+};
+
 const originalEnv = { ...process.env };
 
-async function brokerageSignUp(
-  app: AppInstance,
-  suffix: string,
-  label: string,
-): Promise<SignedUpUser> {
-  const response = await app.inject({
-    method: "POST",
-    url: "/api/auth/brokerage-sign-up",
-    payload: {
-      email: `ai-${label}-${suffix}@test.propai-os.local`,
-      password: "password123",
-      name: `AI Owner ${label}`,
-      organizationName: `AI Brokerage ${label} ${suffix}`,
-    },
-  });
-
-  expect(response.statusCode).toBe(201);
-
-  const body = response.json() as BrokerageSignUpResponse;
-  const cookie = normalizeCookieHeader(response.headers["set-cookie"]);
-
-  expect(cookie).toBeDefined();
-  expect(body.session.activeOrganizationId).toBe(body.organization.id);
-
-  return {
-    userId: body.user.id,
-    organizationId: body.organization.id,
-    cookie: cookie ?? "",
-  };
+function setStorageEnv(): void {
+  process.env.S3_ENDPOINT = "http://localhost:9000";
+  process.env.S3_REGION = "us-east-1";
+  process.env.S3_BUCKET = "propai-uploads";
+  process.env.S3_ACCESS_KEY_ID = "minioadmin";
+  process.env.S3_SECRET_ACCESS_KEY = "minioadmin";
 }
 
-async function inviteAndAcceptUser(
-  app: AppInstance,
-  ownerCookie: string,
-  organizationId: string,
-  role: "viewer",
-  label: string,
-  suffix: string,
-): Promise<{ cookie: string }> {
-  const email = `ai-${role}-${label}-${suffix}@test.propai-os.local`;
-
-  const inviteResponse = await app.inject({
-    method: "POST",
-    url: "/api/auth/brokerage-invite",
-    headers: {
-      cookie: ownerCookie,
-      "content-type": "application/json",
-    },
-    payload: { email, role },
+function mockOwnerAccess(): void {
+  vi.mocked(resolveMemberAccess).mockResolvedValue({
+    allowed: true,
+    role: "owner",
   });
-
-  expect(inviteResponse.statusCode).toBe(201);
-
-  const inviteBody = inviteResponse.json() as InvitationCreateResponse;
-
-  expect(inviteBody.invitation.organizationId).toBe(organizationId);
-  expect(inviteBody.invitation.role).toBe(role);
-
-  const signUpResponse = await app.inject({
-    method: "POST",
-    url: "/api/auth/sign-up/email",
-    payload: {
-      email,
-      password: "password123",
-      name: `AI ${role} ${label}`,
-    },
-  });
-
-  expect(signUpResponse.statusCode).toBe(200);
-
-  const signUpCookie = normalizeCookieHeader(signUpResponse.headers["set-cookie"]);
-
-  expect(signUpCookie).toBeDefined();
-
-  const acceptResponse = await app.inject({
-    method: "POST",
-    url: "/api/auth/organization/accept-invitation",
-    headers: {
-      cookie: signUpCookie ?? "",
-      "content-type": "application/json",
-    },
-    payload: { invitationId: inviteBody.invitation.id },
-  });
-
-  expect(acceptResponse.statusCode).toBe(200);
-
-  const sessionCookie =
-    normalizeCookieHeader(acceptResponse.headers["set-cookie"]) ?? signUpCookie;
-
-  return { cookie: sessionCookie ?? "" };
 }
 
-describe("Day 26 — AI analyze property images integration", () => {
+function mockViewerAccess(): void {
+  vi.mocked(resolveMemberAccess).mockResolvedValue({
+    allowed: false,
+    reason: "forbidden",
+  });
+}
+
+describe("Day 26–27 — AI analyze property images integration", () => {
   beforeEach(() => {
     process.env = { ...originalEnv };
+    process.env.NODE_ENV = "test";
     process.env.ENABLE_AI_VISION = "false";
-    clearDevInvitations();
+    mockOwnerAccess();
+    vi.mocked(checkAiVisionRateLimit).mockReset();
+    vi.mocked(consumeAiVisionRateLimit).mockReset();
+    vi.mocked(analyzePropertyImages).mockReset();
+    vi.mocked(checkAiVisionRateLimit).mockResolvedValue({ allowed: true });
+    vi.mocked(consumeAiVisionRateLimit).mockResolvedValue(undefined);
+    vi.mocked(analyzePropertyImages).mockResolvedValue(llmAnalysis);
   });
 
   afterEach(() => {
@@ -144,13 +108,13 @@ describe("Day 26 — AI analyze property images integration", () => {
   });
 
   it("returns 401 for unauthenticated POST /v1/ai/analyze-property-images", async () => {
-    const app = await buildApp();
+    const app = await buildApp({ mountAuthRoutes: false });
 
     const response = await app.inject({
       method: "POST",
       url: "/v1/ai/analyze-property-images",
       headers: { "content-type": "application/json" },
-      payload: analyzePayload,
+      payload: mockPayload,
     });
 
     expect(response.statusCode).toBe(401);
@@ -159,26 +123,18 @@ describe("Day 26 — AI analyze property images integration", () => {
   });
 
   it("returns 403 for viewer role on analyze endpoint", async () => {
-    const app = await buildApp();
-    const suffix = randomUUID().slice(0, 8);
-    const owner = await brokerageSignUp(app, suffix, "viewer-deny");
-    const viewer = await inviteAndAcceptUser(
-      app,
-      owner.cookie,
-      owner.organizationId,
-      "viewer",
-      "deny",
-      suffix,
-    );
+    mockViewerAccess();
+
+    const app = await buildApp({ mountAuthRoutes: false });
 
     const response = await app.inject({
       method: "POST",
       url: "/v1/ai/analyze-property-images",
       headers: {
-        cookie: viewer.cookie,
+        authorization: createMockSessionAuthorization(tenantId),
         "content-type": "application/json",
       },
-      payload: analyzePayload,
+      payload: mockPayload,
     });
 
     expect(response.statusCode).toBe(403);
@@ -187,18 +143,16 @@ describe("Day 26 — AI analyze property images integration", () => {
   });
 
   it("returns mock analysis when ENABLE_AI_VISION is false", async () => {
-    const app = await buildApp();
-    const suffix = randomUUID().slice(0, 8);
-    const owner = await brokerageSignUp(app, suffix, "mock");
+    const app = await buildApp({ mountAuthRoutes: false });
 
     const response = await app.inject({
       method: "POST",
       url: "/v1/ai/analyze-property-images",
       headers: {
-        cookie: owner.cookie,
+        authorization: createMockSessionAuthorization(tenantId),
         "content-type": "application/json",
       },
-      payload: analyzePayload,
+      payload: mockPayload,
     });
 
     expect(response.statusCode).toBe(200);
@@ -215,32 +169,135 @@ describe("Day 26 — AI analyze property images integration", () => {
     expect(parsed.suggestedPriceUSD).toBe(
       MOCK_PROPERTY_IMAGE_ANALYSIS.suggestedPriceUSD,
     );
+    expect(checkAiVisionRateLimit).not.toHaveBeenCalled();
+    expect(analyzePropertyImages).not.toHaveBeenCalled();
 
     await app.close();
   });
 
-  it("returns 503 when ENABLE_AI_VISION is true", async () => {
+  it("returns LLM analysis when ENABLE_AI_VISION is true", async () => {
     process.env.ENABLE_AI_VISION = "true";
+    setStorageEnv();
 
-    const app = await buildApp();
-    const suffix = randomUUID().slice(0, 8);
-    const owner = await brokerageSignUp(app, suffix, "flag-on");
+    const app = await buildApp({ mountAuthRoutes: false });
 
     const response = await app.inject({
       method: "POST",
       url: "/v1/ai/analyze-property-images",
       headers: {
-        cookie: owner.cookie,
+        authorization: createMockSessionAuthorization(tenantId),
         "content-type": "application/json",
       },
-      payload: analyzePayload,
+      payload: { imageUrls: [validPresignedUrl] },
     });
 
-    expect(response.statusCode).toBe(503);
+    expect(response.statusCode).toBe(200);
 
-    const body = response.json() as { error: string; message: string };
+    const body = response.json() as PropertyImageAnalysis;
 
-    expect(body.message).toBe("AI vision is not implemented yet");
+    expect(propertyImageAnalysisSchema.parse(body)).toEqual(llmAnalysis);
+    expect(checkAiVisionRateLimit).toHaveBeenCalledWith(tenantId);
+    expect(consumeAiVisionRateLimit).toHaveBeenCalledWith(tenantId);
+    expect(analyzePropertyImages).toHaveBeenCalledWith([validPresignedUrl]);
+
+    await app.close();
+  });
+
+  it("returns 400 for external image URLs when ENABLE_AI_VISION is true", async () => {
+    process.env.ENABLE_AI_VISION = "true";
+    setStorageEnv();
+
+    const app = await buildApp({ mountAuthRoutes: false });
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/ai/analyze-property-images",
+      headers: {
+        authorization: createMockSessionAuthorization(tenantId),
+        "content-type": "application/json",
+      },
+      payload: mockPayload,
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(analyzePropertyImages).not.toHaveBeenCalled();
+    expect(consumeAiVisionRateLimit).not.toHaveBeenCalled();
+
+    await app.close();
+  });
+
+  it("returns 429 with Retry-After when rate limit is exceeded", async () => {
+    process.env.ENABLE_AI_VISION = "true";
+    setStorageEnv();
+    vi.mocked(checkAiVisionRateLimit).mockResolvedValue({
+      allowed: false,
+      retryAfterSeconds: 900,
+    });
+
+    const app = await buildApp({ mountAuthRoutes: false });
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/ai/analyze-property-images",
+      headers: {
+        authorization: createMockSessionAuthorization(tenantId),
+        "content-type": "application/json",
+      },
+      payload: { imageUrls: [validPresignedUrl] },
+    });
+
+    expect(response.statusCode).toBe(429);
+    expect(response.headers["retry-after"]).toBe("900");
+    expect(analyzePropertyImages).not.toHaveBeenCalled();
+    expect(consumeAiVisionRateLimit).not.toHaveBeenCalled();
+
+    await app.close();
+  });
+
+  it("returns 429 on the 11th blocked rate-limit check", async () => {
+    process.env.ENABLE_AI_VISION = "true";
+    setStorageEnv();
+
+    let callCount = 0;
+    vi.mocked(checkAiVisionRateLimit).mockImplementation(async () => {
+      callCount += 1;
+
+      if (callCount > 10) {
+        return { allowed: false, retryAfterSeconds: 1200 };
+      }
+
+      return { allowed: true };
+    });
+
+    const app = await buildApp({ mountAuthRoutes: false });
+
+    for (let index = 0; index < 10; index += 1) {
+      const allowedResponse = await app.inject({
+        method: "POST",
+        url: "/v1/ai/analyze-property-images",
+        headers: {
+          authorization: createMockSessionAuthorization(tenantId),
+          "content-type": "application/json",
+        },
+        payload: { imageUrls: [validPresignedUrl] },
+      });
+
+      expect(allowedResponse.statusCode).toBe(200);
+    }
+
+    const blockedResponse = await app.inject({
+      method: "POST",
+      url: "/v1/ai/analyze-property-images",
+      headers: {
+        authorization: createMockSessionAuthorization(tenantId),
+        "content-type": "application/json",
+      },
+      payload: { imageUrls: [validPresignedUrl] },
+    });
+
+    expect(blockedResponse.statusCode).toBe(429);
+    expect(blockedResponse.headers["retry-after"]).toBe("1200");
+    expect(checkAiVisionRateLimit).toHaveBeenCalledTimes(11);
 
     await app.close();
   });
