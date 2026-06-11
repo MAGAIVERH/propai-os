@@ -1,40 +1,69 @@
 import { closeAnalyzeImagesQueue } from "./modules/ai/queues/analyze-images-queue.js";
+import { closeGenerateEmbeddingQueue } from "./modules/ai/queues/generate-embedding-queue.js";
 import {
   closeAnalyzePropertyImagesWorker,
   createAnalyzePropertyImagesWorker,
 } from "./modules/ai/workers/analyze-property-images-worker.js";
+import {
+  closeGeneratePropertyEmbeddingWorker,
+  createGeneratePropertyEmbeddingWorker,
+} from "./modules/ai/workers/generate-property-embedding-worker.js";
 import { closeBullMqConnections } from "./lib/redis-bullmq.js";
 
 async function shutdown(signal: string): Promise<void> {
   console.info({ signal }, "worker shutting down");
 
-  await closeAnalyzePropertyImagesWorker();
-  await closeAnalyzeImagesQueue();
-  await closeBullMqConnections();
+  await Promise.all([
+    closeAnalyzePropertyImagesWorker(),
+    closeGeneratePropertyEmbeddingWorker(),
+    closeAnalyzeImagesQueue(),
+    closeGenerateEmbeddingQueue(),
+    closeBullMqConnections(),
+  ]);
 
   process.exit(0);
 }
 
 async function startWorker(): Promise<void> {
-  const worker = createAnalyzePropertyImagesWorker();
+  const analyzeImagesWorker = createAnalyzePropertyImagesWorker();
+  const generateEmbeddingWorker = createGeneratePropertyEmbeddingWorker();
 
-  worker.on("ready", () => {
+  analyzeImagesWorker.on("ready", () => {
     console.info("analyze-property-images worker ready");
   });
 
-  worker.on("completed", (job) => {
+  analyzeImagesWorker.on("completed", (job) => {
     console.info({ jobId: job.id }, "analyze-property-images job completed");
   });
 
-  worker.on("failed", (job, error) => {
+  analyzeImagesWorker.on("failed", (job, error) => {
     console.error(
       { jobId: job?.id, err: error.message },
       "analyze-property-images job failed",
     );
   });
 
-  worker.on("error", (error) => {
+  analyzeImagesWorker.on("error", (error) => {
     console.error({ err: error.message }, "analyze-property-images worker error");
+  });
+
+  generateEmbeddingWorker.on("ready", () => {
+    console.info("generate-property-embedding worker ready");
+  });
+
+  generateEmbeddingWorker.on("completed", (job) => {
+    console.info({ jobId: job.id }, "generate-property-embedding job completed");
+  });
+
+  generateEmbeddingWorker.on("failed", (job, error) => {
+    console.error(
+      { jobId: job?.id, err: error.message },
+      "generate-property-embedding job failed",
+    );
+  });
+
+  generateEmbeddingWorker.on("error", (error) => {
+    console.error({ err: error.message }, "generate-property-embedding worker error");
   });
 
   process.on("SIGINT", () => {

@@ -150,6 +150,42 @@ With `ENABLE_AI_VISION=false`, POST still returns **200** mock JSON immediately 
 
 ---
 
+## Day 29 — Semantic search embeddings (async queue)
+
+When `ENABLE_SEMANTIC_SEARCH=true`, publishing or updating an **active** property **enqueues** a BullMQ job (`ai:generate-embedding`). The worker builds text from `title`, `description`, and `property_features`, calls OpenAI `text-embedding-3-small`, and stores a `vector(1536)` on `properties.embedding`.
+
+### Two terminals (same worker process as Day 28)
+
+```bash
+# Terminal 1 — API + dashboard (or API only)
+pnpm dev
+
+# Terminal 2 — vision + embedding workers
+pnpm --filter @propai/api worker:dev
+```
+
+### Required `.env` (in addition to Redis)
+
+| Variable | Local value |
+| -------- | ----------- |
+| `ENABLE_SEMANTIC_SEARCH` | `true` |
+| `OPENAI_API_KEY` | Your OpenAI key |
+| `REDIS_BULLMQ_URL` | `redis://localhost:6379` |
+
+Postgres must have **pgvector** enabled (`pnpm db:migrate` after `docker compose up` with `pgvector/pgvector:pg16`).
+
+### Async flow
+
+1. **POST** `/v1/properties` with `status: "active"` **or** **PATCH** draft → `active` (or PATCH `title`/`description` on active listing)
+2. API returns **201/200** immediately — enqueue must not block HTTP
+3. Worker writes `properties.embedding` + `embedding_updated_at`
+
+With `ENABLE_SEMANTIC_SEARCH=false`, property save/publish succeeds with **no** enqueue (regression-safe).
+
+**Manual QA checklist:** [tasks/PHASE-3-DAY-29-MANUAL.md](./tasks/PHASE-3-DAY-29-MANUAL.md)
+
+---
+
 ## Quick start (recommended)
 
 ```bash

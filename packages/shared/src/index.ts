@@ -13,6 +13,11 @@ export {
   type EnqueueAnalyzeImagesJobResponse,
 } from "./ai/analyze-images-job.js";
 export {
+  AI_GENERATE_EMBEDDING_QUEUE_NAME,
+  generateEmbeddingJobDataSchema,
+  type GenerateEmbeddingJobData,
+} from "./ai/generate-embedding-job.js";
+export {
   analyzePropertyImagesRequestSchema,
   analyzePropertyImagesResponseSchema,
   MOCK_PROPERTY_IMAGE_ANALYSIS,
