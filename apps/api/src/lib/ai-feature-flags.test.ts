@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { isAiVisionEnabled } from "./ai-feature-flags.js";
+import { isAiVisionEnabled, isSemanticSearchEnabled } from "./ai-feature-flags.js";
 
 const originalEnv = { ...process.env };
 
@@ -41,5 +41,45 @@ describe("isAiVisionEnabled", () => {
     process.env.ENABLE_AI_VISION = "";
 
     expect(isAiVisionEnabled()).toBe(false);
+  });
+});
+
+describe("isSemanticSearchEnabled", () => {
+  beforeEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  it('returns true when ENABLE_SEMANTIC_SEARCH is "true"', () => {
+    process.env.ENABLE_SEMANTIC_SEARCH = "true";
+
+    expect(isSemanticSearchEnabled()).toBe(true);
+  });
+
+  it('returns true when ENABLE_SEMANTIC_SEARCH is "TRUE" (case-insensitive)', () => {
+    process.env.ENABLE_SEMANTIC_SEARCH = "TRUE";
+
+    expect(isSemanticSearchEnabled()).toBe(true);
+  });
+
+  it('returns false when ENABLE_SEMANTIC_SEARCH is "false"', () => {
+    process.env.ENABLE_SEMANTIC_SEARCH = "false";
+
+    expect(isSemanticSearchEnabled()).toBe(false);
+  });
+
+  it("returns false when ENABLE_SEMANTIC_SEARCH is unset", () => {
+    delete process.env.ENABLE_SEMANTIC_SEARCH;
+
+    expect(isSemanticSearchEnabled()).toBe(false);
+  });
+
+  it("returns false when ENABLE_SEMANTIC_SEARCH is an empty string", () => {
+    process.env.ENABLE_SEMANTIC_SEARCH = "";
+
+    expect(isSemanticSearchEnabled()).toBe(false);
   });
 });

@@ -66,6 +66,10 @@ US listing fields per [REQUIREMENTS.md](../REQUIREMENTS.md#us-property-fields-v1
 | `created_at` | `timestamptz` | Default `now()` |
 | `updated_at` | `timestamptz` | Default `now()` |
 | `soft_deleted_at` | `timestamptz` | Nullable; v1 uses soft delete only |
+| `embedding` | `vector(1536)` | Nullable; pgvector semantic search (Phase 3 Day 29); OpenAI `text-embedding-3-small` |
+| `embedding_updated_at` | `timestamptz` | Nullable; last successful embedding write |
+
+Migration: `packages/db/drizzle/0008_property_embeddings.sql`. Requires PostgreSQL **pgvector** extension (`CREATE EXTENSION vector`). On Neon, enable pgvector in the console before migrate.
 
 **Indexes:**
 
@@ -166,7 +170,7 @@ Same `EXISTS` pattern for `property_images`. Runtime role: `propai_app`. App cod
 | Item | Target |
 | ---- | ------ |
 | `property_pricing_history` | v1.1 — price change audit trail |
-| pgvector / embedding column on `properties` | Phase 3+ — semantic search |
+| HNSW / IVFFlat index on `properties.embedding` | Day 31+ — semantic search query tuning |
 | CRUD API `/v1/properties` | Day 18 |
 | Zod DTOs in `@propai/shared` | Day 17 |
 | R2 presigned upload flow | Days 19–21 |
@@ -194,6 +198,7 @@ Same `EXISTS` pattern for `property_images`. Runtime role: `propai_app`. App cod
 
 - `packages/db/src/schema/properties.ts`
 - `packages/db/drizzle/0007_properties.sql`
+- `packages/db/drizzle/0008_property_embeddings.sql`
 - `packages/db/scripts/rls-poc-test.ts`
 - [REQUIREMENTS.md — US property fields](../REQUIREMENTS.md#us-property-fields-v1)
 - [PHASE-2-PLAN.md](../PHASE-2-PLAN.md)

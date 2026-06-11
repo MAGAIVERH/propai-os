@@ -57,6 +57,13 @@
       "when": 1780698058219,
       "tag": "0007_properties",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1780780000000,
+      "tag": "0008_property_embeddings",
+      "breakpoints": true
     }
   ]
 }

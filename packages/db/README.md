@@ -14,7 +14,7 @@ See `docs/adr/001-rls-multi-tenancy.md` (RLS), `docs/adr/002-identity-organizati
 | `tenant_settings` | Per-org settings (FK → `organization.id`) |
 | `test_items` | RLS POC (`tenant_id` → `organization.id`) |
 | `audit_logs` | Immutable audit trail (`tenant_id` → `organization.id`; Day 13) |
-| `properties` | US listing core (`tenant_id` → `organization.id`; Day 16) |
+| `properties` | US listing core (`tenant_id` → `organization.id`; Day 16) — includes nullable `embedding vector(1536)` + `embedding_updated_at` (Day 29, pgvector) |
 | `property_features` | Key-value amenities per listing (FK → `properties.id`, parent-scoped RLS) |
 | `property_images` | Ordered photo metadata + `storage_key` (FK → `properties.id`, parent-scoped RLS) |
 
@@ -72,3 +72,16 @@ const items = await runInTenantContext(orgId!, async (tx) => {
 | `seedDevIdentity()` | Dev seed: org + owner member + settings |
 
 `pnpm db:rls-test` validates RLS for **`test_items`**, **`audit_logs`**, **`properties`**, **`property_features`**, and **`property_images`** (tenant A/B isolation, no context, cross-tenant read/insert).
+
+## pgvector (semantic search)
+
+Migration `0008_property_embeddings.sql` enables the PostgreSQL **`vector`** extension and adds nullable columns on `properties`:
+
+| Column | Type | Notes |
+| ------ | ---- | ----- |
+| `embedding` | `vector(1536)` | OpenAI `text-embedding-3-small`; populated async by worker (Day 29+) |
+| `embedding_updated_at` | `timestamptz` | Last successful embedding write |
+
+**Neon (production / staging):** enable the **pgvector** extension in the Neon console (**Project → Extensions → pgvector**) **before** running `pnpm db:migrate`. Neon Postgres includes pgvector; local Docker uses the `pgvector/pgvector:pg16` image (see root `docker-compose.yml`).
+
+**Local Docker:** use `pnpm docker:up` with the pgvector-enabled Postgres image, then `pnpm db:migrate`. A fresh volume is required if you previously ran plain `postgres:16-alpine` without pgvector.
