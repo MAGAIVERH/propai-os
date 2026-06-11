@@ -6,6 +6,7 @@ import {
   AI_JOB_STATUSES,
   aiJobStatusSchema,
   analyzeImagesJobDataSchema,
+  analyzeImagesJobParamsSchema,
   analyzeImagesJobStatusResponseSchema,
   enqueueAnalyzeImagesJobResponseSchema,
 } from "./analyze-images-job.js";
@@ -62,6 +63,20 @@ describe("enqueueAnalyzeImagesJobResponseSchema", () => {
     });
 
     expect(result.jobId).toBe("job-123");
+  });
+});
+
+describe("analyzeImagesJobParamsSchema", () => {
+  it("requires a non-empty jobId param", () => {
+    const result = analyzeImagesJobParamsSchema.parse({ jobId: "job-123" });
+
+    expect(result.jobId).toBe("job-123");
+  });
+
+  it("rejects an empty jobId param", () => {
+    const result = analyzeImagesJobParamsSchema.safeParse({ jobId: "" });
+
+    expect(result.success).toBe(false);
   });
 });
 

@@ -76,6 +76,20 @@
       }
     },
     {
+      "label": "Dev: AI worker",
+      "type": "shell",
+      "command": "pnpm --filter @propai/api worker:dev",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
       "label": "Dev: smoke",
       "type": "shell",
       "command": "pnpm dev:smoke",

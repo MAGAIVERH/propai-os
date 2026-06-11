@@ -12,6 +12,7 @@ import {
   consumeAiVisionRateLimit,
 } from "./lib/ai-vision-rate-limit.js";
 import { resolveMemberAccess } from "./lib/member-access.js";
+import { BullMqRedisUnavailableError } from "./lib/redis-bullmq.js";
 import { createMockSessionAuthorization } from "./modules/auth/session.js";
 import { getJobStatus } from "./modules/ai/queries/get-job-status.js";
 import { enqueueAnalyzeImagesJob } from "./modules/ai/queues/analyze-images-queue.js";
@@ -315,6 +316,62 @@ describe("Day 26–28 — AI analyze property images integration", () => {
     expect(blockedResponse.statusCode).toBe(429);
     expect(blockedResponse.headers["retry-after"]).toBe("1200");
     expect(checkAiVisionRateLimit).toHaveBeenCalledTimes(11);
+
+    await app.close();
+  });
+
+  it("returns 503 when BullMQ Redis is unavailable on enqueue", async () => {
+    process.env.ENABLE_AI_VISION = "true";
+    setStorageEnv();
+    vi.mocked(enqueueAnalyzeImagesJob).mockRejectedValue(
+      new BullMqRedisUnavailableError(),
+    );
+
+    const app = await buildApp({ mountAuthRoutes: false });
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/ai/analyze-property-images",
+      headers: {
+        authorization: createMockSessionAuthorization(tenantId),
+        "content-type": "application/json",
+      },
+      payload: { imageUrls: [validPresignedUrl] },
+    });
+
+    expect(response.statusCode).toBe(503);
+
+    await app.close();
+  });
+
+  it("returns 401 for unauthenticated GET /v1/ai/jobs/:jobId", async () => {
+    const app = await buildApp({ mountAuthRoutes: false });
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/v1/ai/jobs/job-123",
+    });
+
+    expect(response.statusCode).toBe(401);
+
+    await app.close();
+  });
+
+  it("returns 503 for GET job status when ENABLE_AI_VISION is false", async () => {
+    process.env.ENABLE_AI_VISION = "false";
+
+    const app = await buildApp({ mountAuthRoutes: false });
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/v1/ai/jobs/job-123",
+      headers: {
+        authorization: createMockSessionAuthorization(tenantId),
+      },
+    });
+
+    expect(response.statusCode).toBe(503);
+    expect(getJobStatus).not.toHaveBeenCalled();
 
     await app.close();
   });
