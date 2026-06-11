@@ -30,6 +30,12 @@ export type EnqueueAnalyzeImagesJobResponse = z.infer<
   typeof enqueueAnalyzeImagesJobResponseSchema
 >;
 
+export const analyzeImagesJobParamsSchema = z.object({
+  jobId: z.string().min(1),
+});
+
+export type AnalyzeImagesJobParams = z.infer<typeof analyzeImagesJobParamsSchema>;
+
 export const analyzeImagesJobStatusResponseSchema = z.object({
   jobId: z.string().min(1),
   status: aiJobStatusSchema,

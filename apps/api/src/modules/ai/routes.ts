@@ -1,7 +1,10 @@
 import { TenantContextRequiredError } from "@propai/db";
 import {
+  analyzeImagesJobParamsSchema,
+  analyzeImagesJobStatusResponseSchema,
   analyzePropertyImagesRequestSchema,
   analyzePropertyImagesResponseSchema,
+  enqueueAnalyzeImagesJobResponseSchema,
   MOCK_PROPERTY_IMAGE_ANALYSIS,
 } from "@propai/shared";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
@@ -13,14 +16,12 @@ import {
 } from "../../lib/ai-vision-rate-limit.js";
 import { isAiVisionEnabled } from "../../lib/ai-feature-flags.js";
 import { apiError } from "../../lib/api-error.js";
+import { BullMqRedisUnavailableError } from "../../lib/redis-bullmq.js";
 import { RedisUnavailableError } from "../../lib/redis.js";
 import { assertTenantImageUrls } from "../../lib/validate-tenant-image-url.js";
 import { createRequirePermissionHook } from "../../plugins/require-member-role.js";
-import {
-  AiAnalysisParseError,
-  AiProviderNotConfiguredError,
-} from "./ai-errors.js";
-import { analyzePropertyImages } from "./analyze-property-images-service.js";
+import { getJobStatus } from "./queries/get-job-status.js";
+import { enqueueAnalyzeImagesJob } from "./queues/analyze-images-queue.js";
 
 function requireTenantId(request: FastifyRequest): string {
   if (!request.tenantId) {
@@ -59,6 +60,7 @@ export async function registerAiRoutes(app: FastifyInstance): Promise<void> {
         body: analyzePropertyImagesRequestSchema,
         response: {
           200: analyzePropertyImagesResponseSchema,
+          202: enqueueAnalyzeImagesJobResponseSchema,
         },
       },
       preHandler: requirePropertiesWrite,
@@ -70,7 +72,7 @@ export async function registerAiRoutes(app: FastifyInstance): Promise<void> {
 
       const body = analyzePropertyImagesRequestSchema.parse(request.body);
 
-      // Day 26 path: mock JSON only — no Redis, no URL validation, no LLM.
+      // Day 26 path: mock JSON only — no Redis, no URL validation, no queue.
       if (!isAiVisionEnabled()) {
         const response = analyzePropertyImagesResponseSchema.parse(
           MOCK_PROPERTY_IMAGE_ANALYSIS,
@@ -81,13 +83,11 @@ export async function registerAiRoutes(app: FastifyInstance): Promise<void> {
 
       const tenantId = requireTenantId(request);
 
-      // Flag on — HTTP mapping:
+      // Flag on — async queue path:
       // Redis unavailable → 503
       // Rate limit exceeded → 429 + Retry-After
       // Invalid / foreign image URLs → 400
-      // Gemini not configured → 503
-      // LLM / Zod failure → 502
-      // Success → 200
+      // Success → 202 + jobId
       try {
         const rateLimit = await checkAiVisionRateLimit(tenantId);
 
@@ -113,27 +113,74 @@ export async function registerAiRoutes(app: FastifyInstance): Promise<void> {
 
         await consumeAiVisionRateLimit(tenantId);
 
-        const analysis = await analyzePropertyImages(body.imageUrls);
-        const response = analyzePropertyImagesResponseSchema.parse(analysis);
+        const jobId = await enqueueAnalyzeImagesJob({
+          tenantId,
+          imageUrls: body.imageUrls,
+        });
 
-        return reply.status(200).send(response);
+        const response = enqueueAnalyzeImagesJobResponseSchema.parse({ jobId });
+
+        return reply.status(202).send(response);
       } catch (error) {
-        if (error instanceof RedisUnavailableError) {
+        if (
+          error instanceof RedisUnavailableError ||
+          error instanceof BullMqRedisUnavailableError
+        ) {
           return reply
             .status(503)
             .send(apiError("Service Unavailable", error.message));
         }
 
-        if (error instanceof AiProviderNotConfiguredError) {
+        throw error;
+      }
+    },
+  );
+
+  zodApp.get(
+    "/ai/jobs/:jobId",
+    {
+      schema: {
+        params: analyzeImagesJobParamsSchema,
+        response: {
+          200: analyzeImagesJobStatusResponseSchema,
+        },
+      },
+      preHandler: requirePropertiesWrite,
+    },
+    async (request, reply: FastifyReply) => {
+      requireTenantId(request);
+      requireSessionUserId(request);
+      requireMemberRole(request);
+
+      const tenantId = requireTenantId(request);
+      const { jobId } = analyzeImagesJobParamsSchema.parse(request.params);
+
+      if (!isAiVisionEnabled()) {
+        return reply
+          .status(503)
+          .send(
+            apiError(
+              "Service Unavailable",
+              "AI vision is disabled. Enable ENABLE_AI_VISION to poll job status.",
+            ),
+          );
+      }
+
+      try {
+        const status = await getJobStatus(tenantId, jobId);
+
+        if (!status) {
+          return reply
+            .status(404)
+            .send(apiError("Not Found", "Analysis job was not found."));
+        }
+
+        return reply.status(200).send(status);
+      } catch (error) {
+        if (error instanceof BullMqRedisUnavailableError) {
           return reply
             .status(503)
             .send(apiError("Service Unavailable", error.message));
-        }
-
-        if (error instanceof AiAnalysisParseError) {
-          return reply
-            .status(502)
-            .send(apiError("Bad Gateway", error.message));
         }
 
         throw error;
