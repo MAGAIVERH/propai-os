@@ -29,9 +29,9 @@ importers:
 
   apps/api:
     dependencies:
-      '@ai-sdk/openai':
-        specifier: ^3.0.69
-        version: 3.0.69(zod@4.4.3)
+      '@ai-sdk/google':
+        specifier: ^3.0.80
+        version: 3.0.80(zod@4.4.3)
       '@aws-sdk/client-s3':
         specifier: ^3.1062.0
         version: 3.1062.0
@@ -288,8 +288,8 @@ packages:
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
-  '@ai-sdk/openai@3.0.69':
-    resolution: {integrity: sha512-T/J3ED6ERDsine+crkXHfraisSG20k6BkBdgjvXCvySYnnJ19IaLIOsQPYfvXdOsKrl0LVNghooTV/nKCA7SmQ==}
+  '@ai-sdk/google@3.0.80':
+    resolution: {integrity: sha512-5ORbm/yFUPO0MEvZsxBMN0cdKw2+lwU/wVn5KN3KF8Dmk1LughuDuUohMh/7iU/XFTiyB0OvmTW/tdV/J7O9zg==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -5188,7 +5188,7 @@ snapshots:
       '@vercel/oidc': 3.2.0
       zod: 4.4.3
 
-  '@ai-sdk/openai@3.0.69(zod@4.4.3)':
+  '@ai-sdk/google@3.0.80(zod@4.4.3)':
     dependencies:
       '@ai-sdk/provider': 3.0.10
       '@ai-sdk/provider-utils': 4.0.27(zod@4.4.3)
