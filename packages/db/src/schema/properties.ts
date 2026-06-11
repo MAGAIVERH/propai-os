@@ -12,6 +12,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { organization, user } from "./auth.js";
+import { vector1536 } from "./vector.js";
 
 export const propertyTypeEnum = pgEnum("property_type", [
   "single_family",
@@ -66,6 +67,11 @@ export const properties = pgTable(
       .notNull()
       .defaultNow(),
     softDeletedAt: timestamp("soft_deleted_at", {
+      withTimezone: true,
+      mode: "date",
+    }),
+    embedding: vector1536("embedding"),
+    embeddingUpdatedAt: timestamp("embedding_updated_at", {
       withTimezone: true,
       mode: "date",
     }),
