@@ -107,6 +107,49 @@ Restart `pnpm dev` after changing any `NEXT_PUBLIC_*` or auth variable.
 
 ---
 
+## Day 28 — AI vision worker (async queue)
+
+When `ENABLE_AI_VISION=true`, `POST /v1/ai/analyze-property-images` **enqueues** a BullMQ job and returns **202 + jobId**. A separate **worker process** must consume the queue and call Gemini.
+
+### Two terminals (recommended)
+
+```bash
+# Terminal 1 — API + dashboard (or API only)
+pnpm dev
+
+# Terminal 2 — analyze-property-images worker
+pnpm --filter @propai/api worker:dev
+```
+
+One-shot worker (no file watch): `pnpm --filter @propai/api worker`.
+
+### Required `.env` (in addition to object storage for real photos)
+
+| Variable | Local value |
+| -------- | ----------- |
+| `ENABLE_AI_VISION` | `true` |
+| `GEMINI_API_KEY` | Your Google AI key |
+| `REDIS_URL` | `redis://localhost:6379` — AI vision rate limit |
+| `REDIS_BULLMQ_URL` | `redis://localhost:6379` — BullMQ (same Redis in Compose) |
+
+Both Redis URLs can point at the same local instance. In production, BullMQ typically uses a dedicated Upstash URL (`rediss://...`) — see `.env.example`.
+
+### Async flow
+
+1. **POST** `/v1/ai/analyze-property-images` with presigned image URLs → **202** `{ "jobId": "..." }`
+2. **GET** `/v1/ai/jobs/:jobId` → poll until `status` is `completed` or `failed`
+3. When `completed`, read `result` (same schema as sync Day 27 response)
+
+With `ENABLE_AI_VISION=false`, POST still returns **200** mock JSON immediately (no worker required).
+
+**Manual QA checklist:** [tasks/PHASE-3-DAY-28-MANUAL.md](./tasks/PHASE-3-DAY-28-MANUAL.md)
+
+### VS Code / Cursor — worker task
+
+`Terminal → Run Task…` → **Dev: AI worker** (see `.vscode/tasks.json`). Run alongside **Dev: API+Web**.
+
+---
+
 ## Quick start (recommended)
 
 ```bash
@@ -180,6 +223,7 @@ curl -s http://localhost:3333/ready
 | `pnpm build:web` | Build `@propai/shared` → `dist/` then `@propai/web` (Turbo `^build`) |
 | `pnpm web-build-smoke` | Typecheck + shared build + web build — regression guard for Day 19 hotfix |
 | `pnpm auth:poc` | Day 11 auth isolation smoke (needs Postgres + migrations) |
+| `pnpm --filter @propai/api worker:dev` | BullMQ worker for async AI vision (Day 28 — run beside API) |
 
 `pnpm dev` runs a fast **predev** check (~1.5s max on Windows if Postgres is down): TCP probe on `localhost:5432`. If it fails:
 
@@ -208,7 +252,8 @@ Copy from `.env.example`. Minimum for daily dev:
 | -------- | ------- |
 | `DATABASE_URL` | Migrations / admin (`propai` user locally) |
 | `DATABASE_APP_URL` | API runtime with RLS (`propai_app` role) |
-| `REDIS_URL` | `redis://localhost:6379` |
+| `REDIS_URL` | `redis://localhost:6379` — rate limit / cache |
+| `REDIS_BULLMQ_URL` | `redis://localhost:6379` — BullMQ queue (same Redis locally; Upstash `rediss://` in prod) |
 | `BETTER_AUTH_SECRET` | Session signing — **min 32 chars** |
 | `BETTER_AUTH_URL` | `http://localhost:3333` (must match API origin) |
 | `API_URL` | Server/middleware → API (`http://localhost:3333`) |
@@ -356,6 +401,7 @@ The dashboard imports compiled output from `packages/shared/dist/`. Turbo builds
 | [web/dashboard-auth.md](./web/dashboard-auth.md) | Dashboard login/signup, cookies, middleware, QA |
 | [infra/object-storage.md](./infra/object-storage.md) | R2 / MinIO private bucket, CORS, `S3_*` env |
 | [api/upload-confirm.md](./api/upload-confirm.md) | Presign → PUT → confirm `property_images` (Day 21) |
+| [tasks/PHASE-3-DAY-28-MANUAL.md](./tasks/PHASE-3-DAY-28-MANUAL.md) | Async AI vision queue + worker manual QA (Day 28) |
 | [web/properties-module.md](./web/properties-module.md) | Dashboard properties list (Day 22) |
 | [api/api-scaffold.md](./api/api-scaffold.md) | Fastify layout, probes |
 | [api/auth-flow.md](./api/auth-flow.md) | Better Auth manual flow |
@@ -368,4 +414,5 @@ The dashboard imports compiled output from `packages/shared/dist/`. Turbo builds
 - `pnpm db:seed-dev` — sample org + owner user
 - `pnpm auth:poc` — dual-org auth smoke
 - `pnpm test:api` — Vitest integration suite
+- `pnpm --filter @propai/api worker:dev` — AI vision BullMQ worker (with `ENABLE_AI_VISION=true`)
 - `pnpm dev:all` — include marketplace on `:3001`
