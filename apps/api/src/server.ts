@@ -1,4 +1,6 @@
 import { buildApp } from "./app.js";
+import { closeBullMqConnections } from "./lib/redis-bullmq.js";
+import { closeRedisClient } from "./lib/redis.js";
 
 const DEFAULT_PORT = 3333;
 
@@ -11,6 +13,7 @@ export async function startServer(): Promise<void> {
   const shutdown = async (signal: string): Promise<void> => {
     app.log.info({ signal }, "shutting down");
     await app.close();
+    await Promise.all([closeRedisClient(), closeBullMqConnections()]);
     process.exit(0);
   };
 
