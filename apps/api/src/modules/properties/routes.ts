@@ -37,6 +37,7 @@ import {
 import { writeAuditEventSafe } from "../../lib/write-audit-event.js";
 import { MOCK_SESSION_DEFAULT_USER_ID } from "../auth/session.js";
 import { createRequirePermissionHook } from "../../plugins/require-member-role.js";
+import { enqueuePropertyEmbeddingJobIfEnabled } from "../ai/enqueue-property-embedding.js";
 
 const propertySelectFields = {
   id: properties.id,
@@ -182,6 +183,25 @@ function listChangedFields(body: UpdatePropertyInput): string[] {
   return (Object.keys(body) as (keyof UpdatePropertyInput)[]).filter(
     (key) => body[key] !== undefined,
   );
+}
+
+function shouldEnqueuePropertyEmbeddingAfterPatch(
+  existing: PropertyRow,
+  updated: PropertyRow,
+  body: UpdatePropertyInput,
+): boolean {
+  if (updated.status !== "active" || updated.softDeletedAt) {
+    return false;
+  }
+
+  const publishedNow =
+    existing.status !== "active" && updated.status === "active";
+
+  const reindexActive =
+    existing.status === "active" &&
+    (body.title !== undefined || body.description !== undefined);
+
+  return publishedNow || reindexActive;
 }
 
 function buildListFilters(
@@ -391,6 +411,10 @@ export async function registerPropertiesRoutes(
         ip: request.ip,
       });
 
+      if (created.status === "active") {
+        await enqueuePropertyEmbeddingJobIfEnabled(tenantId, created.id);
+      }
+
       return reply.status(201).send({
         property: mapPropertyRow(created),
       });
@@ -456,6 +480,10 @@ export async function registerPropertiesRoutes(
         metadata: { changedFields: listChangedFields(body) },
         ip: request.ip,
       });
+
+      if (shouldEnqueuePropertyEmbeddingAfterPatch(existing, updated, body)) {
+        await enqueuePropertyEmbeddingJobIfEnabled(tenantId, updated.id);
+      }
 
       return reply.status(200).send({
         property: mapPropertyRow(updated),
