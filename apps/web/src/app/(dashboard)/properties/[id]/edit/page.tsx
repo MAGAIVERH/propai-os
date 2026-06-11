@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 
 import { ModuleHeader } from "@/components/module-header";
 import { ApiClientError } from "@/lib/api-client";
-import { PropertyForm } from "@/modules/properties/components/property-form";
+import { PropertyEditForm } from "@/modules/properties/components/property-edit-form";
 import { getPropertyById } from "@/modules/properties/queries/get-property-by-id";
 import { mapPropertyToFormValues } from "@/modules/properties/schemas/update-property";
 
@@ -34,8 +34,7 @@ export default async function EditPropertyPage({
         title="Edit property"
         description="Update address, square footage, price, and status."
       />
-      <PropertyForm
-        mode="edit"
+      <PropertyEditForm
         propertyId={property.id}
         defaultValues={mapPropertyToFormValues(property)}
       />

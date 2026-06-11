@@ -2,6 +2,7 @@
 
 import type { PropertyImageResponse } from "@propai/shared";
 
+import { PropertyAiAnalyze } from "@/modules/properties/components/property-ai-analyze";
 import { PropertyGallery } from "@/modules/properties/components/property-gallery";
 import { PropertyImageUpload } from "@/modules/properties/components/property-image-upload";
 import { usePropertyImagesQuery } from "@/modules/properties/hooks/use-property-images";
@@ -39,6 +40,7 @@ export function PropertyDetailMedia({
         nextSortOrder={nextSortOrder}
       />
       <PropertyGallery images={images} />
+      {images.length > 0 ? <PropertyAiAnalyze propertyId={propertyId} /> : null}
     </section>
   );
 }

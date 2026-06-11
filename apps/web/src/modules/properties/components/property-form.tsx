@@ -15,6 +15,11 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/components/ui/alert";
+import {
   Form,
   FormControl,
   FormField,
@@ -58,9 +63,24 @@ type PropertyFormEditProps = {
   mode: "edit";
   propertyId: string;
   defaultValues: CreatePropertyFormValues;
+  aiPrefill?: Partial<CreatePropertyFormValues>;
 };
 
 type PropertyFormProps = PropertyFormCreateProps | PropertyFormEditProps;
+
+const AI_DISCLAIMER =
+  "AI-generated content — please review before publishing.";
+
+function mergeFormValues(
+  base: CreatePropertyFormValues,
+  patch?: Partial<CreatePropertyFormValues>,
+): CreatePropertyFormValues {
+  if (!patch) {
+    return base;
+  }
+
+  return { ...base, ...patch };
+}
 
 function parseNumericField(value: string): number {
   if (value.trim() === "") {
@@ -87,11 +107,13 @@ export function PropertyForm(props: PropertyFormProps) {
   const queryClient = useQueryClient();
   const [isPending, startTransition] = useTransition();
   const isEdit = props.mode === "edit";
+  const aiPrefill = isEdit ? props.aiPrefill : undefined;
+  const hasAiPrefill = Boolean(aiPrefill && Object.keys(aiPrefill).length > 0);
 
   const form = useForm<CreatePropertyFormValues>({
     resolver: zodResolver(createPropertyFormSchema),
     defaultValues: isEdit
-      ? props.defaultValues
+      ? mergeFormValues(props.defaultValues, aiPrefill)
       : createPropertyFormDefaultValues,
   });
 
@@ -146,6 +168,15 @@ export function PropertyForm(props: PropertyFormProps) {
         className="space-y-6"
         noValidate
       >
+        {hasAiPrefill ? (
+          <Alert className="rounded-xl border-primary/30 bg-primary/5">
+            <AlertTitle className="text-foreground">
+              AI-suggested fields applied
+            </AlertTitle>
+            <AlertDescription>{AI_DISCLAIMER}</AlertDescription>
+          </Alert>
+        ) : null}
+
         <section className="rounded-2xl border border-border bg-card p-6">
           <h2 className="text-lg font-semibold text-foreground">
             Basic information
