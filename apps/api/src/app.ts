@@ -7,6 +7,7 @@ import {
   getFastifyLoggerConfig,
   requestIdOptions,
 } from "./lib/logger.js";
+import { registerAiModule } from "./modules/ai/index.js";
 import { registerAuditModule } from "./modules/audit/index.js";
 import { registerHealthModule } from "./modules/health/index.js";
 import { registerPropertiesModule } from "./modules/properties/index.js";
@@ -57,6 +58,7 @@ export async function buildApp(
       await registerAuditModule(v1);
       await registerPropertiesModule(v1);
       await registerUploadsModule(v1);
+      await registerAiModule(v1);
     },
     { prefix: "/v1" },
   );
