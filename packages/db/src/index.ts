@@ -20,12 +20,20 @@ export {
 } from "./queries/organization-auth.js";
 export { seedDevIdentity } from "./seed/dev-identity.js";
 export {
+  DEFAULT_PIPELINE_STAGES,
+  seedDefaultPipelineStages,
+} from "./seed/pipeline-stages.js";
+export {
   account,
   auditLogs,
   authSchema,
   invitation,
+  leadActivities,
+  leadActivityTypeEnum,
+  leads,
   member,
   organization,
+  pipelineStages,
   properties,
   propertyFeatures,
   propertyImages,

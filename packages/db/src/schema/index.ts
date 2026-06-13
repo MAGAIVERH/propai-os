@@ -32,6 +32,12 @@ export {
 };
 export { auditLogs } from "./audit-logs.js";
 export {
+  leadActivities,
+  leadActivityTypeEnum,
+  leads,
+  pipelineStages,
+} from "./crm.js";
+export {
   properties,
   propertyFeatures,
   propertyImages,
