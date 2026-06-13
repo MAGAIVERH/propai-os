@@ -12,6 +12,13 @@ export {
   type ScoreLeadResponse,
 } from "./ai/lead-scoring.js";
 export {
+  estimatePriceRequestSchema,
+  estimatePriceResponseSchema,
+  MOCK_PRICE_ESTIMATE,
+  type EstimatePriceRequest,
+  type EstimatePriceResponse,
+} from "./ai/price-estimation.js";
+export {
   AI_ANALYZE_IMAGES_QUEUE_NAME,
   AI_JOB_STATUSES,
   aiJobStatusSchema,
