@@ -1,7 +1,7 @@
 import { fromNodeHeaders } from "better-auth/node";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 
-import { isOrganizationSlugTaken } from "@propai/db";
+import { isOrganizationSlugTaken, seedDefaultPipelineStages } from "@propai/db";
 
 import { apiError } from "../../../lib/api-error.js";
 import {
@@ -142,6 +142,8 @@ export async function registerBrokerageAuthRoutes(
           metadata: { slug, organizationName },
           ip: request.ip,
         });
+
+        await seedDefaultPipelineStages(organizationId);
 
         const payload: BrokerageSignUpResponse = {
           user: {
