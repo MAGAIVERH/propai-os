@@ -35,6 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { EstimatePriceWidget } from "@/modules/properties/components/estimate-price-widget";
 import { PROPERTIES_QUERY_KEY } from "@/modules/properties/hooks/use-properties";
 import {
   getPropertyStatusLabel,
@@ -116,6 +117,14 @@ export function PropertyForm(props: PropertyFormProps) {
       ? mergeFormValues(props.defaultValues, aiPrefill)
       : createPropertyFormDefaultValues,
   });
+
+  const [watchedCity, watchedState, watchedType, watchedBedrooms, watchedSqFt, watchedRentOrSale] =
+    form.watch(["city", "state", "type", "bedrooms", "sqFt", "rentOrSale"]);
+
+  const canEstimatePrice =
+    Boolean(watchedCity?.trim()) &&
+    Boolean(watchedState?.trim()) &&
+    watchedSqFt > 0;
 
   function onSubmit(values: CreatePropertyFormValues) {
     startTransition(async () => {
@@ -578,6 +587,20 @@ export function PropertyForm(props: PropertyFormProps) {
               )}
             />
           </div>
+
+          <EstimatePriceWidget
+            params={{
+              city: watchedCity ?? "",
+              state: watchedState ?? "",
+              type: watchedType,
+              bedrooms: watchedBedrooms ?? 0,
+              sqFt: watchedSqFt ?? 0,
+              rentOrSale: watchedRentOrSale,
+              excludePropertyId: isEdit ? props.propertyId : undefined,
+            }}
+            canEstimate={canEstimatePrice}
+            onApplyPrice={(usd) => form.setValue("priceUsd", usd)}
+          />
         </section>
 
         <div className="flex flex-wrap items-center gap-3">

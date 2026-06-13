@@ -5,7 +5,10 @@ import {
   analyzePropertyImagesRequestSchema,
   analyzePropertyImagesResponseSchema,
   enqueueAnalyzeImagesJobResponseSchema,
+  estimatePriceRequestSchema,
+  estimatePriceResponseSchema,
   MOCK_LEAD_SCORING_RESULT,
+  MOCK_PRICE_ESTIMATE,
   MOCK_PROPERTY_IMAGE_ANALYSIS,
   scoreLeadRequestSchema,
   scoreLeadResponseSchema,
@@ -19,6 +22,7 @@ import {
   consumeAiVisionRateLimit,
 } from "../../lib/ai-vision-rate-limit.js";
 import {
+  isAiPricingEnabled,
   isAiScoringEnabled,
   isAiVisionEnabled,
 } from "../../lib/ai-feature-flags.js";
@@ -30,6 +34,7 @@ import { createRequirePermissionHook } from "../../plugins/require-member-role.j
 import { AiAnalysisParseError, AiProviderNotConfiguredError } from "./ai-errors.js";
 import { getJobStatus } from "./queries/get-job-status.js";
 import { enqueueAnalyzeImagesJob } from "./queues/analyze-images-queue.js";
+import { estimatePriceWithAI } from "./estimate-price-service.js";
 import { scoreLeadWithAI } from "./score-lead-service.js";
 
 function requireTenantId(request: FastifyRequest): string {
@@ -267,6 +272,57 @@ export async function registerAiRoutes(app: FastifyInstance): Promise<void> {
           bedrooms: property.bedrooms,
           sqFt: property.sqFt,
         });
+
+        return reply.status(200).send(result);
+      } catch (error) {
+        if (error instanceof AiProviderNotConfiguredError) {
+          return reply
+            .status(503)
+            .send(apiError("Service Unavailable", "AI provider is not configured."));
+        }
+
+        if (error instanceof AiAnalysisParseError) {
+          return reply
+            .status(422)
+            .send(apiError("Unprocessable Entity", error.message));
+        }
+
+        throw error;
+      }
+    },
+  );
+
+  /**
+   * POST /ai/estimate-price
+   *
+   * Returns a suggested price range (min/max/midpoint USD) for a property
+   * based on comparable active listings in the same tenant + market.
+   *
+   * Flag off → mock estimate (200). Flag on → real LLM call (OpenAI gpt-4o-mini).
+   */
+  zodApp.post(
+    "/ai/estimate-price",
+    {
+      schema: {
+        body: estimatePriceRequestSchema,
+        response: {
+          200: estimatePriceResponseSchema,
+        },
+      },
+      preHandler: requirePropertiesWrite,
+    },
+    async (request, reply: FastifyReply) => {
+      const tenantId = requireTenantId(request);
+      const body = estimatePriceRequestSchema.parse(request.body);
+
+      if (!isAiPricingEnabled()) {
+        return reply
+          .status(200)
+          .send(estimatePriceResponseSchema.parse(MOCK_PRICE_ESTIMATE));
+      }
+
+      try {
+        const result = await estimatePriceWithAI(tenantId, body);
 
         return reply.status(200).send(result);
       } catch (error) {

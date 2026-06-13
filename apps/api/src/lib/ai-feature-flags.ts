@@ -22,3 +22,8 @@ export function isSemanticSearchEnabled(): boolean {
 export function isAiScoringEnabled(): boolean {
   return isEnvFlagTrue("ENABLE_AI_SCORING");
 }
+
+/** True only when ENABLE_AI_PRICING is exactly "true" (case-insensitive). */
+export function isAiPricingEnabled(): boolean {
+  return isEnvFlagTrue("ENABLE_AI_PRICING");
+}
