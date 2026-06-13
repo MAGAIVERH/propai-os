@@ -1,4 +1,17 @@
 export {
+  derivePriority,
+  LEAD_PRIORITIES,
+  leadPrioritySchema,
+  leadScoringLeadDataSchema,
+  MOCK_LEAD_SCORING_RESULT,
+  scoreLeadRequestSchema,
+  scoreLeadResponseSchema,
+  type LeadPriority,
+  type LeadScoringLeadData,
+  type ScoreLeadRequest,
+  type ScoreLeadResponse,
+} from "./ai/lead-scoring.js";
+export {
   AI_ANALYZE_IMAGES_QUEUE_NAME,
   AI_JOB_STATUSES,
   aiJobStatusSchema,
