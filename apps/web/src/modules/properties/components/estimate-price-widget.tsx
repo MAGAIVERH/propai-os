@@ -122,7 +122,12 @@ export function EstimatePriceWidget({
           )}
 
           {!isLoading && state.status === "error" && (
-            <p className="text-sm text-destructive">{state.message}</p>
+            <div className="space-y-1">
+              <p className="text-sm text-destructive">{state.message}</p>
+              <p className="text-xs text-muted-foreground">
+                You can still enter the price manually in the field above.
+              </p>
+            </div>
           )}
 
           {!isLoading && (

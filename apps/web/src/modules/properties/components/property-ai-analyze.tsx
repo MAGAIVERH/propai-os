@@ -135,7 +135,10 @@ export function PropertyAiAnalyze({ propertyId }: PropertyAiAnalyzeProps) {
       {status === "failed" && errorMessage ? (
         <Alert variant="destructive" className="rounded-xl">
           <AlertTitle>Analysis failed</AlertTitle>
-          <AlertDescription>{errorMessage}</AlertDescription>
+          <AlertDescription>
+            {errorMessage} You can still fill in the property details manually
+            using the edit form.
+          </AlertDescription>
         </Alert>
       ) : null}
 
