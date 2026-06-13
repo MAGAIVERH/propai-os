@@ -1,12 +1,16 @@
-import { TenantContextRequiredError } from "@propai/db";
+import { properties, runInTenantContext, TenantContextRequiredError } from "@propai/db";
 import {
   analyzeImagesJobParamsSchema,
   analyzeImagesJobStatusResponseSchema,
   analyzePropertyImagesRequestSchema,
   analyzePropertyImagesResponseSchema,
   enqueueAnalyzeImagesJobResponseSchema,
+  MOCK_LEAD_SCORING_RESULT,
   MOCK_PROPERTY_IMAGE_ANALYSIS,
+  scoreLeadRequestSchema,
+  scoreLeadResponseSchema,
 } from "@propai/shared";
+import { and, eq, isNull } from "drizzle-orm";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 
@@ -14,14 +18,19 @@ import {
   checkAiVisionRateLimit,
   consumeAiVisionRateLimit,
 } from "../../lib/ai-vision-rate-limit.js";
-import { isAiVisionEnabled } from "../../lib/ai-feature-flags.js";
+import {
+  isAiScoringEnabled,
+  isAiVisionEnabled,
+} from "../../lib/ai-feature-flags.js";
 import { apiError } from "../../lib/api-error.js";
 import { BullMqRedisUnavailableError } from "../../lib/redis-bullmq.js";
 import { RedisUnavailableError } from "../../lib/redis.js";
 import { assertTenantImageUrls } from "../../lib/validate-tenant-image-url.js";
 import { createRequirePermissionHook } from "../../plugins/require-member-role.js";
+import { AiAnalysisParseError, AiProviderNotConfiguredError } from "./ai-errors.js";
 import { getJobStatus } from "./queries/get-job-status.js";
 import { enqueueAnalyzeImagesJob } from "./queues/analyze-images-queue.js";
+import { scoreLeadWithAI } from "./score-lead-service.js";
 
 function requireTenantId(request: FastifyRequest): string {
   if (!request.tenantId) {
@@ -181,6 +190,96 @@ export async function registerAiRoutes(app: FastifyInstance): Promise<void> {
           return reply
             .status(503)
             .send(apiError("Service Unavailable", error.message));
+        }
+
+        throw error;
+      }
+    },
+  );
+
+  /**
+   * POST /ai/score-lead
+   *
+   * Scores a lead (0–100) based on lead data + matched property context.
+   * Returns priority label (hot/warm/cold) and a short reasoning string.
+   *
+   * Flag off → mock score (200). Flag on → real LLM call (OpenAI gpt-4o-mini).
+   * Score persistence is wired in Day 36 when the `leads` table is added.
+   */
+  zodApp.post(
+    "/ai/score-lead",
+    {
+      schema: {
+        body: scoreLeadRequestSchema,
+        response: {
+          200: scoreLeadResponseSchema,
+        },
+      },
+      preHandler: requirePropertiesWrite,
+    },
+    async (request, reply: FastifyReply) => {
+      const tenantId = requireTenantId(request);
+
+      const body = scoreLeadRequestSchema.parse(request.body);
+
+      if (!isAiScoringEnabled()) {
+        return reply
+          .status(200)
+          .send(scoreLeadResponseSchema.parse(MOCK_LEAD_SCORING_RESULT));
+      }
+
+      // Fetch property in tenant context (RLS enforced)
+      const property = await runInTenantContext(tenantId, async (tx) => {
+        const rows = await tx
+          .select({
+            id: properties.id,
+            title: properties.title,
+            priceUsdCents: properties.priceUsdCents,
+            city: properties.city,
+            state: properties.state,
+            bedrooms: properties.bedrooms,
+            sqFt: properties.sqFt,
+          })
+          .from(properties)
+          .where(
+            and(
+              eq(properties.id, body.propertyId),
+              isNull(properties.softDeletedAt),
+            ),
+          )
+          .limit(1);
+
+        return rows[0] ?? null;
+      });
+
+      if (!property) {
+        return reply
+          .status(404)
+          .send(apiError("Not Found", "Property not found."));
+      }
+
+      try {
+        const result = await scoreLeadWithAI(body.leadData, {
+          title: property.title,
+          priceUsdCents: property.priceUsdCents,
+          city: property.city,
+          state: property.state,
+          bedrooms: property.bedrooms,
+          sqFt: property.sqFt,
+        });
+
+        return reply.status(200).send(result);
+      } catch (error) {
+        if (error instanceof AiProviderNotConfiguredError) {
+          return reply
+            .status(503)
+            .send(apiError("Service Unavailable", "AI provider is not configured."));
+        }
+
+        if (error instanceof AiAnalysisParseError) {
+          return reply
+            .status(422)
+            .send(apiError("Unprocessable Entity", error.message));
         }
 
         throw error;
