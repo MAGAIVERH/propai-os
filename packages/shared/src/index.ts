@@ -75,6 +75,14 @@ export {
   type PropertyImageResponse,
 } from "./properties/image-confirm.js";
 export {
+  semanticSearchQuerySchema,
+  semanticSearchResponseSchema,
+  semanticSearchResultItemSchema,
+  type SemanticSearchQuery,
+  type SemanticSearchResponse,
+  type SemanticSearchResultItem,
+} from "./search/semantic-search.js";
+export {
   createPropertySchema,
   PROPERTY_STATUSES,
   PROPERTY_TYPES,
