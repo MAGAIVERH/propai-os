@@ -15,12 +15,8 @@ Index of accepted decisions for PropAI OS. New ADRs use the template below and i
 | [003](./003-audit-logs.md) | Tenant-scoped audit logs | Accepted | 2026-06-04 | Append-only `audit_logs` with RLS; `GET /v1/audit-logs`; `audit:read` RBAC |
 | [004](./004-properties-schema.md) | Properties schema and RLS | Accepted | 2026-06-05 | `properties` + child tables; direct vs parent-scoped RLS; US fields; migration `0007_properties` |
 | [005](./005-object-storage-r2.md) | Object storage (R2) for listing photos | Accepted | 2026-06-05 | Private bucket; presigned PUT/GET; key `tenant/{id}/property/{id}/{uuid}.ext`; 10 MB image/* |
-
-### Planned (Phase 2+)
-
-| ADR | Title | Status | Target phase |
-| --- | ----- | ------ | ------------ |
-| 006 | AI workers & feature flags | Proposed | Phase 3+ |
+| [006](./006-ai-vision-listings.md) | AI vision for property listings | Accepted | 2026-06-13 | Gemini Flash async via BullMQ; rate limit 10/hour/tenant; `ENABLE_AI_VISION` flag; SSRF guard |
+| [007](./007-semantic-search-pgvector.md) | Semantic search with pgvector | Accepted | 2026-06-13 | `text-embedding-3-small` (1536d); ivfflat index; public `GET /search/semantic`; hybrid SQL filters |
 
 See [PHASE-2-PLAN.md](../PHASE-2-PLAN.md) and [FOUNDATION-SIGNOFF.md](../FOUNDATION-SIGNOFF.md).
 

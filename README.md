@@ -223,6 +223,50 @@ API scaffold (Day 12): [docs/api/api-scaffold.md](./docs/api/api-scaffold.md)
 
 ---
 
+## AI features
+
+PropAI OS ships four AI capabilities, each behind a feature flag so they can be enabled independently without affecting CI or demo environments that lack API keys.
+
+| Feature | Flag | Model | Endpoint |
+| ------- | ---- | ----- | -------- |
+| Property image analysis | `ENABLE_AI_VISION` | Gemini Flash 2.0 | `POST /v1/ai/analyze-property-images` |
+| Semantic property search | `ENABLE_SEMANTIC_SEARCH` | text-embedding-3-small | `GET /search/semantic` |
+| Lead scoring | `ENABLE_AI_SCORING` | gpt-4o-mini | `POST /v1/ai/score-lead` |
+| Price estimation | `ENABLE_AI_PRICING` | gpt-4o-mini | `POST /v1/ai/estimate-price` |
+
+All flags default to `false`. When a flag is off, the API returns a deterministic mock response so the UI and tests work without real credentials.
+
+### Enabling AI in local dev
+
+```bash
+# .env — add the keys for the features you want to test
+GEMINI_API_KEY=...                # vision
+OPENAI_API_KEY=...                # embeddings, scoring, pricing
+
+ENABLE_AI_VISION=true             # async Gemini via BullMQ
+ENABLE_SEMANTIC_SEARCH=true       # pgvector cosine search
+ENABLE_AI_SCORING=true            # gpt-4o-mini lead scoring
+ENABLE_AI_PRICING=true            # gpt-4o-mini price estimator
+```
+
+Redis (Upstash or local Docker) is required when `ENABLE_AI_VISION=true` or `ENABLE_SEMANTIC_SEARCH=true` (BullMQ queues). All four flags can run with local Docker (`docker compose up -d`).
+
+### Cost summary
+
+| Feature | Model | Est. cost per operation |
+| ------- | ----- | ----------------------- |
+| Image analysis (10 photos) | Gemini Flash 2.0 | ~$0.001 |
+| Embedding (property publish) | text-embedding-3-small | ~$0.000004 |
+| Semantic search query | text-embedding-3-small | ~$0.000002 |
+| Lead scoring | gpt-4o-mini | ~$0.0001 |
+| Price estimation | gpt-4o-mini | ~$0.0002 |
+
+Rate limits: image analysis is capped at **10 analyses per tenant per hour** to prevent runaway costs.
+
+See [ADR 006](docs/adr/006-ai-vision-listings.md) (vision) and [ADR 007](docs/adr/007-semantic-search-pgvector.md) (semantic search) for architecture and trade-off details.
+
+---
+
 ## Documentation
 
 | Document               | Description                                             |
@@ -231,7 +275,7 @@ API scaffold (Day 12): [docs/api/api-scaffold.md](./docs/api/api-scaffold.md)
 | `docs/FOUNDATION-SIGNOFF.md` | **Executive summary** — what v0.1 proved / excluded |
 | `docs/BACKEND-FOUNDATION-CHECKLIST.md` | **Phase 1 sign-off** — Days 6–15, pre-tag verification |
 | `docs/releases/foundation-v0.1.0.md` | **Release notes** — tag `foundation-v0.1.0` |
-| `docs/adr/README.md` | **ADR index** — 001 RLS, 002 identity, 003 audit |
+| `docs/adr/README.md` | **ADR index** — 001 RLS, 002 identity, 003 audit, 006 AI vision, 007 semantic search |
 | `docs/PHASE-2-PLAN.md` | **Properties** — Days 16–25 roadmap |
 | `docs/REQUIREMENTS.md` | **v1 product scope** — flows, AI, fields, MVP lock      |
 | `docs/architecture.md` | Actors, brokerage flow, **RLS diagrams** (Foundation v0.1) |
