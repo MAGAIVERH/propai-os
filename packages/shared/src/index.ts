@@ -132,6 +132,14 @@ export {
   type UpdateLeadInput,
 } from "./crm/lead.js";
 export {
+  publicPropertyQuerySchema,
+  submitInterestResponseSchema,
+  submitInterestSchema,
+  type PublicPropertyQuery,
+  type SubmitInterestInput,
+  type SubmitInterestResponse,
+} from "./marketplace/public.js";
+export {
   createPropertySchema,
   PROPERTY_STATUSES,
   PROPERTY_TYPES,
