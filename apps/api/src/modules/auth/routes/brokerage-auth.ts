@@ -1,7 +1,7 @@
 import { fromNodeHeaders } from "better-auth/node";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 
-import { isOrganizationSlugTaken, seedDefaultPipelineStages } from "@propai/db";
+import { getInitialOrganizationIdForUser, isOrganizationSlugTaken, seedDefaultPipelineStages } from "@propai/db";
 
 import { apiError } from "../../../lib/api-error.js";
 import {
@@ -18,6 +18,7 @@ import {
 import { slugifyOrganizationName } from "../../../lib/organization-slug.js";
 import { writeAuditEventSafe } from "../../../lib/write-audit-event.js";
 import { auth } from "../better-auth.js";
+import { brokerageSignInSchema } from "../schemas/brokerage-sign-in.js";
 import { brokerageSignUpSchema } from "../schemas/brokerage-sign-up.js";
 
 type BrokerageSignUpResponse = {
@@ -185,6 +186,79 @@ export async function registerBrokerageAuthRoutes(
               "Failed to complete brokerage sign-up.",
             ),
           );
+      }
+    },
+  );
+
+  app.post(
+    "/api/auth/brokerage-sign-in",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const parsed = brokerageSignInSchema.safeParse(request.body);
+
+      if (!parsed.success) {
+        return reply
+          .status(400)
+          .send(
+            apiError(
+              "Bad Request",
+              parsed.error.issues[0]?.message ?? "Invalid request body.",
+            ),
+          );
+      }
+
+      const { email, password } = parsed.data;
+
+      try {
+        const signInResult = await auth.api.signInEmail({
+          body: { email, password, rememberMe: true },
+          headers: fromNodeHeaders(request.headers),
+          returnHeaders: true,
+        });
+
+        forwardSetCookieHeaders(signInResult.headers, reply);
+
+        const userId = signInResult.response?.user?.id;
+
+        if (!userId) {
+          return reply.status(401).send(apiError("Unauthorized", "Sign-in failed."));
+        }
+
+        const orgId = await getInitialOrganizationIdForUser(userId);
+
+        if (!orgId) {
+          return reply.status(200).send(signInResult.response);
+        }
+
+        // Prefer cookies returned by signIn (new session); fall back to the
+        // original request cookies so setActiveOrganization can find the
+        // existing session when Better Auth reuses it without re-issuing cookies.
+        const signInCookieHeader =
+          buildCookieHeader(signInResult.headers) ??
+          (request.headers.cookie ?? null);
+        const activeResult = await auth.api.setActiveOrganization({
+          body: { organizationId: orgId },
+          headers: mergeCookieHeaders(signInResult.headers, signInCookieHeader),
+          returnHeaders: true,
+        });
+
+        forwardSetCookieHeaders(activeResult.headers, reply);
+
+        return reply.status(200).send(signInResult.response);
+      } catch (error: unknown) {
+        if (isAuthHttpError(error)) {
+          const status = getAuthHttpErrorStatus(error);
+          const message = getAuthHttpErrorMessage(error);
+
+          return reply
+            .status(status === 401 ? 401 : 400)
+            .send(apiError("Unauthorized", message ?? "Invalid email or password."));
+        }
+
+        console.error("Brokerage sign-in failed:", error);
+
+        return reply
+          .status(500)
+          .send(apiError("Internal Server Error", "Failed to complete sign-in."));
       }
     },
   );

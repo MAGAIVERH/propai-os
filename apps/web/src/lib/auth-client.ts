@@ -154,12 +154,11 @@ async function readJson(response: Response): Promise<unknown> {
 export async function signInWithEmail(
   input: SignInWithEmailInput,
 ): Promise<AuthSessionData> {
-  const response = await apiFetch("/api/auth/sign-in/email", {
+  const response = await apiFetch("/api/auth/brokerage-sign-in", {
     method: "POST",
     json: {
       email: input.email,
       password: input.password,
-      rememberMe: input.rememberMe ?? false,
     },
   });
 
