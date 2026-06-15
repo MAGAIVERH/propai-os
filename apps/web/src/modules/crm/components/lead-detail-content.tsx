@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { LeadActivityListResponse, LeadResponse } from "@propai/shared";
 import {
@@ -15,8 +16,19 @@ import {
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { deleteLead } from "@/modules/crm/queries/delete-lead";
+import { LEADS_QUERY_KEY } from "@/modules/crm/hooks/use-kanban";
 import { createLeadActivity } from "@/modules/crm/queries/create-lead-activity";
 import { getLeadActivities } from "@/modules/crm/queries/get-lead-activities";
 import { moveLeadStage } from "@/modules/crm/queries/move-lead-stage";
@@ -63,10 +75,12 @@ type Props = {
 
 export function LeadDetailContent({ lead, initialActivities }: Props) {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const ACTIVITIES_KEY = ["lead-activities", lead.id] as const;
 
   const [activityType, setActivityType] = useState<AddActivityType>("note");
   const [content, setContent] = useState("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const activitiesQuery = useQuery({
     queryKey: ACTIVITIES_KEY,
@@ -105,6 +119,19 @@ export function LeadDetailContent({ lead, initialActivities }: Props) {
     },
     onSuccess: () => toast.success("Lead marked as lost."),
     onError: () => toast.error("Failed to mark lead as lost."),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteLead(lead.id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: LEADS_QUERY_KEY });
+      toast.success("Lead deleted.");
+      router.push("/leads");
+    },
+    onError: () => {
+      toast.error("Failed to delete lead.");
+      setDeleteDialogOpen(false);
+    },
   });
 
   const activities = activitiesQuery.data?.activities ?? [];
@@ -237,6 +264,13 @@ export function LeadDetailContent({ lead, initialActivities }: Props) {
           >
             Back to Pipeline
           </Button>
+          <Button
+            variant="ghost"
+            className="w-full rounded-xl text-sm text-destructive hover:bg-destructive/5 hover:text-destructive"
+            onClick={() => setDeleteDialogOpen(true)}
+          >
+            Delete Lead
+          </Button>
         </section>
       </aside>
 
@@ -351,6 +385,38 @@ export function LeadDetailContent({ lead, initialActivities }: Props) {
           )}
         </section>
       </main>
+
+      {/* Delete confirmation dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>Delete lead?</DialogTitle>
+            <DialogDescription>
+              This will permanently remove{" "}
+              <strong>
+                {lead.firstName} {lead.lastName}
+              </strong>{" "}
+              and all their activity history. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose render={<Button variant="outline" className="rounded-xl" />}>
+              Cancel
+            </DialogClose>
+            <Button
+              variant="destructive"
+              className="rounded-xl"
+              disabled={deleteMutation.isPending}
+              onClick={() => deleteMutation.mutate()}
+            >
+              {deleteMutation.isPending ? (
+                <Loader2 className="mr-2 size-4 animate-spin" />
+              ) : null}
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
