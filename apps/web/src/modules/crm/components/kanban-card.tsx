@@ -1,9 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import type { LeadResponse } from "@propai/shared";
-import { GripVertical } from "lucide-react";
+import { ExternalLink, GripVertical } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -48,7 +49,17 @@ export function KanbanCard({ lead, isDragging = false }: KanbanCardProps) {
         <p className="text-sm font-semibold leading-tight text-foreground">
           {lead.firstName} {lead.lastName}
         </p>
-        <GripVertical className="size-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+        <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+          <Link
+            href={`/leads/${lead.id}`}
+            onPointerDown={(e) => e.stopPropagation()}
+            className="rounded p-0.5 text-muted-foreground hover:text-foreground"
+            aria-label="Open lead detail"
+          >
+            <ExternalLink className="size-3.5" />
+          </Link>
+          <GripVertical className="size-4 text-muted-foreground" />
+        </div>
       </div>
 
       {/* Source / property interest */}
