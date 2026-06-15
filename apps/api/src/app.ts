@@ -12,6 +12,7 @@ import { registerAuditModule } from "./modules/audit/index.js";
 import { registerCrmModule } from "./modules/crm/index.js";
 import { registerHealthModule } from "./modules/health/index.js";
 import { registerPropertiesModule } from "./modules/properties/index.js";
+import { registerPublicModule } from "./modules/public/index.js";
 import { registerSearchModule } from "./modules/search/index.js";
 import { registerTenantsModule } from "./modules/tenants/index.js";
 import { registerUploadsModule } from "./modules/uploads/index.js";
@@ -52,6 +53,7 @@ export async function buildApp(
   await app.register(authPlugin, { mountAuthRoutes });
 
   await registerSearchModule(app);
+  await registerPublicModule(app);
 
   await app.register(tenantContextPlugin);
   await app.register(memberRolePlugin);
