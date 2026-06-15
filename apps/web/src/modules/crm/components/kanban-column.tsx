@@ -11,13 +11,17 @@ type KanbanColumnProps = {
   stage: PipelineStage;
   leads: LeadResponse[];
   activeLeadId: string | null;
+  isWonCelebrating?: boolean;
 };
 
-export function KanbanColumn({ stage, leads, activeLeadId }: KanbanColumnProps) {
+export function KanbanColumn({ stage, leads, activeLeadId, isWonCelebrating = false }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: stage.id });
 
   return (
-    <div className="flex w-64 shrink-0 flex-col gap-3">
+    <div
+      className="flex w-64 shrink-0 flex-col gap-3"
+      data-column-id={stage.id}
+    >
       {/* Column header */}
       <div className="flex items-center gap-2 px-1">
         <span
@@ -36,6 +40,7 @@ export function KanbanColumn({ stage, leads, activeLeadId }: KanbanColumnProps) 
         className={cn(
           "flex min-h-48 flex-col gap-2 rounded-2xl border border-border bg-muted/40 p-2 transition-colors",
           isOver && "border-primary/50 bg-primary/5",
+          isWonCelebrating && "border-emerald-400/60 bg-emerald-50/40 dark:bg-emerald-950/20",
         )}
       >
         {leads.map((lead) => (

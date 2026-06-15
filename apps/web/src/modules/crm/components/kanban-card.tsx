@@ -35,6 +35,7 @@ export function KanbanCard({ lead, isDragging = false }: KanbanCardProps) {
     <div
       ref={setNodeRef}
       style={style}
+      data-flip-id={lead.id}
       className={cn(
         "group flex cursor-grab flex-col gap-2 rounded-xl border border-border bg-card p-3 shadow-sm transition-shadow active:cursor-grabbing",
         isDragging && "opacity-50 shadow-lg ring-2 ring-primary/30",
