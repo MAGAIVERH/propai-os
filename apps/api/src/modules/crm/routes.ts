@@ -40,6 +40,7 @@ import { decodeLeadCursor, encodeLeadCursor } from "../../lib/lead-cursor.js";
 import { writeAuditEventSafe } from "../../lib/write-audit-event.js";
 import { MOCK_SESSION_DEFAULT_USER_ID } from "../auth/session.js";
 import { createRequirePermissionHook } from "../../plugins/require-member-role.js";
+import { publishTenantEvent } from "../realtime/bus.js";
 
 // ── Row types ────────────────────────────────────────────────────────────────
 
@@ -356,7 +357,16 @@ export async function registerCrmRoutes(
         ip: request.ip,
       });
 
-      return reply.status(201).send({ lead: mapLeadRow(created as LeadRow) });
+      const lead = mapLeadRow(created as LeadRow);
+
+      publishTenantEvent(tenantId, {
+        type: "lead:created",
+        tenantId,
+        timestamp: new Date().toISOString(),
+        lead,
+      });
+
+      return reply.status(201).send({ lead });
     },
   );
 
@@ -467,7 +477,16 @@ export async function registerCrmRoutes(
         ip: request.ip,
       });
 
-      return reply.status(200).send({ lead: mapLeadRow(updated as LeadRow) });
+      const lead = mapLeadRow(updated as LeadRow);
+
+      publishTenantEvent(tenantId, {
+        type: "lead:updated",
+        tenantId,
+        timestamp: new Date().toISOString(),
+        lead,
+      });
+
+      return reply.status(200).send({ lead });
     },
   );
 
@@ -530,7 +549,16 @@ export async function registerCrmRoutes(
         ip: request.ip,
       });
 
-      return reply.status(200).send({ lead: mapLeadRow(deleted as LeadRow) });
+      const lead = mapLeadRow(deleted as LeadRow);
+
+      publishTenantEvent(tenantId, {
+        type: "lead:deleted",
+        tenantId,
+        timestamp: new Date().toISOString(),
+        lead,
+      });
+
+      return reply.status(200).send({ lead });
     },
   );
 
@@ -600,6 +628,7 @@ export async function registerCrmRoutes(
         return {
           type: "success",
           lead: updated!,
+          oldStageId: lead.stageId,
           newStageName: newStage.name,
           oldStageName,
         } as const;
@@ -631,9 +660,20 @@ export async function registerCrmRoutes(
         ip: request.ip,
       });
 
-      return reply
-        .status(200)
-        .send({ lead: mapLeadRow(result.lead as LeadRow) });
+      const lead = mapLeadRow(result.lead as LeadRow);
+
+      publishTenantEvent(tenantId, {
+        type: "lead:moved",
+        tenantId,
+        timestamp: new Date().toISOString(),
+        lead,
+        fromStageId: result.oldStageId,
+        toStageId: stageId,
+        fromStageName: result.oldStageName,
+        toStageName: result.newStageName,
+      });
+
+      return reply.status(200).send({ lead });
     },
   );
 
@@ -689,9 +729,16 @@ export async function registerCrmRoutes(
           .send(apiError("Internal Server Error", "Failed to create activity."));
       }
 
-      return reply
-        .status(201)
-        .send({ activity: mapActivityRow(created as LeadActivityRow) });
+      const activity = mapActivityRow(created as LeadActivityRow);
+
+      publishTenantEvent(tenantId, {
+        type: "activity:created",
+        tenantId,
+        timestamp: new Date().toISOString(),
+        activity,
+      });
+
+      return reply.status(201).send({ activity });
     },
   );
 

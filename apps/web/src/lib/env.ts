@@ -19,3 +19,8 @@ export function getPublicApiUrl(): string {
 export function getApiUrl(): string {
   return readEnv("API_URL") ?? getPublicApiUrl();
 }
+
+/** Browser-facing WebSocket origin, derived from the public API URL. */
+export function getWsUrl(): string {
+  return getPublicApiUrl().replace(/^http/, "ws");
+}

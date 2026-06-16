@@ -132,6 +132,20 @@ export {
   type UpdateLeadInput,
 } from "./crm/lead.js";
 export {
+  activityCreatedEventSchema,
+  leadCreatedEventSchema,
+  leadDeletedEventSchema,
+  leadMovedEventSchema,
+  leadUpdatedEventSchema,
+  realtimeEventSchema,
+  type ActivityCreatedEvent,
+  type LeadCreatedEvent,
+  type LeadDeletedEvent,
+  type LeadMovedEvent,
+  type LeadUpdatedEvent,
+  type RealtimeEvent,
+} from "./crm/lead-events.js";
+export {
   publicPropertyQuerySchema,
   submitInterestResponseSchema,
   submitInterestSchema,
