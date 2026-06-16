@@ -1,3 +1,5 @@
+import { eq, or } from "drizzle-orm";
+
 import {
   closeDb,
   getDb,
@@ -15,7 +17,14 @@ export async function seedRlsTestData(): Promise<RlsTestSeed> {
   const adminDb = getDb();
 
   await adminDb.delete(testItems);
-  await adminDb.delete(organization);
+  // Delete only the known test orgs — never wipe the whole table so real
+  // user brokerages created during development are not destroyed.
+  await adminDb.delete(organization).where(
+    or(
+      eq(organization.slug, "api-rls-tenant-a"),
+      eq(organization.slug, "api-rls-tenant-b"),
+    ),
+  );
 
   const [tenantA] = await adminDb
     .insert(organization)

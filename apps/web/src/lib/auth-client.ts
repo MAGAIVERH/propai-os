@@ -221,6 +221,19 @@ export async function getSession(): Promise<AuthSessionData | null> {
   return parseAuthSessionData(body);
 }
 
+export async function createBrokerage(input: {
+  organizationName: string;
+}): Promise<void> {
+  const response = await apiFetch("/api/auth/brokerage-create-organization", {
+    method: "POST",
+    json: input,
+  });
+
+  if (!response.ok) {
+    throw await parseApiErrorResponse(response);
+  }
+}
+
 export async function signOut(): Promise<void> {
   const response = await apiFetch("/api/auth/sign-out", {
     method: "POST",

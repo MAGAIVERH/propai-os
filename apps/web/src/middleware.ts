@@ -6,10 +6,6 @@ const DEFAULT_API_URL = "http://localhost:3333";
 
 const AUTH_PATHS = new Set(["/login", "/signup"]);
 
-/**
- * Edge middleware — resolves session via API fetch only (no Node-only APIs).
- * Forwards browser cookies to Better Auth `GET /api/auth/get-session`.
- */
 function getMiddlewareApiUrl(): string {
   return (
     process.env.API_URL?.trim() ??
@@ -22,26 +18,13 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
-function hasAuthenticatedSession(body: unknown): boolean {
-  if (!isRecord(body)) {
-    return false;
-  }
+type SessionStatus = "none" | "no-org" | "active";
 
-  const session = body.session;
-  const user = body.user;
-
-  if (!isRecord(session) || !isRecord(user)) {
-    return false;
-  }
-
-  return typeof user.id === "string" && typeof session.id === "string";
-}
-
-async function fetchHasSession(request: NextRequest): Promise<boolean> {
+async function fetchSessionStatus(request: NextRequest): Promise<SessionStatus> {
   const cookie = request.headers.get("cookie");
 
   if (!cookie) {
-    return false;
+    return "none";
   }
 
   try {
@@ -55,14 +38,25 @@ async function fetchHasSession(request: NextRequest): Promise<boolean> {
     );
 
     if (response.status === 401 || !response.ok) {
-      return false;
+      return "none";
     }
 
     const body: unknown = await response.json();
 
-    return hasAuthenticatedSession(body);
+    if (!isRecord(body)) return "none";
+
+    const session = body.session;
+    const user = body.user;
+
+    if (!isRecord(session) || !isRecord(user)) return "none";
+    if (typeof user.id !== "string" || typeof session.id !== "string") return "none";
+
+    return typeof session.activeOrganizationId === "string" &&
+      session.activeOrganizationId.length > 0
+      ? "active"
+      : "no-org";
   } catch {
-    return false;
+    return "none";
   }
 }
 
@@ -72,24 +66,40 @@ function redirectTo(request: NextRequest, pathname: string): NextResponse {
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
-  const isAuthenticated = await fetchHasSession(request);
+  const status = await fetchSessionStatus(request);
   const isProtected = isProtectedDashboardPath(pathname);
   const isAuthPage = AUTH_PATHS.has(pathname);
+  const isSetup = pathname === "/setup";
   const isRoot = pathname === "/";
 
   if (isRoot) {
-    return redirectTo(request, isAuthenticated ? "/dashboard" : "/login");
+    if (status === "active") return redirectTo(request, "/dashboard");
+    if (status === "no-org") return redirectTo(request, "/setup");
+    return redirectTo(request, "/login");
   }
 
-  if (isProtected && !isAuthenticated) {
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("next", pathname);
-
-    return NextResponse.redirect(loginUrl);
+  if (status === "none") {
+    if (isProtected || isSetup) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("next", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    return NextResponse.next();
   }
 
-  if (isAuthPage && isAuthenticated) {
-    return redirectTo(request, "/dashboard");
+  // Authenticated (with or without org)
+  if (isAuthPage) {
+    return redirectTo(request, status === "active" ? "/dashboard" : "/setup");
+  }
+
+  if (status === "active") {
+    if (isSetup) return redirectTo(request, "/dashboard");
+    return NextResponse.next();
+  }
+
+  // Authenticated but no org — must go to setup
+  if (!isSetup) {
+    return redirectTo(request, "/setup");
   }
 
   return NextResponse.next();
@@ -105,6 +115,7 @@ export const config = {
     "/settings/:path*",
     "/login",
     "/signup",
+    "/setup",
     "/",
   ],
 };
