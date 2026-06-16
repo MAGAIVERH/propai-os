@@ -1,4 +1,5 @@
 import cors from "@fastify/cors";
+import websocket from "@fastify/websocket";
 import Fastify, { type FastifyInstance } from "fastify";
 
 import { TRUSTED_ORIGINS } from "./modules/auth/index.js";
@@ -13,6 +14,7 @@ import { registerCrmModule } from "./modules/crm/index.js";
 import { registerHealthModule } from "./modules/health/index.js";
 import { registerPropertiesModule } from "./modules/properties/index.js";
 import { registerPublicModule } from "./modules/public/index.js";
+import { registerRealtimeModule } from "./modules/realtime/index.js";
 import { registerSearchModule } from "./modules/search/index.js";
 import { registerTenantsModule } from "./modules/tenants/index.js";
 import { registerUploadsModule } from "./modules/uploads/index.js";
@@ -48,6 +50,7 @@ export async function buildApp(
   });
 
   await app.register(securityPlugin);
+  await app.register(websocket);
   await registerHealthModule(app);
 
   await app.register(authPlugin, { mountAuthRoutes });
@@ -66,6 +69,7 @@ export async function buildApp(
       await registerUploadsModule(v1);
       await registerAiModule(v1);
       await registerCrmModule(v1);
+      await registerRealtimeModule(v1);
     },
     { prefix: "/v1" },
   );
