@@ -1,6 +1,6 @@
 import type { PropertyResponse } from "@propai/shared";
 
-import { getApiUrl } from "./env.js";
+import { getApiUrl } from "./env";
 
 type PublicPropertyListResult = {
   properties: PropertyResponse[];
