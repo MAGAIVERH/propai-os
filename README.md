@@ -21,8 +21,7 @@ PropAI OS is an AI-powered Real Estate Operating System built for US brokerages 
 ---
 
 ## Live demo
-
-**URL:** [https://demo.propai-os.com](https://demo.propai-os.com) _(TBD — placeholder)_
+> Live demo coming in Phase 2 (Properties UI). Foundation v0.1 ships multi-tenancy, RLS, auth, and AI feature flags.
 
 Demo credentials will be documented here once staging is deployed.
 
