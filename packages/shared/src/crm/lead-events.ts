@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { leadActivityResponseSchema, leadResponseSchema } from "./lead.js";
+import { notificationResponseSchema } from "./notification.js";
 
 // ── Real-time CRM events (Day 43 — WebSocket catch-up) ────────────────────────
 
@@ -53,12 +54,24 @@ export const activityCreatedEventSchema = z.object({
 
 export type ActivityCreatedEvent = z.infer<typeof activityCreatedEventSchema>;
 
+export const notificationCreatedEventSchema = z.object({
+  type: z.literal("notification:created"),
+  tenantId: z.uuid(),
+  timestamp: z.iso.datetime(),
+  notification: notificationResponseSchema,
+});
+
+export type NotificationCreatedEvent = z.infer<
+  typeof notificationCreatedEventSchema
+>;
+
 export const realtimeEventSchema = z.discriminatedUnion("type", [
   leadCreatedEventSchema,
   leadUpdatedEventSchema,
   leadMovedEventSchema,
   leadDeletedEventSchema,
   activityCreatedEventSchema,
+  notificationCreatedEventSchema,
 ]);
 
 export type RealtimeEvent = z.infer<typeof realtimeEventSchema>;

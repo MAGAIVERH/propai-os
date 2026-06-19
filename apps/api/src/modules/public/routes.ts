@@ -28,6 +28,11 @@ import type { FastifyInstance, FastifyReply } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 
+import {
+  createNotifications,
+  getTenantMemberUserIds,
+} from "../notifications/create-notification.js";
+
 import { apiError } from "../../lib/api-error.js";
 import { mapPropertyRow, type PropertyRow } from "../../lib/map-property-row.js";
 import {
@@ -257,6 +262,17 @@ export async function registerPublicRoutes(
         }
 
         return newLead.id;
+      });
+
+      // Notify the whole brokerage of the inbound marketplace lead.
+      const memberUserIds = await getTenantMemberUserIds(body.tenantId);
+      await createNotifications({
+        tenantId: body.tenantId,
+        userIds: memberUserIds,
+        type: "lead_created",
+        title: "New marketplace lead",
+        body: `${body.firstName} ${body.lastName} submitted interest from the marketplace.`,
+        leadId,
       });
 
       const response: SubmitInterestResponse = { leadId };

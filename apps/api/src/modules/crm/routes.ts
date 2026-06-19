@@ -46,6 +46,10 @@ import { createRequirePermissionHook } from "../../plugins/require-member-role.j
 import { publishTenantEvent } from "../realtime/bus.js";
 import { enqueueVisitConfirmationJobSafe } from "./enqueue-visit-confirmation.js";
 import { formatVisitScheduleSummary } from "./visit-confirmation-email.js";
+import {
+  createNotifications,
+  getTenantMemberUserIds,
+} from "../notifications/create-notification.js";
 
 // ── Row types ────────────────────────────────────────────────────────────────
 
@@ -371,6 +375,20 @@ export async function registerCrmRoutes(
         lead,
       });
 
+      const newLeadRecipients = created.assignedAgentId
+        ? [created.assignedAgentId]
+        : await getTenantMemberUserIds(tenantId);
+
+      await createNotifications({
+        tenantId,
+        userIds: newLeadRecipients,
+        type: "lead_created",
+        title: "New lead",
+        body: `${created.firstName} ${created.lastName} was added to the pipeline.`,
+        leadId: created.id,
+        excludeUserId: resolveActorId(request),
+      });
+
       return reply.status(201).send({ lead });
     },
   );
@@ -490,6 +508,24 @@ export async function registerCrmRoutes(
         timestamp: new Date().toISOString(),
         lead,
       });
+
+      const previousAgentId = (existingRows[0] as LeadRow).assignedAgentId;
+      const assignmentChanged =
+        body.assignedAgentId !== undefined &&
+        updated.assignedAgentId !== null &&
+        updated.assignedAgentId !== previousAgentId;
+
+      if (assignmentChanged) {
+        await createNotifications({
+          tenantId,
+          userIds: [updated.assignedAgentId!],
+          type: "lead_assigned",
+          title: "Lead assigned to you",
+          body: `${updated.firstName} ${updated.lastName} was assigned to you.`,
+          leadId: updated.id,
+          excludeUserId: resolveActorId(request),
+        });
+      }
 
       return reply.status(200).send({ lead });
     },
@@ -814,7 +850,13 @@ export async function registerCrmRoutes(
 
       const result = await runInTenantContext(tenantId, async (tx) => {
         const [lead] = await tx
-          .select({ id: leads.id, propertyId: leads.propertyId })
+          .select({
+            id: leads.id,
+            propertyId: leads.propertyId,
+            assignedAgentId: leads.assignedAgentId,
+            firstName: leads.firstName,
+            lastName: leads.lastName,
+          })
           .from(leads)
           .where(and(eq(leads.id, id), isNull(leads.softDeletedAt)))
           .limit(1);
@@ -845,7 +887,13 @@ export async function registerCrmRoutes(
           })
           .returning(activitySelectFields);
 
-        return { type: "success", activity: activity!, propertyId } as const;
+        return {
+          type: "success",
+          activity: activity!,
+          propertyId,
+          assignedAgentId: lead.assignedAgentId,
+          leadName: `${lead.firstName} ${lead.lastName}`,
+        } as const;
       });
 
       if (result.type === "lead_not_found") {
@@ -890,6 +938,18 @@ export async function registerCrmRoutes(
         scheduledAt: body.scheduledAt,
         timezone: body.timezone,
       });
+
+      if (result.assignedAgentId) {
+        await createNotifications({
+          tenantId,
+          userIds: [result.assignedAgentId],
+          type: "visit_scheduled",
+          title: "Visit scheduled",
+          body: `A visit was scheduled for ${result.leadName} — ${summary}.`,
+          leadId: id,
+          excludeUserId: actorId,
+        });
+      }
 
       const activity = mapActivityRow(result.activity as LeadActivityRow);
 

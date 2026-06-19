@@ -12,6 +12,7 @@ import { registerAiModule } from "./modules/ai/index.js";
 import { registerAuditModule } from "./modules/audit/index.js";
 import { registerCrmModule } from "./modules/crm/index.js";
 import { registerHealthModule } from "./modules/health/index.js";
+import { registerNotificationsModule } from "./modules/notifications/index.js";
 import { registerPropertiesModule } from "./modules/properties/index.js";
 import { registerPublicModule } from "./modules/public/index.js";
 import { registerRealtimeModule } from "./modules/realtime/index.js";
@@ -69,6 +70,7 @@ export async function buildApp(
       await registerUploadsModule(v1);
       await registerAiModule(v1);
       await registerCrmModule(v1);
+      await registerNotificationsModule(v1);
       await registerRealtimeModule(v1);
     },
     { prefix: "/v1" },
