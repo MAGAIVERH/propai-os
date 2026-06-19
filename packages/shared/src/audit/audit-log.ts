@@ -13,6 +13,8 @@ export const AUDIT_ACTIONS = [
   "lead.updated",
   "lead.deleted",
   "lead.stage_changed",
+  "visit.scheduled",
+  "visit.confirmation_failed",
 ] as const;
 
 export const auditActionSchema = z.enum(AUDIT_ACTIONS);
