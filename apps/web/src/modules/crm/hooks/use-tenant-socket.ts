@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { realtimeEventSchema, type RealtimeEvent } from "@propai/shared";
 
 import { getWsUrl } from "@/lib/env";
+import { NOTIFICATIONS_QUERY_KEY } from "@/modules/notifications/hooks/use-notifications";
 
 import { LEADS_QUERY_KEY } from "./use-kanban";
 
@@ -18,6 +19,7 @@ function handleEvent(
   event: RealtimeEvent,
   invalidateLeads: () => void,
   invalidateActivities: (leadId: string) => void,
+  invalidateNotifications: () => void,
 ): void {
   switch (event.type) {
     case "lead:created":
@@ -31,6 +33,10 @@ function handleEvent(
       break;
     case "activity:created":
       invalidateActivities(event.activity.leadId);
+      break;
+    case "notification:created":
+      toast(event.notification.title, { description: event.notification.body });
+      invalidateNotifications();
       break;
   }
 }
@@ -53,6 +59,12 @@ export function useTenantSocket(): { status: TenantSocketStatus } {
     const invalidateActivities = (leadId: string) => {
       void queryClient.invalidateQueries({
         queryKey: ["lead-activities", leadId],
+      });
+    };
+
+    const invalidateNotifications = () => {
+      void queryClient.invalidateQueries({
+        queryKey: NOTIFICATIONS_QUERY_KEY,
       });
     };
 
@@ -79,7 +91,12 @@ export function useTenantSocket(): { status: TenantSocketStatus } {
         const parsed = realtimeEventSchema.safeParse(parsedJson);
 
         if (parsed.success) {
-          handleEvent(parsed.data, invalidateLeads, invalidateActivities);
+          handleEvent(
+            parsed.data,
+            invalidateLeads,
+            invalidateActivities,
+            invalidateNotifications,
+          );
         }
       });
 

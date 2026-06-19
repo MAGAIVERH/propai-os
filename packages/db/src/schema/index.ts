@@ -37,6 +37,7 @@ export {
   leads,
   pipelineStages,
 } from "./crm.js";
+export { notifications, notificationTypeEnum } from "./notifications.js";
 export {
   properties,
   propertyFeatures,

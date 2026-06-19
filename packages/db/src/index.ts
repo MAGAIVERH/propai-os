@@ -32,6 +32,8 @@ export {
   leadActivityTypeEnum,
   leads,
   member,
+  notifications,
+  notificationTypeEnum,
   organization,
   pipelineStages,
   properties,
