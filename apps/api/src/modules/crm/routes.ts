@@ -2,6 +2,7 @@ import {
   leadActivities,
   leads,
   pipelineStages,
+  properties,
   runInTenantContext,
   TenantContextRequiredError,
 } from "@propai/db";
@@ -16,6 +17,8 @@ import {
   leadResponseSchema,
   moveLeadStageSchema,
   pipelineStageListResponseSchema,
+  scheduleVisitResponseSchema,
+  scheduleVisitSchema,
   updateLeadSchema,
   type LeadActivityResponse,
   type LeadActivityType,
@@ -41,6 +44,8 @@ import { writeAuditEventSafe } from "../../lib/write-audit-event.js";
 import { MOCK_SESSION_DEFAULT_USER_ID } from "../auth/session.js";
 import { createRequirePermissionHook } from "../../plugins/require-member-role.js";
 import { publishTenantEvent } from "../realtime/bus.js";
+import { enqueueVisitConfirmationJobSafe } from "./enqueue-visit-confirmation.js";
+import { formatVisitScheduleSummary } from "./visit-confirmation-email.js";
 
 // ── Row types ────────────────────────────────────────────────────────────────
 
@@ -781,6 +786,121 @@ export async function registerCrmRoutes(
       return reply.status(200).send({
         activities: rows.map((r) => mapActivityRow(r as LeadActivityRow)),
       });
+    },
+  );
+
+  // POST /leads/:id/schedule-visit
+  zodApp.post(
+    "/leads/:id/schedule-visit",
+    {
+      schema: {
+        params: leadParamsSchema,
+        body: scheduleVisitSchema,
+        response: { 201: scheduleVisitResponseSchema },
+      },
+      preHandler: requireLeadsWrite,
+    },
+    async (request, reply: FastifyReply) => {
+      const tenantId = requireTenantId(request);
+      const { id } = leadParamsSchema.parse(request.params);
+      const body = scheduleVisitSchema.parse(request.body);
+      const actorId = resolveActorId(request);
+      const sessionUserId = requireSessionUserId(request);
+
+      const summary = formatVisitScheduleSummary(body.scheduledAt, body.timezone);
+      const content = body.notes
+        ? `Visit scheduled for ${summary} — ${body.notes}`
+        : `Visit scheduled for ${summary}`;
+
+      const result = await runInTenantContext(tenantId, async (tx) => {
+        const [lead] = await tx
+          .select({ id: leads.id, propertyId: leads.propertyId })
+          .from(leads)
+          .where(and(eq(leads.id, id), isNull(leads.softDeletedAt)))
+          .limit(1);
+
+        if (!lead) return { type: "lead_not_found" } as const;
+
+        const propertyId = body.propertyId ?? lead.propertyId;
+
+        if (!propertyId) {
+          return { type: "property_required" } as const;
+        }
+
+        const [property] = await tx
+          .select({ id: properties.id })
+          .from(properties)
+          .where(and(eq(properties.id, propertyId), isNull(properties.softDeletedAt)))
+          .limit(1);
+
+        if (!property) return { type: "property_not_found" } as const;
+
+        const [activity] = await tx
+          .insert(leadActivities)
+          .values({
+            leadId: id,
+            type: "visit_scheduled",
+            content,
+            createdBy: actorId ?? sessionUserId,
+          })
+          .returning(activitySelectFields);
+
+        return { type: "success", activity: activity!, propertyId } as const;
+      });
+
+      if (result.type === "lead_not_found") {
+        return reply.status(404).send(apiError("Not Found", "Lead not found."));
+      }
+
+      if (result.type === "property_required") {
+        return reply
+          .status(400)
+          .send(
+            apiError(
+              "Bad Request",
+              "A property is required to schedule a visit.",
+            ),
+          );
+      }
+
+      if (result.type === "property_not_found") {
+        return reply
+          .status(404)
+          .send(apiError("Not Found", "Property not found."));
+      }
+
+      await writeAuditEventSafe({
+        tenantId,
+        actorId,
+        action: "visit.scheduled",
+        entityType: "lead",
+        entityId: id,
+        metadata: {
+          propertyId: result.propertyId,
+          scheduledAt: body.scheduledAt,
+          timezone: body.timezone,
+        },
+        ip: request.ip,
+      });
+
+      await enqueueVisitConfirmationJobSafe({
+        tenantId,
+        leadId: id,
+        propertyId: result.propertyId,
+        scheduledAt: body.scheduledAt,
+        timezone: body.timezone,
+      });
+
+      const activity = mapActivityRow(result.activity as LeadActivityRow);
+
+      publishTenantEvent(tenantId, {
+        type: "activity:created",
+        tenantId,
+        timestamp: new Date().toISOString(),
+        activity,
+      });
+
+      return reply.status(201).send({ activity });
     },
   );
 }

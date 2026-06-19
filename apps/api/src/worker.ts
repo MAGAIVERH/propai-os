@@ -8,6 +8,11 @@ import {
   closeGeneratePropertyEmbeddingWorker,
   createGeneratePropertyEmbeddingWorker,
 } from "./modules/ai/workers/generate-property-embedding-worker.js";
+import { closeSendVisitConfirmationQueue } from "./modules/crm/queues/send-visit-confirmation-queue.js";
+import {
+  closeSendVisitConfirmationWorker,
+  createSendVisitConfirmationWorker,
+} from "./modules/crm/workers/send-visit-confirmation-worker.js";
 import { closeBullMqConnections } from "./lib/redis-bullmq.js";
 
 async function shutdown(signal: string): Promise<void> {
@@ -16,8 +21,10 @@ async function shutdown(signal: string): Promise<void> {
   await Promise.all([
     closeAnalyzePropertyImagesWorker(),
     closeGeneratePropertyEmbeddingWorker(),
+    closeSendVisitConfirmationWorker(),
     closeAnalyzeImagesQueue(),
     closeGenerateEmbeddingQueue(),
+    closeSendVisitConfirmationQueue(),
     closeBullMqConnections(),
   ]);
 
@@ -27,6 +34,7 @@ async function shutdown(signal: string): Promise<void> {
 async function startWorker(): Promise<void> {
   const analyzeImagesWorker = createAnalyzePropertyImagesWorker();
   const generateEmbeddingWorker = createGeneratePropertyEmbeddingWorker();
+  const sendVisitConfirmationWorker = createSendVisitConfirmationWorker();
 
   analyzeImagesWorker.on("ready", () => {
     console.info("analyze-property-images worker ready");
@@ -64,6 +72,25 @@ async function startWorker(): Promise<void> {
 
   generateEmbeddingWorker.on("error", (error) => {
     console.error({ err: error.message }, "generate-property-embedding worker error");
+  });
+
+  sendVisitConfirmationWorker.on("ready", () => {
+    console.info("send-visit-confirmation worker ready");
+  });
+
+  sendVisitConfirmationWorker.on("completed", (job) => {
+    console.info({ jobId: job.id }, "send-visit-confirmation job completed");
+  });
+
+  sendVisitConfirmationWorker.on("failed", (job, error) => {
+    console.error(
+      { jobId: job?.id, err: error.message },
+      "send-visit-confirmation job failed",
+    );
+  });
+
+  sendVisitConfirmationWorker.on("error", (error) => {
+    console.error({ err: error.message }, "send-visit-confirmation worker error");
   });
 
   process.on("SIGINT", () => {
