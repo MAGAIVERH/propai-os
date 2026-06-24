@@ -10,12 +10,6 @@ import { describe, expect, it } from "vitest";
 import { buildApp } from "./app.js";
 import { normalizeCookieHeader } from "./lib/forward-auth-cookies.js";
 
-type BrokerageSignUpResponse = {
-  user: { id: string; email: string };
-  organization: { id: string; slug: string };
-  session: { activeOrganizationId: string };
-};
-
 type LeadSingleResponse = { lead: { id: string } };
 type ScheduleVisitResponse = {
   activity: { id: string; type: string; content: string };
@@ -39,7 +33,6 @@ describe("Day 44 — schedule visit confirmation email", () => {
 
     expect(signUpResponse.statusCode).toBe(201);
 
-    const signUpBody = signUpResponse.json() as BrokerageSignUpResponse;
     const cookie =
       normalizeCookieHeader(signUpResponse.headers["set-cookie"]) ?? "";
 

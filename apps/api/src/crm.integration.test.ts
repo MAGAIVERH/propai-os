@@ -17,9 +17,6 @@ type BrokerageSignUpResponse = {
   session: { activeOrganizationId: string };
 };
 
-type PipelineStageListResponse = {
-  stages: Array<{ id: string; name: string; sortOrder: number }>;
-};
 
 type LeadSingleResponse = { lead: LeadResponse };
 type LeadActivitySingleResponse = {
@@ -51,15 +48,13 @@ describe("Day 37 — CRM leads integration", () => {
 
     expect(signUpBody.session.activeOrganizationId).toBe(orgId);
 
-    // Fetch pipeline stages (seeded on sign-up)
+    // Sanity-check that pipeline stages are seeded and listable on sign-up.
     const stagesResponse = await app.inject({
       method: "GET",
       url: "/v1/pipeline-stages",
       headers: { cookie },
     });
-
-    // Pipeline stages are not yet a route — skip this and use a direct stageId from the list
-    // We'll create a lead without a stage first, then move it
+    expect(stagesResponse.statusCode).toBe(200);
 
     // POST /v1/leads — create a lead
     const createLeadResponse = await app.inject({

@@ -7,7 +7,6 @@ import { properties, runInTenantContext } from "@propai/db";
 import { and, eq, isNull, ne, sql } from "drizzle-orm";
 import { generateObject } from "ai";
 import { ZodError } from "zod";
-import { z } from "zod";
 
 import { getOpenAiProvider } from "../../lib/embedding-provider.js";
 import { AiAnalysisParseError, AiProviderNotConfiguredError } from "./ai-errors.js";

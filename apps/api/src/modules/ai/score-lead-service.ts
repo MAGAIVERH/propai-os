@@ -7,10 +7,7 @@ import {
 import { generateObject } from "ai";
 import { ZodError } from "zod";
 
-import {
-  getOpenAiEmbeddingModelId,
-  getOpenAiProvider,
-} from "../../lib/embedding-provider.js";
+import { getOpenAiProvider } from "../../lib/embedding-provider.js";
 import { AiAnalysisParseError, AiProviderNotConfiguredError } from "./ai-errors.js";
 import {
   buildLeadScoringUserPrompt,
