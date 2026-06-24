@@ -244,7 +244,7 @@ export async function registerBrokerageAuthRoutes(
 
         forwardSetCookieHeaders(activeResult.headers, reply);
 
-        const rawSession = signInResult.response as {
+        const rawSession = signInResult.response as unknown as {
           session: Record<string, unknown>;
           user: unknown;
         };

@@ -34,6 +34,7 @@ import {
   decodePropertyCursor,
   encodePropertyCursor,
 } from "../../lib/property-cursor.js";
+import { invalidatePublicPropertiesCache } from "../../lib/public-properties-cache.js";
 import { writeAuditEventSafe } from "../../lib/write-audit-event.js";
 import { MOCK_SESSION_DEFAULT_USER_ID } from "../auth/session.js";
 import { createRequirePermissionHook } from "../../plugins/require-member-role.js";
@@ -415,6 +416,9 @@ export async function registerPropertiesRoutes(
         await enqueuePropertyEmbeddingJobIfEnabled(tenantId, created.id);
       }
 
+      // Public marketplace grid is cached — drop stale pages on new inventory.
+      await invalidatePublicPropertiesCache(tenantId);
+
       return reply.status(201).send({
         property: mapPropertyRow(created),
       });
@@ -485,6 +489,8 @@ export async function registerPropertiesRoutes(
         await enqueuePropertyEmbeddingJobIfEnabled(tenantId, updated.id);
       }
 
+      await invalidatePublicPropertiesCache(tenantId);
+
       return reply.status(200).send({
         property: mapPropertyRow(updated),
       });
@@ -552,6 +558,8 @@ export async function registerPropertiesRoutes(
         metadata: { title: deleted.title },
         ip: request.ip,
       });
+
+      await invalidatePublicPropertiesCache(tenantId);
 
       return reply.status(200).send({
         property: mapPropertyRow(deleted),

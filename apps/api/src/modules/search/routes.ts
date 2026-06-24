@@ -10,7 +10,12 @@ import { isSemanticSearchEnabled } from "../../lib/ai-feature-flags.js";
 import { apiError } from "../../lib/api-error.js";
 import { AiProviderNotConfiguredError } from "../ai/ai-errors.js";
 import { generatePropertyEmbedding } from "../ai/generate-property-embedding.js";
+import { rankSearchResults, sortRankedRows } from "./queries/hybrid-rank.js";
 import { runSemanticPropertySearch } from "./queries/semantic-property-search.js";
+
+/** Multiplier for the candidate pool fetched before hybrid re-ranking. */
+const CANDIDATE_POOL_MULTIPLIER = 3;
+const MAX_CANDIDATE_POOL = 50;
 
 function numericToNullableNumber(value: string | null): number | null {
   if (value === null) return null;
@@ -41,12 +46,14 @@ export async function registerSearchRoutes(app: FastifyInstance): Promise<void> 
     },
     async (request, reply: FastifyReply) => {
       if (!isSemanticSearchEnabled()) {
-        return reply.status(503).send(
-          apiError(
-            "Service Unavailable",
-            "Semantic search is disabled. Set ENABLE_SEMANTIC_SEARCH=true to use this endpoint.",
-          ),
-        );
+        return reply
+          .status(503)
+          .send(
+            apiError(
+              "Service Unavailable",
+              "Semantic search is disabled. Set ENABLE_SEMANTIC_SEARCH=true to use this endpoint.",
+            ),
+          );
       }
 
       const query = semanticSearchQuerySchema.parse(request.query);
@@ -65,10 +72,14 @@ export async function registerSearchRoutes(app: FastifyInstance): Promise<void> 
         throw error;
       }
 
+      // Fetch a wider candidate pool from pgvector, then re-rank with the
+      // hybrid scorer (semantic + price + distance + recency) before slicing.
+      const candidateLimit = Math.min(query.limit * CANDIDATE_POOL_MULTIPLIER, MAX_CANDIDATE_POOL);
+
       const rows = await runSemanticPropertySearch({
         tenantId: query.tenantId,
         embedding,
-        limit: query.limit,
+        limit: candidateLimit,
         beds: query.beds,
         city: query.city,
         state: query.state,
@@ -78,7 +89,15 @@ export async function registerSearchRoutes(app: FastifyInstance): Promise<void> 
         rentOrSale: query.rentOrSale,
       });
 
-      const items: SemanticSearchResultItem[] = rows.map((row) => ({
+      const ranked = rankSearchResults({
+        rows,
+        minPriceUsdCents: query.minPriceUsdCents,
+        maxPriceUsdCents: query.maxPriceUsdCents,
+      });
+
+      const ordered = sortRankedRows(ranked, query.sort).slice(0, query.limit);
+
+      const items: SemanticSearchResultItem[] = ordered.map((row) => ({
         id: row.id,
         tenantId: row.tenantId,
         title: row.title,
@@ -98,7 +117,9 @@ export async function registerSearchRoutes(app: FastifyInstance): Promise<void> 
         zipCode: row.zipCode,
         latitude: numericToNullableNumber(row.latitude),
         longitude: numericToNullableNumber(row.longitude),
-        relevanceScore: Number(row.relevanceScore),
+        createdAt: row.createdAt.toISOString(),
+        semanticScore: Number(row.semanticScore),
+        relevanceScore: Number(row.hybridScore),
       }));
 
       return reply.status(200).send(

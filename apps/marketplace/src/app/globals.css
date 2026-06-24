@@ -3,20 +3,63 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
   --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-ring: var(--ring);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-card: 1rem;
 }
 
 :root {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --border: oklch(1 0 0 / 10%);
-  --primary: oklch(0.922 0 0);
+  /* Deep, slightly-warm near-black with an emerald brand accent. */
+  --background: oklch(0.16 0.008 240);
+  --foreground: oklch(0.97 0.005 240);
+  --card: oklch(0.205 0.01 240);
+  --card-foreground: oklch(0.97 0.005 240);
+  --muted: oklch(0.27 0.012 240);
+  --muted-foreground: oklch(0.7 0.015 240);
+  --border: oklch(1 0 0 / 9%);
+  --primary: oklch(0.74 0.15 162);
+  --primary-foreground: oklch(0.16 0.02 162);
+  --accent: oklch(0.8 0.12 85);
+  --ring: oklch(0.74 0.15 162 / 50%);
+}
+
+* {
+  border-color: var(--border);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Subtle radial glow behind the hero. */
+.hero-glow {
+  background:
+    radial-gradient(
+      60% 60% at 50% 0%,
+      oklch(0.74 0.15 162 / 14%) 0%,
+      transparent 70%
+    );
+}
+
+::selection {
+  background: oklch(0.74 0.15 162 / 30%);
+}
+
+/* Leaflet map renders dark-friendly. */
+.leaflet-container {
+  background: var(--muted);
+  font-family: var(--font-sans);
 }

@@ -284,6 +284,29 @@ See [ADR 006](docs/adr/006-ai-vision-listings.md) (vision) and [ADR 007](docs/ad
 
 ---
 
+## Public marketplace (Phase 5)
+
+The public, SEO-first marketplace (`apps/marketplace`, port 3001) lets visitors
+browse and convert into CRM leads — no auth required.
+
+- **SSR listing grid** with URL-bound filters (`/properties?city=Austin&beds=2`) and cursor "Load more".
+- **Detail pages** with a photo gallery, location map, `RealEstateListing` JSON-LD, and Open Graph/Twitter cards.
+- **AI search** (`/search`) — describe a home in plain English; results ranked by a hybrid score (semantic 40% + price 20% + distance 20% + recency 20%, see [ADR 008](./docs/adr/008-hybrid-search-ranking.md)) with sort options. Degrades gracefully when the flag is off.
+- **Clustered map** (`/properties/map`) with list ↔ map selection sync.
+- **Lead capture** — `POST /public/leads` with IP rate limiting (Redis, fail-open), a honeypot, and a live `lead:created` push so the lead lands on the dashboard Kanban within seconds.
+- **Fair Housing** disclaimer site-wide, `/privacy` + `/terms`, and a cookie notice.
+
+**Performance — Redis listing cache (Day 53):** `GET /public/properties`
+responses are cached for 5 minutes and tagged with an `X-Cache: HIT|MISS`
+header; a cache `HIT` skips the DB round-trip entirely (single-digit ms vs the
+live query) and is invalidated on any property create/update/delete. See
+[docs/tasks/PHASE-5-DAY-53-MANUAL.md](./docs/tasks/PHASE-5-DAY-53-MANUAL.md) to
+measure before/after.
+
+Full sign-off: [docs/MARKETPLACE-CHECKLIST.md](./docs/MARKETPLACE-CHECKLIST.md).
+
+---
+
 ## License
 
 TBD.
