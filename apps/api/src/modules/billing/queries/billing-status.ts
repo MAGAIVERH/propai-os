@@ -55,12 +55,18 @@ export async function getUserEmail(userId: string): Promise<string | undefined> 
   return rows[0]?.email;
 }
 
+/**
+ * Counts billable "agents" — `agent`-role members. The owner and managers do
+ * not consume an agent seat (the Free plan markets "2 agents").
+ */
 export async function countAgents(tenantId: string): Promise<number> {
   const db = getDb();
   const rows = await db
     .select({ value: count() })
     .from(member)
-    .where(eq(member.organizationId, tenantId));
+    .where(
+      and(eq(member.organizationId, tenantId), eq(member.role, "agent")),
+    );
   return Number(rows[0]?.value ?? 0);
 }
 

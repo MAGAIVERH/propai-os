@@ -76,17 +76,20 @@ export async function registerBrokerageInviteRoutes(
           );
       }
 
-      // Feature gate: Free plan caps team size (Day 60/63).
-      const agentLimit = await checkAgentLimit(organizationId);
-      if (!agentLimit.allowed) {
-        return reply
-          .status(402)
-          .send(
-            apiError(
-              "Payment Required",
-              `Your plan allows up to ${agentLimit.limit} team members. Upgrade to Pro to add more.`,
-            ),
-          );
+      // Feature gate: Free plan caps the number of agents (Day 60/63). Only
+      // agent invitations consume a seat; managers/viewers are unmetered.
+      if (parsed.data.role === "agent") {
+        const agentLimit = await checkAgentLimit(organizationId);
+        if (!agentLimit.allowed) {
+          return reply
+            .status(402)
+            .send(
+              apiError(
+                "Payment Required",
+                `Your plan allows up to ${agentLimit.limit} agents. Upgrade to Pro to add more.`,
+              ),
+            );
+        }
       }
 
       try {
