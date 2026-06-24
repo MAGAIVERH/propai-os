@@ -14,6 +14,7 @@ import { writeAuditEventSafe } from "../../../lib/write-audit-event.js";
 import { auth } from "../better-auth.js";
 import { getSessionFromRequest } from "../session.js";
 import { brokerageInviteSchema } from "../schemas/brokerage-invite.js";
+import { checkAgentLimit } from "../../billing/feature-gate.js";
 
 type InvitationResponse = {
   id: string;
@@ -71,6 +72,19 @@ export async function registerBrokerageInviteRoutes(
             apiError(
               "Forbidden",
               "Only the organization owner can invite members.",
+            ),
+          );
+      }
+
+      // Feature gate: Free plan caps team size (Day 60/63).
+      const agentLimit = await checkAgentLimit(organizationId);
+      if (!agentLimit.allowed) {
+        return reply
+          .status(402)
+          .send(
+            apiError(
+              "Payment Required",
+              `Your plan allows up to ${agentLimit.limit} team members. Upgrade to Pro to add more.`,
             ),
           );
       }

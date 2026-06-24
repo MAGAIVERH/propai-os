@@ -51,9 +51,7 @@ export const analyticsFunnelResponseSchema = z.object({
   stages: z.array(analyticsFunnelStageSchema),
 });
 
-export type AnalyticsFunnelResponse = z.infer<
-  typeof analyticsFunnelResponseSchema
->;
+export type AnalyticsFunnelResponse = z.infer<typeof analyticsFunnelResponseSchema>;
 
 // ── Per-agent performance ─────────────────────────────────────────────────────
 
@@ -72,9 +70,7 @@ export const analyticsAgentsResponseSchema = z.object({
   agents: z.array(analyticsAgentSchema),
 });
 
-export type AnalyticsAgentsResponse = z.infer<
-  typeof analyticsAgentsResponseSchema
->;
+export type AnalyticsAgentsResponse = z.infer<typeof analyticsAgentsResponseSchema>;
 
 // ── Property views time series (for the line chart) ──────────────────────────
 
@@ -90,6 +86,4 @@ export const analyticsViewsResponseSchema = z.object({
   total: z.number().int(),
 });
 
-export type AnalyticsViewsResponse = z.infer<
-  typeof analyticsViewsResponseSchema
->;
+export type AnalyticsViewsResponse = z.infer<typeof analyticsViewsResponseSchema>;

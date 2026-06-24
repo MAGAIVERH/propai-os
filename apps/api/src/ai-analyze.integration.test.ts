@@ -7,10 +7,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { buildApp } from "./app.js";
-import {
-  checkAiVisionRateLimit,
-  consumeAiVisionRateLimit,
-} from "./lib/ai-vision-rate-limit.js";
+import { checkAiVisionRateLimit, consumeAiVisionRateLimit } from "./lib/ai-vision-rate-limit.js";
 import { resolveMemberAccess } from "./lib/member-access.js";
 import { BullMqRedisUnavailableError } from "./lib/redis-bullmq.js";
 import { createMockSessionAuthorization } from "./modules/auth/session.js";
@@ -34,8 +31,7 @@ vi.mock("./lib/member-access.js", async (importOriginal) => {
 });
 
 vi.mock("./lib/ai-vision-rate-limit.js", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("./lib/ai-vision-rate-limit.js")>();
+  const actual = await importOriginal<typeof import("./lib/ai-vision-rate-limit.js")>();
 
   return {
     ...actual,
@@ -184,9 +180,7 @@ describe("Day 26–28 — AI analyze property images integration", () => {
     expect(parsed.features).toEqual(MOCK_PROPERTY_IMAGE_ANALYSIS.features);
     expect(parsed.description).toBe(MOCK_PROPERTY_IMAGE_ANALYSIS.description);
     expect(parsed.seoTitle).toBe(MOCK_PROPERTY_IMAGE_ANALYSIS.seoTitle);
-    expect(parsed.suggestedPriceUSD).toBe(
-      MOCK_PROPERTY_IMAGE_ANALYSIS.suggestedPriceUSD,
-    );
+    expect(parsed.suggestedPriceUSD).toBe(MOCK_PROPERTY_IMAGE_ANALYSIS.suggestedPriceUSD);
     expect(checkAiVisionRateLimit).not.toHaveBeenCalled();
     expect(enqueueAnalyzeImagesJob).not.toHaveBeenCalled();
 
@@ -323,9 +317,7 @@ describe("Day 26–28 — AI analyze property images integration", () => {
   it("returns 503 when BullMQ Redis is unavailable on enqueue", async () => {
     process.env.ENABLE_AI_VISION = "true";
     setStorageEnv();
-    vi.mocked(enqueueAnalyzeImagesJob).mockRejectedValue(
-      new BullMqRedisUnavailableError(),
-    );
+    vi.mocked(enqueueAnalyzeImagesJob).mockRejectedValue(new BullMqRedisUnavailableError());
 
     const app = await buildApp({ mountAuthRoutes: false });
 

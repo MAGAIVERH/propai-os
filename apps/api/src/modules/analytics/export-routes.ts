@@ -44,9 +44,7 @@ function sendCsv(reply: FastifyReply, filename: string, body: string): void {
     .send(body);
 }
 
-export async function registerAnalyticsExportRoutes(
-  app: FastifyInstance,
-): Promise<void> {
+export async function registerAnalyticsExportRoutes(app: FastifyInstance): Promise<void> {
   const zodApp = app.withTypeProvider<ZodTypeProvider>();
   const requireAnalyticsRead = createRequirePermissionHook("analytics:read");
 
@@ -85,7 +83,17 @@ export async function registerAnalyticsExportRoutes(
       });
 
       const csv = toCsv(
-        ["ID", "First Name", "Last Name", "Email", "Phone", "Source", "Stage", "AI Score", "Created At"],
+        [
+          "ID",
+          "First Name",
+          "Last Name",
+          "Email",
+          "Phone",
+          "Source",
+          "Stage",
+          "AI Score",
+          "Created At",
+        ],
         rows.map((r) => [
           r.id,
           r.first_name,
@@ -141,7 +149,21 @@ export async function registerAnalyticsExportRoutes(
       });
 
       const csv = toCsv(
-        ["ID", "Title", "Type", "Status", "Price USD", "Rent/Sale", "Beds", "Baths", "Sq Ft", "City", "State", "ZIP", "Created At"],
+        [
+          "ID",
+          "Title",
+          "Type",
+          "Status",
+          "Price USD",
+          "Rent/Sale",
+          "Beds",
+          "Baths",
+          "Sq Ft",
+          "City",
+          "State",
+          "ZIP",
+          "Created At",
+        ],
         rows.map((r) => [
           r.id,
           r.title,

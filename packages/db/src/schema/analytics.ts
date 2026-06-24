@@ -1,17 +1,9 @@
-import {
-  index,
-  pgEnum,
-  pgTable,
-  timestamp,
-  uuid,
-} from "drizzle-orm/pg-core";
+import { index, pgEnum, pgTable, timestamp, uuid } from "drizzle-orm/pg-core";
 
 import { organization } from "./auth.js";
 import { properties } from "./properties.js";
 
-export const analyticsEventTypeEnum = pgEnum("analytics_event_type", [
-  "property_view",
-]);
+export const analyticsEventTypeEnum = pgEnum("analytics_event_type", ["property_view"]);
 
 /**
  * Lightweight, append-only event stream for product analytics (Day 56).
@@ -29,9 +21,7 @@ export const analyticsEvents = pgTable(
     propertyId: uuid("property_id").references(() => properties.id, {
       onDelete: "cascade",
     }),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [
     index("analytics_events_tenant_type_created_idx").on(

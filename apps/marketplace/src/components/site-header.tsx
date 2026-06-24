@@ -8,16 +8,31 @@ const NAV_LINKS = [
   { href: "/contact", label: "Contact" },
 ];
 
-export function SiteHeader() {
+export function SiteHeader({
+  agencyName,
+  logoUrl,
+}: {
+  agencyName?: string | null;
+  logoUrl?: string | null;
+}) {
   return (
     <header className="border-border bg-background/80 sticky top-0 z-40 border-b backdrop-blur">
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 px-5">
         <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
-          <span className="bg-primary text-primary-foreground flex size-7 items-center justify-center rounded-lg text-sm font-bold">
-            P
-          </span>
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logoUrl} alt={agencyName ?? "Logo"} className="h-7 w-auto rounded" />
+          ) : (
+            <span className="bg-primary text-primary-foreground flex size-7 items-center justify-center rounded-lg text-sm font-bold">
+              {(agencyName ?? "P").charAt(0).toUpperCase()}
+            </span>
+          )}
           <span className="text-base">
-            PropAI<span className="text-primary"> OS</span>
+            {agencyName ?? (
+              <>
+                PropAI<span className="text-primary"> OS</span>
+              </>
+            )}
           </span>
         </Link>
 

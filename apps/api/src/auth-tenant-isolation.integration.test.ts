@@ -119,9 +119,7 @@ describe("Auth tenant isolation (two orgs)", () => {
     expect(listABody.items).toHaveLength(1);
     expect(listABody.items[0]?.name).toBe("A-only");
     expect(listABody.items[0]?.tenantId).toBe(tenantA.organizationId);
-    expect(
-      listABody.items.every((item) => item.tenantId === tenantA.organizationId),
-    ).toBe(true);
+    expect(listABody.items.every((item) => item.tenantId === tenantA.organizationId)).toBe(true);
 
     const listBResponse = await app.inject({
       method: "GET",
@@ -136,9 +134,7 @@ describe("Auth tenant isolation (two orgs)", () => {
     expect(listBBody.items).toHaveLength(1);
     expect(listBBody.items[0]?.name).toBe("B-only");
     expect(listBBody.items[0]?.tenantId).toBe(tenantB.organizationId);
-    expect(
-      listBBody.items.every((item) => item.tenantId === tenantB.organizationId),
-    ).toBe(true);
+    expect(listBBody.items.every((item) => item.tenantId === tenantB.organizationId)).toBe(true);
 
     expect(tenantA.organizationId).not.toBe(tenantB.organizationId);
     expect(listABody.items.some((item) => item.name === "B-only")).toBe(false);

@@ -90,9 +90,7 @@ export async function getOverview(
   });
 }
 
-export async function getFunnel(
-  scope: AnalyticsScope,
-): Promise<AnalyticsFunnelStage[]> {
+export async function getFunnel(scope: AnalyticsScope): Promise<AnalyticsFunnelStage[]> {
   return runInTenantContext(scope.tenantId, async (tx) => {
     // Managers/owners read the canonical view; agents need a self-scoped count.
     const rows = scope.agentId
@@ -139,9 +137,7 @@ export async function getFunnel(
   });
 }
 
-export async function getAgents(
-  scope: AnalyticsScope,
-): Promise<AnalyticsAgent[]> {
+export async function getAgents(scope: AnalyticsScope): Promise<AnalyticsAgent[]> {
   const rows = await runInTenantContext(scope.tenantId, async (tx) => {
     return tx.execute<{
       agent_id: string;
@@ -200,9 +196,7 @@ export async function getViewsSeries(
 }
 
 /** Maps userId → display name for the tenant's members (admin read). */
-async function getOrgMemberNames(
-  tenantId: string,
-): Promise<Map<string, string>> {
+async function getOrgMemberNames(tenantId: string): Promise<Map<string, string>> {
   const db = getDb();
   const rows = await db
     .select({ userId: member.userId, name: user.name, email: user.email })

@@ -11,6 +11,10 @@ import {
 import { registerAiModule } from "./modules/ai/index.js";
 import { registerAnalyticsModule } from "./modules/analytics/index.js";
 import { registerAuditModule } from "./modules/audit/index.js";
+import {
+  registerBillingModule,
+  registerStripeWebhook,
+} from "./modules/billing/index.js";
 import { registerCrmModule } from "./modules/crm/index.js";
 import { registerHealthModule } from "./modules/health/index.js";
 import { registerNotificationsModule } from "./modules/notifications/index.js";
@@ -18,6 +22,7 @@ import { registerPropertiesModule } from "./modules/properties/index.js";
 import { registerPublicModule } from "./modules/public/index.js";
 import { registerRealtimeModule } from "./modules/realtime/index.js";
 import { registerSearchModule } from "./modules/search/index.js";
+import { registerSettingsModule } from "./modules/settings/index.js";
 import { registerTenantsModule } from "./modules/tenants/index.js";
 import { registerUploadsModule } from "./modules/uploads/index.js";
 import { registerTestItemsModule } from "./modules/test-items/index.js";
@@ -59,6 +64,7 @@ export async function buildApp(
 
   await registerSearchModule(app);
   await registerPublicModule(app);
+  await registerStripeWebhook(app);
 
   await app.register(tenantContextPlugin);
   await app.register(memberRolePlugin);
@@ -74,6 +80,8 @@ export async function buildApp(
       await registerNotificationsModule(v1);
       await registerRealtimeModule(v1);
       await registerAnalyticsModule(v1);
+      await registerBillingModule(v1);
+      await registerSettingsModule(v1);
     },
     { prefix: "/v1" },
   );

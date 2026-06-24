@@ -57,10 +57,9 @@ async function signUpBrokerageOwner(
   return { cookie, orgId: body.organization.id };
 }
 
-function waitForOutcome(socket: WebSocket): Promise<
-  | { type: "open" }
-  | { type: "rejected"; statusCode: number }
-> {
+function waitForOutcome(
+  socket: WebSocket,
+): Promise<{ type: "open" } | { type: "rejected"; statusCode: number }> {
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
       reject(new Error("Timed out waiting for WebSocket outcome."));

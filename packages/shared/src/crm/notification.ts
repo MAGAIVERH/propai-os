@@ -1,10 +1,6 @@
 import { z } from "zod";
 
-export const NOTIFICATION_TYPES = [
-  "lead_created",
-  "lead_assigned",
-  "visit_scheduled",
-] as const;
+export const NOTIFICATION_TYPES = ["lead_created", "lead_assigned", "visit_scheduled"] as const;
 
 export const notificationTypeSchema = z.enum(NOTIFICATION_TYPES);
 export type NotificationType = z.infer<typeof notificationTypeSchema>;
@@ -35,9 +31,7 @@ export const notificationListResponseSchema = z.object({
   unreadCount: z.number().int().min(0),
 });
 
-export type NotificationListResponse = z.infer<
-  typeof notificationListResponseSchema
->;
+export type NotificationListResponse = z.infer<typeof notificationListResponseSchema>;
 
 export const notificationParamsSchema = z.object({
   id: z.uuid(),

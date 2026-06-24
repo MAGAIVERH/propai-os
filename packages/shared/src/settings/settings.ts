@@ -59,9 +59,7 @@ export const tenantSettingsResponseSchema = z.object({
   onboardingCompletedAt: z.iso.datetime().nullable(),
 });
 
-export type TenantSettingsResponse = z.infer<
-  typeof tenantSettingsResponseSchema
->;
+export type TenantSettingsResponse = z.infer<typeof tenantSettingsResponseSchema>;
 
 const hexColorSchema = z
   .string()
@@ -81,9 +79,7 @@ export const updateTenantSettingsSchema = z.object({
   marketplaceSlug: slugSchema.nullable().optional(),
 });
 
-export type UpdateTenantSettingsInput = z.infer<
-  typeof updateTenantSettingsSchema
->;
+export type UpdateTenantSettingsInput = z.infer<typeof updateTenantSettingsSchema>;
 
 // ── Onboarding (Day 62) ──────────────────────────────────────────────────────
 

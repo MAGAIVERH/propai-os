@@ -39,9 +39,7 @@ function resolveScope(request: FastifyRequest): AnalyticsScope {
   return { tenantId };
 }
 
-export async function registerAnalyticsRoutes(
-  app: FastifyInstance,
-): Promise<void> {
+export async function registerAnalyticsRoutes(app: FastifyInstance): Promise<void> {
   const zodApp = app.withTypeProvider<ZodTypeProvider>();
   const requireAnalyticsRead = createRequirePermissionHook("analytics:read");
 

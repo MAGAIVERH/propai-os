@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { InterestForm } from "@/components/interest-form";
 import { LeafletMap } from "@/components/leaflet-map";
 import { PropertyGallery } from "@/components/property-gallery";
+import { ViewBeacon } from "@/components/view-beacon";
 import { fetchPublicPropertyDetail } from "@/lib/api";
 import { featureLabel, formatAddress, formatPrice, propertyTypeLabel } from "@/lib/format";
 
@@ -103,6 +104,7 @@ export default async function PropertyDetailPage({ params }: Props) {
 
   return (
     <main className="mx-auto w-full max-w-6xl flex-1 px-5 py-10">
+      <ViewBeacon propertyId={property.id} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

@@ -33,8 +33,7 @@ describe("Day 44 — schedule visit confirmation email", () => {
 
     expect(signUpResponse.statusCode).toBe(201);
 
-    const cookie =
-      normalizeCookieHeader(signUpResponse.headers["set-cookie"]) ?? "";
+    const cookie = normalizeCookieHeader(signUpResponse.headers["set-cookie"]) ?? "";
 
     // Create a property to visit.
     const propertyResponse = await app.inject({
@@ -58,8 +57,7 @@ describe("Day 44 — schedule visit confirmation email", () => {
 
     expect(propertyResponse.statusCode).toBe(201);
 
-    const propertyId = (propertyResponse.json() as PropertyCreateResponse)
-      .property.id;
+    const propertyId = (propertyResponse.json() as PropertyCreateResponse).property.id;
 
     // Create a lead linked to that property.
     const createLeadResponse = await app.inject({
@@ -106,12 +104,9 @@ describe("Day 44 — schedule visit confirmation email", () => {
 
     expect(activitiesResponse.statusCode).toBe(200);
 
-    const activitiesBody =
-      activitiesResponse.json() as LeadActivityListResponse;
+    const activitiesBody = activitiesResponse.json() as LeadActivityListResponse;
 
-    expect(
-      activitiesBody.activities.some((a) => a.type === "visit_scheduled"),
-    ).toBe(true);
+    expect(activitiesBody.activities.some((a) => a.type === "visit_scheduled")).toBe(true);
 
     // Audit trail records the scheduling.
     const auditResponse = await app.inject({
@@ -125,9 +120,7 @@ describe("Day 44 — schedule visit confirmation email", () => {
     const auditBody = auditResponse.json() as AuditLogListResponse;
 
     expect(
-      auditBody.items.some(
-        (e) => e.action === "visit.scheduled" && e.entityId === leadId,
-      ),
+      auditBody.items.some((e) => e.action === "visit.scheduled" && e.entityId === leadId),
     ).toBe(true);
 
     await app.close();
@@ -150,8 +143,7 @@ describe("Day 44 — schedule visit confirmation email", () => {
 
     expect(signUpResponse.statusCode).toBe(201);
 
-    const cookie =
-      normalizeCookieHeader(signUpResponse.headers["set-cookie"]) ?? "";
+    const cookie = normalizeCookieHeader(signUpResponse.headers["set-cookie"]) ?? "";
 
     const createLeadResponse = await app.inject({
       method: "POST",

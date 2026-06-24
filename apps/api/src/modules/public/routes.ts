@@ -5,15 +5,19 @@ import {
   getDb,
   leadActivities,
   leads,
+  organization,
   pipelineStages,
   properties,
   propertyFeatures,
   propertyImages,
   runInTenantContext,
+  tenantSettings,
 } from "@propai/db";
 import {
+  publicBrandingSchema,
   publicPropertyQuerySchema,
   submitInterestSchema,
+  type PublicBranding,
   type PublicPropertyDetailResponse,
   type SubmitInterestResponse,
 } from "@propai/shared";
@@ -413,6 +417,54 @@ export async function registerPublicRoutes(app: FastifyInstance): Promise<void> 
       }
 
       return reply.status(204).send();
+    },
+  );
+
+  // GET /public/branding?tenantId= — brokerage branding for the marketplace
+  zodApp.get(
+    "/public/branding",
+    {
+      schema: {
+        querystring: z.object({ tenantId: z.uuid() }),
+        response: { 200: publicBrandingSchema },
+      },
+    },
+    async (request, reply: FastifyReply) => {
+      const { tenantId } = z
+        .object({ tenantId: z.uuid() })
+        .parse(request.query);
+
+      const db = getDb();
+      const rows = await db
+        .select({
+          agencyName: organization.name,
+          logoUrl: tenantSettings.logoUrl,
+          primaryColor: tenantSettings.primaryColor,
+          marketplaceSlug: tenantSettings.marketplaceSlug,
+        })
+        .from(organization)
+        .leftJoin(
+          tenantSettings,
+          eq(tenantSettings.organizationId, organization.id),
+        )
+        .where(eq(organization.id, tenantId))
+        .limit(1);
+
+      const row = rows[0];
+      if (!row) {
+        return reply
+          .status(404)
+          .send(apiError("Not Found", "Brokerage not found."));
+      }
+
+      const branding: PublicBranding = {
+        agencyName: row.agencyName,
+        logoUrl: row.logoUrl ?? null,
+        primaryColor: row.primaryColor ?? "#10b981",
+        marketplaceSlug: row.marketplaceSlug ?? null,
+      };
+
+      return reply.status(200).send(branding);
     },
   );
 }

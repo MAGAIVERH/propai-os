@@ -237,6 +237,7 @@ export {
   type SendVisitConfirmationJobData,
 } from "./crm/visit.js";
 export {
+  publicBrandingSchema,
   publicPropertyDetailResponseSchema,
   publicPropertyFeatureSchema,
   publicPropertyImageSchema,
@@ -244,6 +245,7 @@ export {
   submitInterestResponseSchema,
   submitInterestSchema,
   submitPublicLeadSchema,
+  type PublicBranding,
   type PublicPropertyDetailResponse,
   type PublicPropertyFeature,
   type PublicPropertyImage,

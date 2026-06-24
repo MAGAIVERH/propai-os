@@ -33,16 +33,9 @@ export const pipelineStages = pgTable(
     color: text("color").notNull().default("#6B7280"),
     isWon: boolean("is_won").notNull().default(false),
     isLost: boolean("is_lost").notNull().default(false),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
-  (table) => [
-    index("pipeline_stages_tenant_sort_idx").on(
-      table.tenantId,
-      table.sortOrder,
-    ),
-  ],
+  (table) => [index("pipeline_stages_tenant_sort_idx").on(table.tenantId, table.sortOrder)],
 );
 
 /** Prospective buyer or renter (Day 36). Tenant-scoped via RLS on tenant_id. */
@@ -69,12 +62,8 @@ export const leads = pgTable(
     }),
     aiScore: integer("ai_score"),
     notes: text("notes"),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
     softDeletedAt: timestamp("soft_deleted_at", {
       withTimezone: true,
       mode: "date",
@@ -83,10 +72,7 @@ export const leads = pgTable(
   (table) => [
     index("leads_tenant_stage_idx").on(table.tenantId, table.stageId),
     index("leads_tenant_email_idx").on(table.tenantId, table.email),
-    index("leads_tenant_created_at_idx").on(
-      table.tenantId,
-      table.createdAt.desc(),
-    ),
+    index("leads_tenant_created_at_idx").on(table.tenantId, table.createdAt.desc()),
   ],
 );
 
@@ -103,15 +89,10 @@ export const leadActivities = pgTable(
     createdBy: text("created_by").references(() => user.id, {
       onDelete: "set null",
     }),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [
     index("lead_activities_lead_id_idx").on(table.leadId),
-    index("lead_activities_lead_created_at_idx").on(
-      table.leadId,
-      table.createdAt.desc(),
-    ),
+    index("lead_activities_lead_created_at_idx").on(table.leadId, table.createdAt.desc()),
   ],
 );

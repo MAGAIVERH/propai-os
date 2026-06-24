@@ -39,9 +39,7 @@ describe("Brokerage auth flow", () => {
 
     const signUpBody = signUpResponse.json() as BrokerageSignUpResponse;
 
-    expect(signUpBody.session.activeOrganizationId).toBe(
-      signUpBody.organization.id,
-    );
+    expect(signUpBody.session.activeOrganizationId).toBe(signUpBody.organization.id);
 
     const cookieHeader = normalizeCookieHeader(signUpResponse.headers["set-cookie"]);
 
@@ -59,9 +57,7 @@ describe("Brokerage auth flow", () => {
 
     const sessionBody = sessionResponse.json() as SessionResponse;
 
-    expect(sessionBody.session?.activeOrganizationId).toBe(
-      signUpBody.organization.id,
-    );
+    expect(sessionBody.session?.activeOrganizationId).toBe(signUpBody.organization.id);
 
     const itemsResponse = await app.inject({
       method: "GET",

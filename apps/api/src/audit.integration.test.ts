@@ -45,9 +45,7 @@ describe("Day 13 — audit log integration", () => {
     const ownerCookie = normalizeCookieHeader(signUpResponse.headers["set-cookie"]);
 
     expect(ownerCookie).toBeDefined();
-    expect(signUpBody.session.activeOrganizationId).toBe(
-      signUpBody.organization.id,
-    );
+    expect(signUpBody.session.activeOrganizationId).toBe(signUpBody.organization.id);
 
     const auditResponse = await app.inject({
       method: "GET",
@@ -214,9 +212,7 @@ describe("Day 13 — audit log integration", () => {
 
     expect(managerSignUp.statusCode).toBe(200);
 
-    const managerCookie = normalizeCookieHeader(
-      managerSignUp.headers["set-cookie"],
-    );
+    const managerCookie = normalizeCookieHeader(managerSignUp.headers["set-cookie"]);
 
     const acceptResponse = await app.inject({
       method: "POST",
@@ -231,8 +227,7 @@ describe("Day 13 — audit log integration", () => {
     expect(acceptResponse.statusCode).toBe(200);
 
     const managerSessionCookie =
-      normalizeCookieHeader(acceptResponse.headers["set-cookie"]) ??
-      managerCookie;
+      normalizeCookieHeader(acceptResponse.headers["set-cookie"]) ?? managerCookie;
 
     const auditResponse = await app.inject({
       method: "GET",
@@ -244,9 +239,7 @@ describe("Day 13 — audit log integration", () => {
 
     const auditBody = auditResponse.json() as AuditLogListResponse;
 
-    expect(
-      auditBody.items.some((entry) => entry.action === "organization.created"),
-    ).toBe(true);
+    expect(auditBody.items.some((entry) => entry.action === "organization.created")).toBe(true);
 
     await app.close();
   });

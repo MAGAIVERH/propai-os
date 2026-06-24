@@ -1,11 +1,4 @@
-import {
-  index,
-  jsonb,
-  pgTable,
-  text,
-  timestamp,
-  uuid,
-} from "drizzle-orm/pg-core";
+import { index, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 import { organization, user } from "./auth.js";
 
@@ -23,24 +16,12 @@ export const auditLogs = pgTable(
     action: text("action").notNull(),
     entityType: text("entity_type").notNull(),
     entityId: text("entity_id").notNull(),
-    metadata: jsonb("metadata")
-      .$type<Record<string, unknown>>()
-      .notNull()
-      .default({}),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>().notNull().default({}),
     ip: text("ip"),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [
-    index("audit_logs_tenant_id_created_at_idx").on(
-      table.tenantId,
-      table.createdAt.desc(),
-    ),
-    index("audit_logs_tenant_entity_idx").on(
-      table.tenantId,
-      table.entityType,
-      table.entityId,
-    ),
+    index("audit_logs_tenant_id_created_at_idx").on(table.tenantId, table.createdAt.desc()),
+    index("audit_logs_tenant_entity_idx").on(table.tenantId, table.entityType, table.entityId),
   ],
 );

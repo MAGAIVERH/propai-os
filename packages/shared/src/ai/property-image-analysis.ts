@@ -16,15 +16,11 @@ export const analyzePropertyImagesRequestSchema = z.object({
   imageUrls: z.array(z.url()).min(1).max(10),
 });
 
-export type AnalyzePropertyImagesRequest = z.infer<
-  typeof analyzePropertyImagesRequestSchema
->;
+export type AnalyzePropertyImagesRequest = z.infer<typeof analyzePropertyImagesRequestSchema>;
 
 export const analyzePropertyImagesResponseSchema = propertyImageAnalysisSchema;
 
-export type AnalyzePropertyImagesResponse = z.infer<
-  typeof analyzePropertyImagesResponseSchema
->;
+export type AnalyzePropertyImagesResponse = z.infer<typeof analyzePropertyImagesResponseSchema>;
 
 export const MOCK_PROPERTY_IMAGE_ANALYSIS = {
   bedrooms: 3,

@@ -1,11 +1,4 @@
-import {
-  index,
-  pgEnum,
-  pgTable,
-  text,
-  timestamp,
-  uuid,
-} from "drizzle-orm/pg-core";
+import { index, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 import { organization, user } from "./auth.js";
 import { leads } from "./crm.js";
@@ -37,9 +30,7 @@ export const notifications = pgTable(
       onDelete: "cascade",
     }),
     readAt: timestamp("read_at", { withTimezone: true, mode: "date" }),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [
     index("notifications_tenant_user_created_idx").on(
@@ -47,10 +38,6 @@ export const notifications = pgTable(
       table.userId,
       table.createdAt.desc(),
     ),
-    index("notifications_tenant_user_read_idx").on(
-      table.tenantId,
-      table.userId,
-      table.readAt,
-    ),
+    index("notifications_tenant_user_read_idx").on(table.tenantId, table.userId, table.readAt),
   ],
 );

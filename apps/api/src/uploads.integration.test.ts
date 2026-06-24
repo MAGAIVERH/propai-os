@@ -10,8 +10,7 @@ import { UPLOAD_MAX_BYTES } from "@propai/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("./lib/storage-config.js", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("./lib/storage-config.js")>();
+  const actual = await importOriginal<typeof import("./lib/storage-config.js")>();
 
   return {
     ...actual,
@@ -29,10 +28,7 @@ vi.mock("./lib/s3-client.js", () => ({
 import { buildApp } from "./app.js";
 import { clearDevInvitations } from "./lib/invitation-dev-store.js";
 import { normalizeCookieHeader } from "./lib/forward-auth-cookies.js";
-import {
-  createPresignedGetUrl,
-  createPresignedPutUrl,
-} from "./lib/s3-client.js";
+import { createPresignedGetUrl, createPresignedPutUrl } from "./lib/s3-client.js";
 import { getStorageConfig } from "./lib/storage-config.js";
 
 type BrokerageSignUpResponse = {
@@ -67,9 +63,7 @@ const mockStorageConfig = {
   presignExpiresSeconds: 900,
 } as const;
 
-function samplePropertyPayload(
-  overrides: Partial<CreatePropertyInput> = {},
-): CreatePropertyInput {
+function samplePropertyPayload(overrides: Partial<CreatePropertyInput> = {}): CreatePropertyInput {
   return {
     title: "Upload Test Home",
     type: "single_family",
@@ -172,8 +166,7 @@ async function inviteAndAcceptUser(
 
   expect(acceptResponse.statusCode).toBe(200);
 
-  const sessionCookie =
-    normalizeCookieHeader(acceptResponse.headers["set-cookie"]) ?? signUpCookie;
+  const sessionCookie = normalizeCookieHeader(acceptResponse.headers["set-cookie"]) ?? signUpCookie;
 
   return { cookie: sessionCookie ?? "", email };
 }
@@ -206,7 +199,10 @@ async function presignUpload(
     contentType: string;
     contentLength: number;
   },
-): Promise<{ statusCode: number; body: PresignUploadResponse | { error: string; message: string } }> {
+): Promise<{
+  statusCode: number;
+  body: PresignUploadResponse | { error: string; message: string };
+}> {
   const response = await app.inject({
     method: "POST",
     url: "/v1/uploads/presign",
@@ -225,12 +221,8 @@ async function presignUpload(
 
 function mockStorageReady(): void {
   vi.mocked(getStorageConfig).mockReturnValue({ ...mockStorageConfig });
-  vi.mocked(createPresignedPutUrl).mockResolvedValue(
-    "https://storage.example/upload",
-  );
-  vi.mocked(createPresignedGetUrl).mockResolvedValue(
-    "https://storage.example/download",
-  );
+  vi.mocked(createPresignedPutUrl).mockResolvedValue("https://storage.example/upload");
+  vi.mocked(createPresignedGetUrl).mockResolvedValue("https://storage.example/download");
 }
 
 describe("Day 18 — uploads integration", () => {

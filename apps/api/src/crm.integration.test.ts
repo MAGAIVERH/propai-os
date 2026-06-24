@@ -17,7 +17,6 @@ type BrokerageSignUpResponse = {
   session: { activeOrganizationId: string };
 };
 
-
 type LeadSingleResponse = { lead: LeadResponse };
 type LeadActivitySingleResponse = {
   activity: { id: string; type: string; content: string };
@@ -147,17 +146,13 @@ describe("Day 37 — CRM leads integration", () => {
 
     const auditBody = auditResponse.json() as AuditLogListResponse;
 
-    expect(
-      auditBody.items.some(
-        (e) => e.action === "lead.created" && e.entityId === leadId,
-      ),
-    ).toBe(true);
+    expect(auditBody.items.some((e) => e.action === "lead.created" && e.entityId === leadId)).toBe(
+      true,
+    );
 
-    expect(
-      auditBody.items.some(
-        (e) => e.action === "lead.updated" && e.entityId === leadId,
-      ),
-    ).toBe(true);
+    expect(auditBody.items.some((e) => e.action === "lead.updated" && e.entityId === leadId)).toBe(
+      true,
+    );
 
     await app.close();
   });
@@ -243,9 +238,7 @@ describe("Day 37 — CRM leads integration", () => {
 
     const activitiesBody = activitiesResponse.json() as LeadActivityListResponse;
 
-    const stageChangeActivity = activitiesBody.activities.find(
-      (a) => a.type === "stage_change",
-    );
+    const stageChangeActivity = activitiesBody.activities.find((a) => a.type === "stage_change");
 
     expect(stageChangeActivity).toBeDefined();
     expect(stageChangeActivity?.content).toContain(firstStage!.name);
@@ -262,9 +255,7 @@ describe("Day 37 — CRM leads integration", () => {
     const auditBody = auditResponse.json() as AuditLogListResponse;
 
     expect(
-      auditBody.items.some(
-        (e) => e.action === "lead.stage_changed" && e.entityId === leadId,
-      ),
+      auditBody.items.some((e) => e.action === "lead.stage_changed" && e.entityId === leadId),
     ).toBe(true);
 
     await app.close();

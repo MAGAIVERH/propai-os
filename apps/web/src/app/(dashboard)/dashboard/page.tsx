@@ -2,6 +2,7 @@ import { LayoutDashboard } from "lucide-react";
 
 import { EmptyState } from "@/components/empty-state";
 import { ModuleHeader } from "@/components/module-header";
+import { OnboardingChecklist } from "@/modules/settings/components/onboarding-checklist";
 
 export default function DashboardPage() {
   return (
@@ -11,6 +12,7 @@ export default function DashboardPage() {
         title="Dashboard"
         description="Overview of your brokerage workspace. Metrics and activity summaries will appear here."
       />
+      <OnboardingChecklist />
       <EmptyState
         icon={LayoutDashboard}
         title="No activity yet"

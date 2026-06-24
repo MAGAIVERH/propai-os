@@ -31,8 +31,7 @@ describe("Day 45 — in-app notifications integration", () => {
     expect(signUpResponse.statusCode).toBe(201);
 
     const signUpBody = signUpResponse.json() as BrokerageSignUpResponse;
-    const cookie =
-      normalizeCookieHeader(signUpResponse.headers["set-cookie"]) ?? "";
+    const cookie = normalizeCookieHeader(signUpResponse.headers["set-cookie"]) ?? "";
     const tenantId = signUpBody.organization.id;
 
     // Inbound marketplace lead (public, unauthenticated) → notifies members.

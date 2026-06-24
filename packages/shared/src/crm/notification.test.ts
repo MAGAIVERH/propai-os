@@ -25,9 +25,7 @@ describe("notificationResponseSchema", () => {
   });
 
   it("rejects an unknown type", () => {
-    expect(() =>
-      notificationResponseSchema.parse({ ...base, type: "spam" }),
-    ).toThrow();
+    expect(() => notificationResponseSchema.parse({ ...base, type: "spam" })).toThrow();
   });
 });
 

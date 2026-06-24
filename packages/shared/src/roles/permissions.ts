@@ -1,11 +1,6 @@
 import { z } from "zod";
 
-export const BROKERAGE_ROLES = [
-  "owner",
-  "manager",
-  "agent",
-  "viewer",
-] as const;
+export const BROKERAGE_ROLES = ["owner", "manager", "agent", "viewer"] as const;
 
 export const brokerageRoleSchema = z.enum(BROKERAGE_ROLES);
 
@@ -23,33 +18,19 @@ export const permissionSchema = z.enum(PERMISSIONS);
 
 export type Permission = z.infer<typeof permissionSchema>;
 
-export const ROLE_PERMISSIONS: Record<
-  BrokerageRole,
-  readonly Permission[]
-> = {
-  owner: [
-    "leads:write",
-    "properties:write",
-    "analytics:read",
-    "audit:read",
-    "billing:manage",
-  ],
+export const ROLE_PERMISSIONS: Record<BrokerageRole, readonly Permission[]> = {
+  owner: ["leads:write", "properties:write", "analytics:read", "audit:read", "billing:manage"],
   manager: ["leads:write", "properties:write", "analytics:read", "audit:read"],
   // Agents can read analytics, but the API scopes the data to their own leads.
   agent: ["leads:write", "properties:write", "analytics:read"],
   viewer: ["analytics:read"],
 };
 
-export function getPermissionsForRole(
-  role: BrokerageRole,
-): readonly Permission[] {
+export function getPermissionsForRole(role: BrokerageRole): readonly Permission[] {
   return ROLE_PERMISSIONS[role];
 }
 
-export function hasPermission(
-  role: BrokerageRole,
-  permission: Permission,
-): boolean {
+export function hasPermission(role: BrokerageRole, permission: Permission): boolean {
   return getPermissionsForRole(role).includes(permission);
 }
 

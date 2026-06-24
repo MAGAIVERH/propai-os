@@ -35,6 +35,7 @@ import {
   encodePropertyCursor,
 } from "../../lib/property-cursor.js";
 import { invalidatePublicPropertiesCache } from "../../lib/public-properties-cache.js";
+import { checkListingLimit } from "../billing/feature-gate.js";
 import { writeAuditEventSafe } from "../../lib/write-audit-event.js";
 import { MOCK_SESSION_DEFAULT_USER_ID } from "../auth/session.js";
 import { createRequirePermissionHook } from "../../plugins/require-member-role.js";
@@ -366,6 +367,21 @@ export async function registerPropertiesRoutes(
       const userId = requireSessionUserId(request);
       const body = createPropertySchema.parse(request.body);
 
+      // Feature gate: Free plan caps active listings (Day 60).
+      if ((body.status ?? "draft") === "active") {
+        const check = await checkListingLimit(tenantId);
+        if (!check.allowed) {
+          return reply
+            .status(402)
+            .send(
+              apiError(
+                "Payment Required",
+                `Your plan allows up to ${check.limit} active listings. Upgrade to Pro to publish more.`,
+              ),
+            );
+        }
+      }
+
       const rows = await runInTenantContext(tenantId, async (tx) => {
         return tx
           .insert(properties)
@@ -457,6 +473,25 @@ export async function registerPropertiesRoutes(
 
       if (sendPropertyAccessFailure(reply, access)) {
         return;
+      }
+
+      // Feature gate: block publishing a draft to active over the plan limit.
+      if (
+        body.status === "active" &&
+        existing &&
+        existing.status !== "active"
+      ) {
+        const check = await checkListingLimit(tenantId);
+        if (!check.allowed) {
+          return reply
+            .status(402)
+            .send(
+              apiError(
+                "Payment Required",
+                `Your plan allows up to ${check.limit} active listings. Upgrade to Pro to publish more.`,
+              ),
+            );
+        }
       }
 
       const updatedRows = await runInTenantContext(tenantId, async (tx) => {

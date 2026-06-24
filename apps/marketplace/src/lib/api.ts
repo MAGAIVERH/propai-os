@@ -1,11 +1,24 @@
 import type {
   PropertyResponse,
+  PublicBranding,
   PublicPropertyDetailResponse,
   SearchSort,
   SemanticSearchResponse,
 } from "@propai/shared";
 
 import { getApiUrl } from "./env";
+
+export async function fetchBranding(tenantId: string): Promise<PublicBranding | null> {
+  try {
+    const url = new URL(`${getApiUrl()}/public/branding`);
+    url.searchParams.set("tenantId", tenantId);
+    const res = await fetch(url.toString(), { next: { revalidate: 300 } });
+    if (!res.ok) return null;
+    return (await res.json()) as PublicBranding;
+  } catch {
+    return null;
+  }
+}
 
 export type PublicPropertyListResult = {
   properties: PropertyResponse[];
