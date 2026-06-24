@@ -7,7 +7,6 @@ const {
   mockGetResendFromEmail,
   mockResendSend,
   mockWriteAuditEventSafe,
-  mockWorkerClose,
   mockGetBullMqDuplicateConnection,
   MockWorker,
   mockWorkerConstructor,
