@@ -4,6 +4,7 @@ import { sql, type SQL } from "drizzle-orm";
 export type SemanticSearchParams = {
   tenantId: string;
   embedding: number[];
+  /** Number of candidate rows to fetch from pgvector before hybrid re-ranking. */
   limit: number;
   beds?: number;
   city?: string;
@@ -34,6 +35,8 @@ export type SemanticSearchRow = {
   zipCode: string;
   latitude: string | null;
   longitude: string | null;
+  createdAt: Date;
+  /** Cosine similarity to the query embedding (0–1). */
   relevanceScore: number;
 };
 
@@ -100,6 +103,7 @@ export async function runSemanticPropertySearch(
         zip_code              AS "zipCode",
         latitude::text,
         longitude::text,
+        created_at            AS "createdAt",
         (1 - (embedding <=> ${vectorLiteral}::vector))::float AS "relevanceScore"
       FROM properties
       WHERE ${whereClause}

@@ -95,9 +95,12 @@ export {
   type PropertyImageResponse,
 } from "./properties/image-confirm.js";
 export {
+  SEARCH_SORT_OPTIONS,
+  searchSortSchema,
   semanticSearchQuerySchema,
   semanticSearchResponseSchema,
   semanticSearchResultItemSchema,
+  type SearchSort,
   type SemanticSearchQuery,
   type SemanticSearchResponse,
   type SemanticSearchResultItem,
@@ -173,12 +176,20 @@ export {
   type SendVisitConfirmationJobData,
 } from "./crm/visit.js";
 export {
+  publicPropertyDetailResponseSchema,
+  publicPropertyFeatureSchema,
+  publicPropertyImageSchema,
   publicPropertyQuerySchema,
   submitInterestResponseSchema,
   submitInterestSchema,
+  submitPublicLeadSchema,
+  type PublicPropertyDetailResponse,
+  type PublicPropertyFeature,
+  type PublicPropertyImage,
   type PublicPropertyQuery,
   type SubmitInterestInput,
   type SubmitInterestResponse,
+  type SubmitPublicLeadInput,
 } from "./marketplace/public.js";
 export {
   createPropertySchema,

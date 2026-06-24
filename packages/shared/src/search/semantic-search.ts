@@ -6,10 +6,17 @@ import {
   rentOrSaleSchema,
 } from "../properties/property.js";
 
+export const SEARCH_SORT_OPTIONS = ["relevance", "price_asc", "newest"] as const;
+
+export const searchSortSchema = z.enum(SEARCH_SORT_OPTIONS);
+
+export type SearchSort = z.infer<typeof searchSortSchema>;
+
 export const semanticSearchQuerySchema = z.object({
   q: z.string().trim().min(1).max(500),
   tenantId: z.uuid(),
   limit: z.coerce.number().int().min(1).max(50).default(20),
+  sort: searchSortSchema.default("relevance"),
   beds: z.coerce.number().int().min(0).optional(),
   city: z.string().trim().min(1).optional(),
   state: z
@@ -46,6 +53,10 @@ export const semanticSearchResultItemSchema = z.object({
   zipCode: z.string(),
   latitude: z.number().nullable(),
   longitude: z.number().nullable(),
+  createdAt: z.iso.datetime(),
+  /** Cosine similarity to the query embedding (0–1). */
+  semanticScore: z.number().min(0).max(1),
+  /** Composite hybrid rank used for ordering when sort=relevance (0–1). */
   relevanceScore: z.number().min(0).max(1),
 });
 

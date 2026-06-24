@@ -17,6 +17,7 @@ Index of accepted decisions for PropAI OS. New ADRs use the template below and i
 | [005](./005-object-storage-r2.md) | Object storage (R2) for listing photos | Accepted | 2026-06-05 | Private bucket; presigned PUT/GET; key `tenant/{id}/property/{id}/{uuid}.ext`; 10 MB image/* |
 | [006](./006-ai-vision-listings.md) | AI vision for property listings | Accepted | 2026-06-13 | Gemini Flash async via BullMQ; rate limit 10/hour/tenant; `ENABLE_AI_VISION` flag; SSRF guard |
 | [007](./007-semantic-search-pgvector.md) | Semantic search with pgvector | Accepted | 2026-06-13 | `text-embedding-3-small` (1536d); ivfflat index; public `GET /search/semantic`; hybrid SQL filters |
+| [008](./008-hybrid-search-ranking.md) | Hybrid search ranking | Accepted | 2026-06-24 | Re-rank pgvector pool: semantic 40% + price 20% + distance 20% + recency 20%; `sort` options |
 
 See [PHASE-2-PLAN.md](../PHASE-2-PLAN.md) and [FOUNDATION-SIGNOFF.md](../FOUNDATION-SIGNOFF.md).
 
