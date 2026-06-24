@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import {
+  analyticsEvents,
   getDb,
   leadActivities,
   leads,
@@ -373,4 +374,45 @@ export async function registerPublicRoutes(app: FastifyInstance): Promise<void> 
 
   // POST /public/interest — kept as an alias for backwards compatibility
   zodApp.post("/public/interest", { schema: { body: submitInterestSchema } }, handlePublicLead);
+
+  // POST /public/properties/:id/view — analytics beacon (Day 56). Fire-and-forget
+  // from the marketplace detail page; records a property_view event.
+  zodApp.post(
+    "/public/properties/:id/view",
+    { schema: { params: z.object({ id: z.uuid() }) } },
+    async (request, reply: FastifyReply) => {
+      const { id } = z.object({ id: z.uuid() }).parse(request.params);
+
+      const db = getDb();
+      const rows = await db
+        .select({ tenantId: properties.tenantId })
+        .from(properties)
+        .where(
+          and(
+            eq(properties.id, id),
+            eq(properties.status, "active"),
+            isNull(properties.softDeletedAt),
+          ),
+        )
+        .limit(1);
+
+      const tenantId = rows[0]?.tenantId;
+
+      if (tenantId) {
+        try {
+          await runInTenantContext(tenantId, async (tx) => {
+            await tx.insert(analyticsEvents).values({
+              tenantId,
+              type: "property_view",
+              propertyId: id,
+            });
+          });
+        } catch {
+          // Analytics is best-effort — never fail on a view beacon.
+        }
+      }
+
+      return reply.status(204).send();
+    },
+  );
 }

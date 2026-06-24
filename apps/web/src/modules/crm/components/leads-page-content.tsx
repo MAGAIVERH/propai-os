@@ -62,7 +62,7 @@ export function LeadsPageContent() {
 
       {!isPending && !isError && stages.length > 0 && leads.length === 0 ? (
         <p className="py-2 text-center text-sm text-muted-foreground">
-          No leads yet — click "New Lead" to add your first prospect.
+          No leads yet — click &ldquo;New Lead&rdquo; to add your first prospect.
         </p>
       ) : null}
 

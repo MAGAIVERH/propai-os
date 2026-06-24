@@ -35,7 +35,8 @@ export const ROLE_PERMISSIONS: Record<
     "billing:manage",
   ],
   manager: ["leads:write", "properties:write", "analytics:read", "audit:read"],
-  agent: ["leads:write", "properties:write"],
+  // Agents can read analytics, but the API scopes the data to their own leads.
+  agent: ["leads:write", "properties:write", "analytics:read"],
   viewer: ["analytics:read"],
 };
 

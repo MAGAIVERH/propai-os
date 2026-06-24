@@ -23,9 +23,9 @@ describe("hasPermission", () => {
     expect(hasPermission("viewer", "audit:read")).toBe(false);
   });
 
-  it("denies analytics:read to agent and allows viewer", () => {
+  it("grants analytics:read to all roles (agents are self-scoped in the API)", () => {
     expect(hasPermission("viewer", "analytics:read")).toBe(true);
-    expect(hasPermission("agent", "analytics:read")).toBe(false);
+    expect(hasPermission("agent", "analytics:read")).toBe(true);
     expect(hasPermission("owner", "analytics:read")).toBe(true);
     expect(hasPermission("manager", "analytics:read")).toBe(true);
   });

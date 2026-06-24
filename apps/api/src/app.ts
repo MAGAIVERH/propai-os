@@ -9,6 +9,7 @@ import {
   requestIdOptions,
 } from "./lib/logger.js";
 import { registerAiModule } from "./modules/ai/index.js";
+import { registerAnalyticsModule } from "./modules/analytics/index.js";
 import { registerAuditModule } from "./modules/audit/index.js";
 import { registerCrmModule } from "./modules/crm/index.js";
 import { registerHealthModule } from "./modules/health/index.js";
@@ -72,6 +73,7 @@ export async function buildApp(
       await registerCrmModule(v1);
       await registerNotificationsModule(v1);
       await registerRealtimeModule(v1);
+      await registerAnalyticsModule(v1);
     },
     { prefix: "/v1" },
   );

@@ -25,8 +25,11 @@ export {
 } from "./seed/pipeline-stages.js";
 export {
   account,
+  analyticsEvents,
+  analyticsEventTypeEnum,
   auditLogs,
   authSchema,
+  billingPlanEnum,
   invitation,
   leadActivities,
   leadActivityTypeEnum,
@@ -40,6 +43,7 @@ export {
   propertyFeatures,
   propertyImages,
   session,
+  stripeEvents,
   tenantSettings,
   tenants,
   testItems,
