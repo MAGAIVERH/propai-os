@@ -34,9 +34,7 @@ type SignedUpUser = {
   cookie: string;
 };
 
-function samplePropertyPayload(
-  overrides: Partial<CreatePropertyInput> = {},
-): CreatePropertyInput {
+function samplePropertyPayload(overrides: Partial<CreatePropertyInput> = {}): CreatePropertyInput {
   return {
     title: "Austin Ranch Home",
     type: "single_family",
@@ -139,8 +137,7 @@ async function inviteAndAcceptUser(
 
   expect(acceptResponse.statusCode).toBe(200);
 
-  const sessionCookie =
-    normalizeCookieHeader(acceptResponse.headers["set-cookie"]) ?? signUpCookie;
+  const sessionCookie = normalizeCookieHeader(acceptResponse.headers["set-cookie"]) ?? signUpCookie;
 
   return { cookie: sessionCookie ?? "", email };
 }
@@ -218,9 +215,7 @@ describe("Day 17 — properties integration", () => {
 
     const listBody = listResponse.json() as PropertyListResponse;
 
-    expect(
-      listBody.items.some((item) => item.id === created.property.id),
-    ).toBe(true);
+    expect(listBody.items.some((item) => item.id === created.property.id)).toBe(true);
 
     await app.close();
   });
@@ -306,9 +301,7 @@ describe("Day 17 — properties integration", () => {
 
     const listBody = listResponse.json() as PropertyListResponse;
 
-    expect(
-      listBody.items.some((item) => item.id === created.property.id),
-    ).toBe(true);
+    expect(listBody.items.some((item) => item.id === created.property.id)).toBe(true);
 
     await app.close();
   });
@@ -447,9 +440,7 @@ describe("Day 17 — properties integration", () => {
     expect(ids).toContain(highActive.property.id);
     expect(ids).not.toContain(lowActive.property.id);
     expect(listBody.items.every((item) => item.status === "active")).toBe(true);
-    expect(
-      listBody.items.every((item) => item.priceUsdCents >= 60_000_000),
-    ).toBe(true);
+    expect(listBody.items.every((item) => item.priceUsdCents >= 60_000_000)).toBe(true);
 
     await app.close();
   });
@@ -545,9 +536,7 @@ describe("Day 17 — properties integration", () => {
 
     const listBody = listResponse.json() as PropertyListResponse;
 
-    expect(
-      listBody.items.some((item) => item.id === created.property.id),
-    ).toBe(false);
+    expect(listBody.items.some((item) => item.id === created.property.id)).toBe(false);
 
     const getResponse = await app.inject({
       method: "GET",

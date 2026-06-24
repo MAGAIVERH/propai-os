@@ -42,6 +42,4 @@ export const sendVisitConfirmationJobDataSchema = z.object({
   timezone: z.string().trim().min(1),
 });
 
-export type SendVisitConfirmationJobData = z.infer<
-  typeof sendVisitConfirmationJobDataSchema
->;
+export type SendVisitConfirmationJobData = z.infer<typeof sendVisitConfirmationJobDataSchema>;

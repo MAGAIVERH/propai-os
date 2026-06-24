@@ -61,9 +61,7 @@ export const notificationCreatedEventSchema = z.object({
   notification: notificationResponseSchema,
 });
 
-export type NotificationCreatedEvent = z.infer<
-  typeof notificationCreatedEventSchema
->;
+export type NotificationCreatedEvent = z.infer<typeof notificationCreatedEventSchema>;
 
 export const realtimeEventSchema = z.discriminatedUnion("type", [
   leadCreatedEventSchema,

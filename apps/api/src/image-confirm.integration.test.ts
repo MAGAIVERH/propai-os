@@ -1,9 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import {
-  propertyImages,
-  runInTenantContext,
-} from "@propai/db";
+import { propertyImages, runInTenantContext } from "@propai/db";
 import type {
   AuditLogListResponse,
   CreatePropertyInput,
@@ -15,8 +12,7 @@ import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("./lib/storage-config.js", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("./lib/storage-config.js")>();
+  const actual = await importOriginal<typeof import("./lib/storage-config.js")>();
 
   return {
     ...actual,
@@ -69,9 +65,7 @@ const mockStorageConfig = {
   presignExpiresSeconds: 900,
 } as const;
 
-function samplePropertyPayload(
-  overrides: Partial<CreatePropertyInput> = {},
-): CreatePropertyInput {
+function samplePropertyPayload(overrides: Partial<CreatePropertyInput> = {}): CreatePropertyInput {
   return {
     title: "Confirm Test Home",
     type: "single_family",
@@ -174,8 +168,7 @@ async function inviteAndAcceptUser(
 
   expect(acceptResponse.statusCode).toBe(200);
 
-  const sessionCookie =
-    normalizeCookieHeader(acceptResponse.headers["set-cookie"]) ?? signUpCookie;
+  const sessionCookie = normalizeCookieHeader(acceptResponse.headers["set-cookie"]) ?? signUpCookie;
 
   return { cookie: sessionCookie ?? "", email };
 }
@@ -234,7 +227,10 @@ async function confirmImage(
     sizeBytes: number;
     sortOrder?: number;
   },
-): Promise<{ statusCode: number; body: ImageConfirmResponse | { error: string; message: string } }> {
+): Promise<{
+  statusCode: number;
+  body: ImageConfirmResponse | { error: string; message: string };
+}> {
   const response = await app.inject({
     method: "POST",
     url: `/v1/properties/${propertyId}/images/confirm`,
@@ -253,9 +249,7 @@ async function confirmImage(
 
 function mockStorageReady(): void {
   vi.mocked(getStorageConfig).mockReturnValue({ ...mockStorageConfig });
-  vi.mocked(createPresignedPutUrl).mockResolvedValue(
-    "https://storage.example/upload",
-  );
+  vi.mocked(createPresignedPutUrl).mockResolvedValue("https://storage.example/upload");
 }
 
 describe("Day 21 — image confirm integration", () => {

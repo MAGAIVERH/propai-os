@@ -1,18 +1,23 @@
 import { randomUUID } from "node:crypto";
 
 import {
+  analyticsEvents,
   getDb,
   leadActivities,
   leads,
+  organization,
   pipelineStages,
   properties,
   propertyFeatures,
   propertyImages,
   runInTenantContext,
+  tenantSettings,
 } from "@propai/db";
 import {
+  publicBrandingSchema,
   publicPropertyQuerySchema,
   submitInterestSchema,
+  type PublicBranding,
   type PublicPropertyDetailResponse,
   type SubmitInterestResponse,
 } from "@propai/shared";
@@ -373,4 +378,93 @@ export async function registerPublicRoutes(app: FastifyInstance): Promise<void> 
 
   // POST /public/interest — kept as an alias for backwards compatibility
   zodApp.post("/public/interest", { schema: { body: submitInterestSchema } }, handlePublicLead);
+
+  // POST /public/properties/:id/view — analytics beacon (Day 56). Fire-and-forget
+  // from the marketplace detail page; records a property_view event.
+  zodApp.post(
+    "/public/properties/:id/view",
+    { schema: { params: z.object({ id: z.uuid() }) } },
+    async (request, reply: FastifyReply) => {
+      const { id } = z.object({ id: z.uuid() }).parse(request.params);
+
+      const db = getDb();
+      const rows = await db
+        .select({ tenantId: properties.tenantId })
+        .from(properties)
+        .where(
+          and(
+            eq(properties.id, id),
+            eq(properties.status, "active"),
+            isNull(properties.softDeletedAt),
+          ),
+        )
+        .limit(1);
+
+      const tenantId = rows[0]?.tenantId;
+
+      if (tenantId) {
+        try {
+          await runInTenantContext(tenantId, async (tx) => {
+            await tx.insert(analyticsEvents).values({
+              tenantId,
+              type: "property_view",
+              propertyId: id,
+            });
+          });
+        } catch {
+          // Analytics is best-effort — never fail on a view beacon.
+        }
+      }
+
+      return reply.status(204).send();
+    },
+  );
+
+  // GET /public/branding?tenantId= — brokerage branding for the marketplace
+  zodApp.get(
+    "/public/branding",
+    {
+      schema: {
+        querystring: z.object({ tenantId: z.uuid() }),
+        response: { 200: publicBrandingSchema },
+      },
+    },
+    async (request, reply: FastifyReply) => {
+      const { tenantId } = z
+        .object({ tenantId: z.uuid() })
+        .parse(request.query);
+
+      const db = getDb();
+      const rows = await db
+        .select({
+          agencyName: organization.name,
+          logoUrl: tenantSettings.logoUrl,
+          primaryColor: tenantSettings.primaryColor,
+          marketplaceSlug: tenantSettings.marketplaceSlug,
+        })
+        .from(organization)
+        .leftJoin(
+          tenantSettings,
+          eq(tenantSettings.organizationId, organization.id),
+        )
+        .where(eq(organization.id, tenantId))
+        .limit(1);
+
+      const row = rows[0];
+      if (!row) {
+        return reply
+          .status(404)
+          .send(apiError("Not Found", "Brokerage not found."));
+      }
+
+      const branding: PublicBranding = {
+        agencyName: row.agencyName,
+        logoUrl: row.logoUrl ?? null,
+        primaryColor: row.primaryColor ?? "#10b981",
+        marketplaceSlug: row.marketplaceSlug ?? null,
+      };
+
+      return reply.status(200).send(branding);
+    },
+  );
 }

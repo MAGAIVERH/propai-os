@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  createPropertySchema,
-  propertyListQuerySchema,
-  updatePropertySchema,
-} from "./property.js";
+import { createPropertySchema, propertyListQuerySchema, updatePropertySchema } from "./property.js";
 
 const validMinimalCreate = {
   title: "Lakeview Home",

@@ -4,12 +4,7 @@ import { propertyImageAnalysisSchema } from "./property-image-analysis.js";
 
 export const AI_ANALYZE_IMAGES_QUEUE_NAME = "ai:analyze-images";
 
-export const AI_JOB_STATUSES = [
-  "queued",
-  "processing",
-  "completed",
-  "failed",
-] as const;
+export const AI_JOB_STATUSES = ["queued", "processing", "completed", "failed"] as const;
 
 export const aiJobStatusSchema = z.enum(AI_JOB_STATUSES);
 
@@ -26,9 +21,7 @@ export const enqueueAnalyzeImagesJobResponseSchema = z.object({
   jobId: z.string().min(1),
 });
 
-export type EnqueueAnalyzeImagesJobResponse = z.infer<
-  typeof enqueueAnalyzeImagesJobResponseSchema
->;
+export type EnqueueAnalyzeImagesJobResponse = z.infer<typeof enqueueAnalyzeImagesJobResponseSchema>;
 
 export const analyzeImagesJobParamsSchema = z.object({
   jobId: z.string().min(1),
@@ -43,6 +36,4 @@ export const analyzeImagesJobStatusResponseSchema = z.object({
   failedReason: z.string().nullable().optional(),
 });
 
-export type AnalyzeImagesJobStatusResponse = z.infer<
-  typeof analyzeImagesJobStatusResponseSchema
->;
+export type AnalyzeImagesJobStatusResponse = z.infer<typeof analyzeImagesJobStatusResponseSchema>;

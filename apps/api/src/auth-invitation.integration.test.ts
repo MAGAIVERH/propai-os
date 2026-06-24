@@ -127,8 +127,7 @@ describe("Brokerage invitation flow", () => {
 
     expect(acceptResponse.statusCode).toBe(200);
 
-    const acceptCookie =
-      normalizeCookieHeader(acceptResponse.headers["set-cookie"]) ?? agentCookie;
+    const acceptCookie = normalizeCookieHeader(acceptResponse.headers["set-cookie"]) ?? agentCookie;
 
     const sessionResponse = await app.inject({
       method: "GET",
@@ -154,12 +153,8 @@ describe("Brokerage invitation flow", () => {
     const itemsBody = itemsResponse.json() as TestItemsListResponse;
 
     expect(itemsBody.items.length).toBeGreaterThanOrEqual(1);
-    expect(itemsBody.items.some((item) => item.name === "org-a-shared")).toBe(
-      true,
-    );
-    expect(
-      itemsBody.items.every((item) => item.tenantId === organizationId),
-    ).toBe(true);
+    expect(itemsBody.items.some((item) => item.name === "org-a-shared")).toBe(true);
+    expect(itemsBody.items.every((item) => item.tenantId === organizationId)).toBe(true);
 
     const otherOrgSuffix = `${suffix}-other`;
     const otherOwnerSignUp = await app.inject({
@@ -175,9 +170,7 @@ describe("Brokerage invitation flow", () => {
 
     expect(otherOwnerSignUp.statusCode).toBe(201);
 
-    const otherOwnerCookie = normalizeCookieHeader(
-      otherOwnerSignUp.headers["set-cookie"],
-    );
+    const otherOwnerCookie = normalizeCookieHeader(otherOwnerSignUp.headers["set-cookie"]);
 
     const otherItemResponse = await app.inject({
       method: "POST",
@@ -199,9 +192,7 @@ describe("Brokerage invitation flow", () => {
 
     const agentItemsBody = agentItemsAgain.json() as TestItemsListResponse;
 
-    expect(agentItemsBody.items.some((item) => item.name === "other-org-only")).toBe(
-      false,
-    );
+    expect(agentItemsBody.items.some((item) => item.name === "other-org-only")).toBe(false);
 
     await app.close();
   });
@@ -273,9 +264,7 @@ describe("Brokerage invitation flow", () => {
 
     expect(managerSignUp.statusCode).toBe(200);
 
-    const managerCookie = normalizeCookieHeader(
-      managerSignUp.headers["set-cookie"],
-    );
+    const managerCookie = normalizeCookieHeader(managerSignUp.headers["set-cookie"]);
 
     const managerInviteBody = managerInvite.json() as InvitationCreateResponse;
 
@@ -292,8 +281,7 @@ describe("Brokerage invitation flow", () => {
     expect(managerAccept.statusCode).toBe(200);
 
     const managerSessionCookie =
-      normalizeCookieHeader(managerAccept.headers["set-cookie"]) ??
-      managerCookie;
+      normalizeCookieHeader(managerAccept.headers["set-cookie"]) ?? managerCookie;
 
     const forbiddenInvite = await app.inject({
       method: "POST",

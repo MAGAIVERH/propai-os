@@ -1,23 +1,12 @@
 import { z } from "zod";
 
-export const PROPERTY_TYPES = [
-  "single_family",
-  "condo",
-  "townhouse",
-  "multi_family",
-] as const;
+export const PROPERTY_TYPES = ["single_family", "condo", "townhouse", "multi_family"] as const;
 
 export const propertyTypeSchema = z.enum(PROPERTY_TYPES);
 
 export type PropertyType = z.infer<typeof propertyTypeSchema>;
 
-export const PROPERTY_STATUSES = [
-  "draft",
-  "active",
-  "under_contract",
-  "sold",
-  "rented",
-] as const;
+export const PROPERTY_STATUSES = ["draft", "active", "under_contract", "sold", "rented"] as const;
 
 export const propertyStatusSchema = z.enum(PROPERTY_STATUSES);
 
@@ -35,9 +24,7 @@ const usStateCodeSchema = z
   .regex(/^[A-Za-z]{2}$/, "State must be a 2-letter US code")
   .transform((value) => value.toUpperCase());
 
-const zipCodeSchema = z
-  .string()
-  .regex(/^\d{5}(-\d{4})?$/, "ZIP must be 5 digits or ZIP+4");
+const zipCodeSchema = z.string().regex(/^\d{5}(-\d{4})?$/, "ZIP must be 5 digits or ZIP+4");
 
 const bathroomsSchema = z
   .string()

@@ -60,12 +60,8 @@ export const properties = pgTable(
     createdBy: text("created_by").references(() => user.id, {
       onDelete: "set null",
     }),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
     softDeletedAt: timestamp("soft_deleted_at", {
       withTimezone: true,
       mode: "date",
@@ -78,11 +74,7 @@ export const properties = pgTable(
   },
   (table) => [
     index("properties_tenant_status_idx").on(table.tenantId, table.status),
-    index("properties_tenant_city_state_idx").on(
-      table.tenantId,
-      table.city,
-      table.state,
-    ),
+    index("properties_tenant_city_state_idx").on(table.tenantId, table.city, table.state),
     index("properties_geo_idx").on(table.latitude, table.longitude),
   ],
 );
@@ -97,16 +89,11 @@ export const propertyFeatures = pgTable(
       .references(() => properties.id, { onDelete: "cascade" }),
     featureKey: text("feature_key").notNull(),
     featureValue: text("feature_value").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [
     index("property_features_property_id_idx").on(table.propertyId),
-    uniqueIndex("property_features_property_key_uidx").on(
-      table.propertyId,
-      table.featureKey,
-    ),
+    uniqueIndex("property_features_property_key_uidx").on(table.propertyId, table.featureKey),
   ],
 );
 
@@ -121,14 +108,7 @@ export const propertyImages = pgTable(
     storageKey: text("storage_key").notNull(),
     sortOrder: integer("sort_order").notNull().default(0),
     isPrimary: boolean("is_primary").notNull().default(false),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
-  (table) => [
-    index("property_images_property_id_sort_idx").on(
-      table.propertyId,
-      table.sortOrder,
-    ),
-  ],
+  (table) => [index("property_images_property_id_sort_idx").on(table.propertyId, table.sortOrder)],
 );

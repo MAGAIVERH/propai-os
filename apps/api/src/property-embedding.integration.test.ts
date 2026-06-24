@@ -1,9 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import type {
-  CreatePropertyInput,
-  PropertyCreateResponse,
-} from "@propai/shared";
+import type { CreatePropertyInput, PropertyCreateResponse } from "@propai/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { buildApp } from "./app.js";
@@ -23,9 +20,7 @@ type BrokerageSignUpResponse = {
 
 type AppInstance = Awaited<ReturnType<typeof buildApp>>;
 
-function samplePropertyPayload(
-  overrides: Partial<CreatePropertyInput> = {},
-): CreatePropertyInput {
+function samplePropertyPayload(overrides: Partial<CreatePropertyInput> = {}): CreatePropertyInput {
   return {
     title: "Austin Ranch Home",
     type: "single_family",
@@ -204,9 +199,7 @@ describe("Day 29 — property embedding enqueue integration", () => {
   });
 
   it("does not fail PATCH when enqueue throws", async () => {
-    vi.mocked(enqueueGenerateEmbeddingJob).mockRejectedValue(
-      new Error("Redis unavailable"),
-    );
+    vi.mocked(enqueueGenerateEmbeddingJob).mockRejectedValue(new Error("Redis unavailable"));
 
     const app = await buildApp();
     const suffix = randomUUID().slice(0, 8);

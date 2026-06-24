@@ -14,6 +14,7 @@ import { writeAuditEventSafe } from "../../../lib/write-audit-event.js";
 import { auth } from "../better-auth.js";
 import { getSessionFromRequest } from "../session.js";
 import { brokerageInviteSchema } from "../schemas/brokerage-invite.js";
+import { checkAgentLimit } from "../../billing/feature-gate.js";
 
 type InvitationResponse = {
   id: string;
@@ -73,6 +74,22 @@ export async function registerBrokerageInviteRoutes(
               "Only the organization owner can invite members.",
             ),
           );
+      }
+
+      // Feature gate: Free plan caps the number of agents (Day 60/63). Only
+      // agent invitations consume a seat; managers/viewers are unmetered.
+      if (parsed.data.role === "agent") {
+        const agentLimit = await checkAgentLimit(organizationId);
+        if (!agentLimit.allowed) {
+          return reply
+            .status(402)
+            .send(
+              apiError(
+                "Payment Required",
+                `Your plan allows up to ${agentLimit.limit} agents. Upgrade to Pro to add more.`,
+              ),
+            );
+        }
       }
 
       try {

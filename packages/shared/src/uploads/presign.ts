@@ -10,10 +10,7 @@ export function isImageContentType(contentType: string): boolean {
 
 export const presignUploadRequestSchema = z.object({
   propertyId: z.uuid(),
-  contentType: z
-    .string()
-    .min(1)
-    .refine(isImageContentType, "Content-Type must be image/*"),
+  contentType: z.string().min(1).refine(isImageContentType, "Content-Type must be image/*"),
   contentLength: z.number().int().min(1).max(UPLOAD_MAX_BYTES),
 });
 

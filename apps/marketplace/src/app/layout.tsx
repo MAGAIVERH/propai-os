@@ -4,6 +4,8 @@ import { Inter } from "next/font/google";
 import { CookieNotice } from "@/components/cookie-notice";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { fetchBranding } from "@/lib/api";
+import { getDefaultTenantId } from "@/lib/env";
 
 import "./globals.css";
 
@@ -41,13 +43,22 @@ type RootLayoutProps = {
   children: React.ReactNode;
 };
 
-export default function RootLayout({ children }: RootLayoutProps) {
+export default async function RootLayout({ children }: RootLayoutProps) {
+  const tenantId = getDefaultTenantId();
+  const branding = tenantId ? await fetchBranding(tenantId) : null;
+
   return (
     <html lang="en-US" className={`dark ${inter.variable}`}>
+      {branding?.primaryColor ? (
+        <head>
+          {/* Apply the brokerage's brand color to the marketplace theme. */}
+          <style>{`:root{--primary:${branding.primaryColor};--ring:${branding.primaryColor};}`}</style>
+        </head>
+      ) : null}
       <body className="flex min-h-screen flex-col antialiased">
-        <SiteHeader />
+        <SiteHeader agencyName={branding?.agencyName} logoUrl={branding?.logoUrl} />
         <div className="flex flex-1 flex-col">{children}</div>
-        <SiteFooter />
+        <SiteFooter agencyName={branding?.agencyName} />
         <CookieNotice />
       </body>
     </html>

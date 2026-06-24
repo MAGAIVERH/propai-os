@@ -68,8 +68,7 @@ describe("analyzePropertyImagesRequestSchema", () => {
 
 describe("analyzePropertyImagesResponseSchema", () => {
   it("validates the mock fixture as a response", () => {
-    const result =
-      analyzePropertyImagesResponseSchema.parse(MOCK_PROPERTY_IMAGE_ANALYSIS);
+    const result = analyzePropertyImagesResponseSchema.parse(MOCK_PROPERTY_IMAGE_ANALYSIS);
 
     expect(result.seoTitle).toBe(MOCK_PROPERTY_IMAGE_ANALYSIS.seoTitle);
   });

@@ -30,13 +30,9 @@ export {
   userRelations,
   verification,
 };
+export { analyticsEvents, analyticsEventTypeEnum } from "./analytics.js";
 export { auditLogs } from "./audit-logs.js";
-export {
-  leadActivities,
-  leadActivityTypeEnum,
-  leads,
-  pipelineStages,
-} from "./crm.js";
+export { leadActivities, leadActivityTypeEnum, leads, pipelineStages } from "./crm.js";
 export { notifications, notificationTypeEnum } from "./notifications.js";
 export {
   properties,
@@ -46,7 +42,7 @@ export {
   propertyTypeEnum,
   rentOrSaleEnum,
 } from "./properties.js";
-export { tenantSettings } from "./tenant-settings.js";
+export { billingPlanEnum, stripeEvents, tenantSettings } from "./tenant-settings.js";
 export { testItems } from "./test-items.js";
 
 export const authSchema = {

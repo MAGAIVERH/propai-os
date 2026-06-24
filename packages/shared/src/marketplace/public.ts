@@ -84,3 +84,13 @@ export const submitInterestResponseSchema = z.object({
 });
 
 export type SubmitInterestResponse = z.infer<typeof submitInterestResponseSchema>;
+
+/** Public brokerage branding for the marketplace (Day 64). */
+export const publicBrandingSchema = z.object({
+  agencyName: z.string(),
+  logoUrl: z.string().nullable(),
+  primaryColor: z.string(),
+  marketplaceSlug: z.string().nullable(),
+});
+
+export type PublicBranding = z.infer<typeof publicBrandingSchema>;

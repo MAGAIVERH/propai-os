@@ -7,6 +7,4 @@ export const generateEmbeddingJobDataSchema = z.object({
   propertyId: z.uuid(),
 });
 
-export type GenerateEmbeddingJobData = z.infer<
-  typeof generateEmbeddingJobDataSchema
->;
+export type GenerateEmbeddingJobData = z.infer<typeof generateEmbeddingJobDataSchema>;
