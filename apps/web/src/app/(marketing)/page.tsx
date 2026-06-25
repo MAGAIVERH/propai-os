@@ -8,6 +8,7 @@ import { HowItWorksSection } from "@/modules/marketing/components/how-it-works-s
 import { LandingAnimations } from "@/modules/marketing/components/landing-animations";
 import { PricingSection } from "@/modules/marketing/components/pricing-section";
 import { TestimonialsSection } from "@/modules/marketing/components/testimonials-section";
+import { HouseHero } from "@/modules/marketing/experience/house-hero";
 
 export const metadata: Metadata = {
   title: "PropAI OS — The operating system for modern real estate agencies",
@@ -23,14 +24,19 @@ export const metadata: Metadata = {
 
 export default function LandingPage() {
   return (
-    <LandingAnimations>
-      <HeroSection />
-      <FeaturesSection />
-      <HowItWorksSection />
-      <PricingSection />
-      <TestimonialsSection />
-      <FaqSection />
-      <CtaSection />
-    </LandingAnimations>
+    <>
+      {/* Immersive 3D gallery hero (client-only, WebGL) */}
+      <HouseHero />
+
+      <LandingAnimations>
+        <HeroSection />
+        <FeaturesSection />
+        <HowItWorksSection />
+        <PricingSection />
+        <TestimonialsSection />
+        <FaqSection />
+        <CtaSection />
+      </LandingAnimations>
+    </>
   );
 }
