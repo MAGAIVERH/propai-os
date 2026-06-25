@@ -73,9 +73,11 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   const isRoot = pathname === "/";
 
   if (isRoot) {
+    // Authenticated users skip the marketing landing and go straight to the app.
     if (status === "active") return redirectTo(request, "/dashboard");
     if (status === "no-org") return redirectTo(request, "/setup");
-    return redirectTo(request, "/login");
+    // Unauthenticated visitors see the public landing page.
+    return NextResponse.next();
   }
 
   if (status === "none") {
