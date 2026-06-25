@@ -8,7 +8,7 @@ import { LandingAnimations } from "@/modules/marketing/components/landing-animat
 import { PricingSection } from "@/modules/marketing/components/pricing-section";
 import { SmoothScrollProvider } from "@/modules/marketing/components/smooth-scroll-provider";
 import { TestimonialsSection } from "@/modules/marketing/components/testimonials-section";
-import { CinematicHero } from "@/modules/marketing/experience/cinematic-hero";
+import { ScrollVideoHero } from "@/modules/marketing/experience/scroll-video-hero";
 
 export const metadata: Metadata = {
   title: "PropAI OS — The operating system for modern real estate agencies",
@@ -25,8 +25,8 @@ export const metadata: Metadata = {
 export default function LandingPage() {
   return (
     <SmoothScrollProvider>
-      {/* Cinematic, photographic scrollytelling hero */}
-      <CinematicHero />
+      {/* Cinematic scroll-driven video hero — fly through a home of brokerages */}
+      <ScrollVideoHero />
 
       <LandingAnimations>
         <FeaturesSection />

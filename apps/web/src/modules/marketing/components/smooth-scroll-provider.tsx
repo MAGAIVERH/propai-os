@@ -27,6 +27,8 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
       if (!active) return;
       const instance = new LenisCtor({ duration: 1.1, smoothWheel: true });
       lenis = instance;
+      // Expose for programmatic scroll (e.g. hero "discover next" navigation).
+      (window as unknown as { __lenis?: Lenis }).__lenis = instance;
       instance.on("scroll", ScrollTrigger.update);
       const raf = (time: number) => {
         instance.raf(time);
@@ -40,6 +42,7 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
       active = false;
       cancelAnimationFrame(frame);
       lenis?.destroy();
+      delete (window as unknown as { __lenis?: Lenis }).__lenis;
     };
   }, [reduced]);
 
