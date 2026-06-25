@@ -1,48 +1,46 @@
-# Phase 7 · 3D Gallery Landing (immersive hero)
+# Phase 7 · Cinematic Landing Hero
 
-**Goal:** An extraordinary, "drone-through-the-house" landing where every brokerage
-gets a wall/room of listings you can walk into — built with real WebGL 3D
-(React Three Fiber), not video.
+**Goal:** An extraordinary, editorial landing in the spirit of high-end real-estate
+sites (e.g. "mirador") — full-bleed architectural photography with a slow,
+camera-like scroll that moves "through" a home.
 
-## Stack
-- `three` + `@react-three/fiber` (v9, React 19) + `@react-three/drei` (v10).
-- Mounted client-only via `next/dynamic({ ssr: false })` so WebGL never runs in SSR.
+> Note: an earlier attempt used procedural WebGL (React Three Fiber). It looked
+> amateurish without photoreal assets, so it was removed in favor of the
+> image-based cinematic approach below — which is how those reference sites
+> actually achieve their quality (real photography + motion + typography).
 
-## Files (`apps/web/src/modules/marketing/experience/`)
-- `showroom-data.ts` — brokerage/listing model + curated demo data. Listing
-  `imageUrl: null` renders a tasteful placeholder panel (no fake photos); `closed`
-  renders a SOLD/leased state.
-- `scene.tsx` — the 3D world: reflective floor, ceiling washes, corridor with
-  per-brokerage **alcoves** (back wall + side walls + emissive accent strip),
-  museum-style accent + white spotlights, far-wall PropAI wordmark, structural
-  pillars. Listing **murals** are crisp HTML-in-3D (`drei <Html transform>`),
-  clickable. `CameraRig` eases the camera (drone feel) toward the active target.
-- `house-experience.tsx` — `<Canvas>` + overlay UI (brokerage switcher, Back to
-  gallery, listing detail card), reduced-motion aware, **no-WebGL 2D fallback**.
-- `house-hero.tsx` — client `dynamic(ssr:false)` wrapper with a loading state.
+## Technique
+- **Photographic scrollytelling**: a tall section with a `sticky` full-viewport
+  stage. As you scroll, full-bleed photos crossfade while the active image does a
+  slow **Ken Burns** zoom (camera/drone feel). Editorial captions hand off cleanly
+  at each transition (no overlap).
+- **GSAP ScrollTrigger** drives the effect from scroll progress; **Lenis** provides
+  page-wide smooth scroll (one instance via `SmoothScrollProvider`).
+- **Editorial typography**: `Fraunces` serif display (`--font-display`) for headlines.
+- Fully disabled under `prefers-reduced-motion` → a clean stacked, legible sequence.
 
-## Interaction
-- Intro: camera eases in from above/behind (drone fly-in); reduced-motion skips it.
-- Click a brokerage wall (or its chip) → camera flies **into** that alcove showing
-  its listings as murals. **Back to gallery** returns to the overview.
-- Click a listing mural → detail card (price/meta) with a "Start free" CTA; closed
-  listings show "no longer available".
+## Files
+- `apps/web/src/modules/marketing/experience/cinematic-hero.tsx` — the hero.
+- `apps/web/src/modules/marketing/components/smooth-scroll-provider.tsx` — page-wide Lenis.
+- `apps/web/public/showroom/*.jpg` — curated high-res architecture photography
+  (Unsplash license; no attribution required).
 
-## Mocked-image policy (per product requirement)
-- Murals never show fake photography. Until a brokerage publishes real listing
-  photos, murals render an elegant placeholder panel; sold/leased listings show a
-  SOLD state. The model already supports real `imageUrl`s — wiring the public
-  marketplace API to populate `brokerages`/`listings` is the next step (the
-  `HouseExperience` component already accepts a `brokerages` prop for this).
+## Scenes (image + caption tied to the product)
+1. Modern dusk exterior — "The operating system for modern real estate".
+2. Open living→garden — "Open the whole house to the world" (AI listings).
+3. Staircase living — "A pipeline your team lives in" (real-time CRM).
+4. Bright gallery living — "Buyers describe home. We find it." (semantic search).
+5. Classic US craftsman — "From Boulder bungalows to Bay Area estates" (US-native).
+6. Modern exterior — finale CTA "Run your brokerage on PropAI OS" + Start free / Sign in.
+
+Below the hero: the existing editorial sections (features, how it works, pricing,
+testimonials, FAQ, CTA) with scroll-reveal via `LandingAnimations`.
 
 ## Verified
-- Typecheck + lint green. Page serves 200; SSR shows the loading fallback.
-- Headless-Chrome (SwiftShader) screenshots confirm the gallery renders and that
-  entering a brokerage bay (e.g. Summit Realty Group) flies the camera in and
-  shows its four listing murals (incl. the SOLD one).
+- Typecheck + lint green. Headless-Chrome screenshots confirm each scene renders
+  with the photo + serif caption, and transitions hand off cleanly (no overlap).
+- React Three Fiber / postprocessing dependencies removed (lighter bundle).
 
-## Follow-ups (next round)
-- Populate from real published listings via `/public/*` API (replace demo data).
-- Optional: deeper "enter the room" geometry (doorway portals) and a scroll-driven
-  intro; texture murals with real photos (CORS-enabled) when available.
-- Tune aesthetics with stakeholder feedback (lighting, color, camera pacing).
+## Next
+- Swap in higher-end / on-brand photography (or brokerage-supplied photos).
+- Optional: tie a scene to live published listings from the public marketplace API.
