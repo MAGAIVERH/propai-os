@@ -1,6 +1,7 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
+import { Bloom, EffectComposer, Vignette } from "@react-three/postprocessing";
 import { ArrowLeft, Maximize2, MousePointerClick, X } from "lucide-react";
 import { Suspense, useMemo, useState } from "react";
 
@@ -60,9 +61,23 @@ export function HouseExperience({
             bays={bays}
             target={target}
             reduced={reduced}
+            skipIntro={activeId !== null}
             onEnterBay={setActiveId}
             onSelectListing={setSelected}
           />
+          {!reduced ? (
+            <EffectComposer>
+              <Bloom
+                intensity={0.7}
+                luminanceThreshold={0.5}
+                luminanceSmoothing={0.25}
+                mipmapBlur
+              />
+              <Vignette offset={0.28} darkness={0.72} eskil={false} />
+            </EffectComposer>
+          ) : (
+            <></>
+          )}
         </Suspense>
       </Canvas>
 

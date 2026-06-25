@@ -45,32 +45,69 @@ export function bayView(bay: BayPlacement): CameraTarget {
   };
 }
 
-// ── Camera rig: eases the camera toward the active target each frame ─────────
+// ── Camera rig: cinematic drone intro, then eased target navigation ──────────
+const INTRO_DURATION = 4.2; // seconds
+
+const INTRO_CURVE = new THREE.CatmullRomCurve3([
+  new THREE.Vector3(0.5, 9, FRONT_Z + 26), // high & far, like a drone approaching
+  new THREE.Vector3(-1.2, 5.5, FRONT_Z + 12),
+  new THREE.Vector3(0.8, 3.2, FRONT_Z + 4), // dropping toward the entrance
+  new THREE.Vector3(0, 2.8, FRONT_Z + 0.2), // through the doorway
+  new THREE.Vector3(0, 2.7, FRONT_Z - 2), // settle into the hall view
+]);
+
+function easeInOut(x: number): number {
+  return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+}
+
 function CameraRig({
   target,
   reduced,
+  skipIntro,
 }: {
   target: CameraTarget;
   reduced: boolean;
+  skipIntro: boolean;
 }) {
   const { camera } = useThree();
+  const base = useRef(new THREE.Vector3().copy(HALL_VIEW.pos));
   const look = useRef(new THREE.Vector3().copy(HALL_VIEW.look));
-  const started = useRef(false);
+  const intro = useRef(0); // 0..1
+  const init = useRef(false);
 
-  useFrame((_, delta) => {
-    // Intro: start far/high and ease in on first frames (unless reduced motion).
-    if (!started.current) {
-      started.current = true;
-      if (!reduced) {
-        camera.position.set(0, 6.5, FRONT_Z + 10);
-      } else {
-        camera.position.copy(target.pos);
+  useFrame((state, delta) => {
+    if (!init.current) {
+      init.current = true;
+      if (reduced || skipIntro) {
+        intro.current = 1;
+        base.current.copy(target.pos);
         look.current.copy(target.look);
+      } else {
+        base.current.copy(INTRO_CURVE.getPoint(0));
       }
     }
-    const t = reduced ? 1 : 1 - Math.pow(0.0015, delta);
-    camera.position.lerp(target.pos, t);
-    look.current.lerp(target.look, t);
+
+    const introActive = intro.current < 1 && !reduced && !skipIntro;
+
+    if (introActive) {
+      intro.current = Math.min(1, intro.current + delta / INTRO_DURATION);
+      const p = INTRO_CURVE.getPoint(easeInOut(intro.current));
+      base.current.copy(p);
+      look.current.lerp(HALL_VIEW.look, 0.06);
+    } else {
+      if (intro.current < 1) intro.current = 1;
+      const t = reduced ? 1 : 1 - Math.pow(0.0016, delta);
+      base.current.lerp(target.pos, t);
+      look.current.lerp(target.look, t);
+    }
+
+    // Gentle drone hover once we're in the hall (not during a bay close-up).
+    const t = state.clock.elapsedTime;
+    const isHall = target === HALL_VIEW;
+    const floatY = !reduced && isHall && !introActive ? Math.sin(t * 0.55) * 0.12 : 0;
+    const floatX = !reduced && isHall && !introActive ? Math.sin(t * 0.32) * 0.18 : 0;
+
+    camera.position.set(base.current.x + floatX, base.current.y + floatY, base.current.z);
     camera.lookAt(look.current);
   });
 
@@ -327,12 +364,14 @@ export function ShowroomScene({
   bays,
   target,
   reduced,
+  skipIntro,
   onEnterBay,
   onSelectListing,
 }: {
   bays: BayPlacement[];
   target: CameraTarget;
   reduced: boolean;
+  skipIntro: boolean;
   onEnterBay: (id: string) => void;
   onSelectListing: (l: ShowroomListing) => void;
 }) {
@@ -346,7 +385,7 @@ export function ShowroomScene({
 
   return (
     <>
-      <CameraRig target={target} reduced={reduced} />
+      <CameraRig target={target} reduced={reduced} skipIntro={skipIntro} />
 
       {/* Ambient + key lighting (gallery-bright) */}
       <ambientLight intensity={0.75} />
@@ -417,6 +456,50 @@ export function ShowroomScene({
           </mesh>
         )),
       )}
+
+      {/* Entrance facade with a glowing doorway the camera flies through */}
+      {(() => {
+        const fz = FRONT_Z + 1;
+        const openHalf = 1.7;
+        const openTop = 4.3;
+        return (
+          <group>
+            {[-1, 1].map((s) => (
+              <mesh
+                key={`facade-${s}`}
+                position={[s * (openHalf + (HALL_HALF_W - openHalf) / 2), HALL_H / 2, fz]}
+              >
+                <boxGeometry args={[HALL_HALF_W - openHalf, HALL_H, 0.4]} />
+                <meshStandardMaterial color="#0e1014" roughness={0.8} metalness={0.2} />
+              </mesh>
+            ))}
+            {/* Lintel above the doorway */}
+            <mesh position={[0, (openTop + HALL_H) / 2, fz]}>
+              <boxGeometry args={[openHalf * 2, HALL_H - openTop, 0.4]} />
+              <meshStandardMaterial color="#0e1014" roughness={0.8} metalness={0.2} />
+            </mesh>
+            {/* Emissive doorway frame */}
+            {[-openHalf, openHalf].map((x) => (
+              <mesh key={`jamb-${x}`} position={[x, openTop / 2, fz - 0.22]}>
+                <boxGeometry args={[0.08, openTop, 0.08]} />
+                <meshStandardMaterial color="#bcd4ff" emissive="#9ec5ff" emissiveIntensity={3} />
+              </mesh>
+            ))}
+            <mesh position={[0, openTop, fz - 0.22]}>
+              <boxGeometry args={[openHalf * 2, 0.08, 0.08]} />
+              <meshStandardMaterial color="#bcd4ff" emissive="#9ec5ff" emissiveIntensity={3} />
+            </mesh>
+          </group>
+        );
+      })()}
+
+      {/* Floor guide light strips leading down the corridor */}
+      {[-0.55, 0.55].map((x) => (
+        <mesh key={`strip-${x}`} rotation={[-Math.PI / 2, 0, 0]} position={[x, 0.02, centerZ]}>
+          <planeGeometry args={[0.12, corridorLen]} />
+          <meshStandardMaterial color="#cfe0ff" emissive="#9ec5ff" emissiveIntensity={1.6} />
+        </mesh>
+      ))}
 
       {/* Brokerage bays */}
       {bays.map((bay) => (
