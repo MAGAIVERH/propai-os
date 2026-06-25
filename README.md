@@ -201,6 +201,27 @@ pnpm --filter @propai/marketplace dev  # http://localhost:3001
 pnpm --filter @propai/api dev          # http://localhost:3333
 ```
 
+### Demo data
+
+Seed a realistic US demo tenant (**Summit Realty Group**, Denver, CO) — owner,
+agent, 6 listings, 12 leads across the pipeline, and scheduled visits:
+
+```bash
+pnpm db:seed     # requires Docker Postgres + pnpm db:migrate
+```
+
+Then sign in at http://localhost:3000 with the demo credentials. The default
+password is **not** committed — override via env for anything shared:
+
+```bash
+DEMO_EMAIL=demo@propai.io DEMO_PASSWORD='your-strong-password' pnpm db:seed
+```
+
+Defaults (local only): `demo@propai.io` / `DemoPass123!` (owner) and
+`john.martinez@summit-realty.demo` / `DemoPass123!` (agent). The seed is
+idempotent — it skips if the demo tenant already exists. See
+[docs/tasks/PHASE-7-DAY-73-MANUAL.md](./docs/tasks/PHASE-7-DAY-73-MANUAL.md).
+
 Docker Compose optional API container: `docker compose --profile api up -d` (see `docker-compose.yml`).
 
 Quality checks (also run in CI on every PR):

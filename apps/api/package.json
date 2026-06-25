@@ -12,7 +12,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
-    "auth:poc": "tsx scripts/auth-poc-smoke.ts"
+    "auth:poc": "tsx scripts/auth-poc-smoke.ts",
+    "seed:demo": "tsx scripts/seed-demo.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.80",
