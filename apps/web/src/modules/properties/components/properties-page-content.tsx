@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 
 import { EmptyState } from "@/components/empty-state";
+import { ErrorState } from "@/components/error-state";
 import { ModuleHeader } from "@/components/module-header";
 import { Button } from "@/components/ui/button";
 import { ApiClientError } from "@/lib/api-client";
@@ -41,6 +42,8 @@ export function PropertiesPageContent({ filters }: PropertiesPageContentProps) {
     isPending: isListPending,
     isError: isListError,
     error: listError,
+    refetch: refetchList,
+    isFetching: isListFetching,
   } = usePropertiesQuery(listQuery);
 
   const { data: metricsData, isPending: isMetricsPending } =
@@ -84,6 +87,15 @@ export function PropertiesPageContent({ filters }: PropertiesPageContentProps) {
       <PropertiesStatusFilter filters={filters} />
 
       {isPending ? <PropertiesTableSkeleton /> : null}
+
+      {isError ? (
+        <ErrorState
+          title="Couldn't load properties"
+          description={getPropertiesErrorMessage(listError)}
+          onRetry={() => void refetchList()}
+          retrying={isListFetching}
+        />
+      ) : null}
 
       {showEmptyState ? (
         <EmptyState
