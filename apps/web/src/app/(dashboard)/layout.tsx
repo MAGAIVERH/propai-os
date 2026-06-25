@@ -3,7 +3,7 @@ import { DashboardHeader } from "@/components/dashboard-header";
 import { PageTransition } from "@/components/page-transition";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
-// Dashboard pages are authenticated (gated by middleware) and depend on the
+// Dashboard pages are authenticated (gated by proxy) and depend on the
 // signed-in session, so they must render per-request rather than being
 // statically prerendered at build time.
 export const dynamic = "force-dynamic";

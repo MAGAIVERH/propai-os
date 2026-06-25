@@ -15,7 +15,7 @@ export function getPublicApiUrl(): string {
   return readEnv("NEXT_PUBLIC_API_URL") ?? DEFAULT_API_URL;
 }
 
-/** Server-side API origin (middleware, Server Components, route handlers). */
+/** Server-side API origin (proxy, Server Components, route handlers). */
 export function getApiUrl(): string {
   return readEnv("API_URL") ?? getPublicApiUrl();
 }

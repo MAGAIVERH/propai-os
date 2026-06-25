@@ -64,7 +64,7 @@ function redirectTo(request: NextRequest, pathname: string): NextResponse {
   return NextResponse.redirect(new URL(pathname, request.url));
 }
 
-export async function middleware(request: NextRequest): Promise<NextResponse> {
+export async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
   const status = await fetchSessionStatus(request);
   const isProtected = isProtectedDashboardPath(pathname);
