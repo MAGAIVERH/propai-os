@@ -1,5 +1,6 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { DashboardHeader } from "@/components/dashboard-header";
+import { PageTransition } from "@/components/page-transition";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 // Dashboard pages are authenticated (gated by middleware) and depend on the
@@ -17,7 +18,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <AppSidebar />
       <SidebarInset>
         <DashboardHeader />
-        <div className="flex flex-1 flex-col gap-6 p-6">{children}</div>
+        <div className="flex flex-1 flex-col gap-6 p-6">
+          <PageTransition>{children}</PageTransition>
+        </div>
       </SidebarInset>
     </SidebarProvider>
   );

@@ -71,7 +71,7 @@ export function PropertyCard({
               <span className="text-border">|</span>
               <span>
                 <span className="text-foreground font-semibold">
-                  {property.sqFt.toLocaleString()}
+                  {property.sqFt.toLocaleString("en-US")}
                 </span>{" "}
                 sqft
               </span>

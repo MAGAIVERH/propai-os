@@ -98,6 +98,14 @@ export function PropertiesPageContent({ filters }: PropertiesPageContentProps) {
               ? "Try another status filter or create a new listing."
               : "Create your first listing to manage inventory, photos, and pricing in one place."
           }
+          action={
+            filters.status ? undefined : (
+              <Button render={<Link href="/properties/new" />}>
+                <Plus className="size-4" aria-hidden="true" />
+                Add property
+              </Button>
+            )
+          }
         />
       ) : null}
 

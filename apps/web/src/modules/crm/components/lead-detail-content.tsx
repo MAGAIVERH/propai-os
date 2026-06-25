@@ -59,11 +59,11 @@ function aiScoreText(score: number) {
 }
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleString("pt-BR", {
-    day: "2-digit",
+  return new Date(iso).toLocaleString("en-US", {
     month: "short",
+    day: "2-digit",
     year: "numeric",
-    hour: "2-digit",
+    hour: "numeric",
     minute: "2-digit",
   });
 }

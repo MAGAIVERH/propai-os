@@ -43,7 +43,7 @@ export function SearchResultCard({ item }: { item: SemanticSearchResultItem }) {
             <>
               <span className="text-border">|</span>
               <span>
-                <span className="text-foreground font-semibold">{item.sqFt.toLocaleString()}</span>{" "}
+                <span className="text-foreground font-semibold">{item.sqFt.toLocaleString("en-US")}</span>{" "}
                 sqft
               </span>
             </>
