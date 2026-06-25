@@ -64,7 +64,7 @@ function redirectTo(request: NextRequest, pathname: string): NextResponse {
   return NextResponse.redirect(new URL(pathname, request.url));
 }
 
-export async function middleware(request: NextRequest): Promise<NextResponse> {
+export async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
   const status = await fetchSessionStatus(request);
   const isProtected = isProtectedDashboardPath(pathname);
@@ -73,9 +73,11 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   const isRoot = pathname === "/";
 
   if (isRoot) {
+    // Authenticated users skip the marketing landing and go straight to the app.
     if (status === "active") return redirectTo(request, "/dashboard");
     if (status === "no-org") return redirectTo(request, "/setup");
-    return redirectTo(request, "/login");
+    // Unauthenticated visitors see the public landing page.
+    return NextResponse.next();
   }
 
   if (status === "none") {

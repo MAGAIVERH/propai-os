@@ -36,6 +36,8 @@ export function PropertyCard({
           <img
             src={imageUrl}
             alt={property.title}
+            loading="lazy"
+            decoding="async"
             className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
@@ -71,7 +73,7 @@ export function PropertyCard({
               <span className="text-border">|</span>
               <span>
                 <span className="text-foreground font-semibold">
-                  {property.sqFt.toLocaleString()}
+                  {property.sqFt.toLocaleString("en-US")}
                 </span>{" "}
                 sqft
               </span>

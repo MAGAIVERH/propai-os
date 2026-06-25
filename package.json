@@ -25,6 +25,7 @@
     "db:studio": "pnpm --filter @propai/db db:studio",
     "db:rls-test": "pnpm --filter @propai/db db:rls-test",
     "db:seed-dev": "pnpm --filter @propai/db db:seed-dev",
+    "db:seed": "pnpm --filter @propai/api seed:demo",
     "test": "turbo test",
     "test:api": "pnpm --filter @propai/api test",
     "test:shared": "pnpm --filter @propai/shared test",
