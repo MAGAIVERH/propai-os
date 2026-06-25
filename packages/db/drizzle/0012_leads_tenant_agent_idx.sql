@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS "leads_tenant_agent_idx" ON "leads" USING btree ("tenant_id","assigned_agent_id");

@@ -33,6 +33,8 @@ export function PropertyGallery({
         <img
           src={current.url}
           alt={`${title} — photo ${active + 1}`}
+          fetchPriority="high"
+          decoding="async"
           className="aspect-[16/10] w-full object-cover"
         />
       </div>
@@ -54,6 +56,8 @@ export function PropertyGallery({
               <img
                 src={img.url}
                 alt={`${title} thumbnail ${i + 1}`}
+                loading="lazy"
+                decoding="async"
                 className="aspect-square w-full object-cover"
               />
             </button>
