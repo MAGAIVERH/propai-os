@@ -114,12 +114,12 @@ export function LoginForm() {
         </Button>
 
         <p className="text-center text-sm text-muted-foreground">
-          Don&apos;t have an account?{" "}
+          New brokerage on PropAI?{" "}
           <Link
             href="/signup"
             className="font-medium text-primary underline-offset-4 hover:underline"
           >
-            Sign up
+            Create an account
           </Link>
         </p>
       </form>

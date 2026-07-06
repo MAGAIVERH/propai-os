@@ -1,41 +1,47 @@
 import type { Metadata } from "next";
 
+import { BlogSection } from "@/modules/marketing/components/blog-section";
+import { CinematicReveal } from "@/modules/marketing/components/cinematic-reveal";
 import { CtaSection } from "@/modules/marketing/components/cta-section";
 import { FaqSection } from "@/modules/marketing/components/faq-section";
-import { FeaturesSection } from "@/modules/marketing/components/features-section";
-import { HowItWorksSection } from "@/modules/marketing/components/how-it-works-section";
+import { FeaturedListings } from "@/modules/marketing/components/featured-listings";
 import { LandingAnimations } from "@/modules/marketing/components/landing-animations";
-import { PricingSection } from "@/modules/marketing/components/pricing-section";
-import { SmoothScrollProvider } from "@/modules/marketing/components/smooth-scroll-provider";
-import { TestimonialsSection } from "@/modules/marketing/components/testimonials-section";
-import { ScrollVideoHero } from "@/modules/marketing/experience/scroll-video-hero";
+import { MarketsBand } from "@/modules/marketing/components/markets-band";
+import { PhotoHero } from "@/modules/marketing/components/photo-hero";
+import { ServicesBand } from "@/modules/marketing/components/services-band";
+import { ShowcaseSection } from "@/modules/marketing/components/showcase-section";
+import { StatsBand } from "@/modules/marketing/components/stats-band";
+import { StoriesSection } from "@/modules/marketing/components/stories-section";
 
 export const metadata: Metadata = {
-  title: "PropAI OS — The operating system for modern real estate agencies",
+  title: "PropAI — Luxury Real Estate, Intelligently Run",
   description:
-    "PropAI OS is an AI-powered Real Estate Operating System for US brokerages — multi-tenant CRM, pipeline, marketplace, semantic search, and analytics.",
+    "PropAI is the operating system for modern real estate brokerages — a curated marketplace, AI listings, semantic search, and a real-time CRM in one premium platform.",
   openGraph: {
-    title: "PropAI OS — The operating system for modern real estate agencies",
+    title: "PropAI — Luxury Real Estate, Intelligently Run",
     description:
-      "CRM, pipeline, AI listings, and a public marketplace — all in one platform built for US brokerages.",
+      "A curated collection of exceptional homes and the intelligent platform that powers the brokerages behind them.",
     type: "website",
   },
 };
 
 export default function LandingPage() {
   return (
-    <SmoothScrollProvider>
-      {/* Cinematic scroll-driven video hero — fly through a home of brokerages */}
-      <ScrollVideoHero />
+    <>
+      <PhotoHero />
 
       <LandingAnimations>
-        <FeaturesSection />
-        <HowItWorksSection />
-        <PricingSection />
-        <TestimonialsSection />
+        <CinematicReveal />
+        <FeaturedListings />
+        <StatsBand />
+        <ServicesBand />
+        <ShowcaseSection />
+        <MarketsBand />
+        <StoriesSection />
+        <BlogSection />
         <FaqSection />
         <CtaSection />
       </LandingAnimations>
-    </SmoothScrollProvider>
+    </>
   );
 }

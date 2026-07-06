@@ -5,10 +5,16 @@ export function FeaturesSection() {
     <section id="features" className="scroll-mt-20 py-20 sm:py-24">
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 data-animate className="text-3xl font-bold tracking-tight sm:text-4xl">
+          <p data-animate className="text-primary text-sm font-semibold tracking-wide">
+            The platform
+          </p>
+          <h2
+            data-animate
+            className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl"
+          >
             Everything your brokerage runs on
           </h2>
-          <p data-animate className="text-muted-foreground mt-4 text-lg">
+          <p data-animate className="text-muted-foreground mx-auto mt-4 max-w-xl text-lg">
             One platform for listings, leads, search, and reporting — so your team stops
             juggling tools and starts closing.
           </p>

@@ -1,14 +1,23 @@
-import { Quote } from "lucide-react";
+import { Star } from "lucide-react";
 
 import { TESTIMONIALS } from "../content";
 
+/**
+ * Symmetric testimonial grid — three evenly-weighted cards with ratings.
+ */
 export function TestimonialsSection() {
   return (
-    <section className="bg-muted/20 border-y border-border/60 py-20 sm:py-24">
+    <section className="py-24 sm:py-28">
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 data-animate className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Built for the way brokerages actually work
+          <p data-animate className="text-primary text-sm font-semibold tracking-wide">
+            Client stories
+          </p>
+          <h2
+            data-animate
+            className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl"
+          >
+            Trusted by brokerages and the buyers they serve
           </h2>
         </div>
 
@@ -17,21 +26,25 @@ export function TestimonialsSection() {
             <li
               key={testimonial.name}
               data-animate
-              className="border-border/60 bg-card/50 flex flex-col rounded-xl border p-6"
+              className="border-border bg-card flex flex-col rounded-2xl border p-8"
             >
-              <Quote className="text-primary/40 size-6" aria-hidden="true" />
-              <blockquote className="mt-4 flex-1 text-sm leading-relaxed">
+              <div className="text-primary flex gap-0.5">
+                {Array.from({ length: 5 }).map((_, s) => (
+                  <Star key={s} className="size-4 fill-current" aria-hidden="true" />
+                ))}
+              </div>
+              <blockquote className="mt-5 flex-1 leading-relaxed text-pretty">
                 “{testimonial.quote}”
               </blockquote>
-              <footer className="mt-6">
-                <p className="text-sm font-medium">{testimonial.name}</p>
-                <p className="text-muted-foreground text-xs">{testimonial.role}</p>
+              <footer className="border-border mt-6 border-t pt-5">
+                <p className="font-medium">{testimonial.name}</p>
+                <p className="text-muted-foreground text-sm">{testimonial.role}</p>
               </footer>
             </li>
           ))}
         </ul>
 
-        <p className="text-muted-foreground/70 mt-8 text-center text-xs">
+        <p className="text-muted-foreground/70 mt-10 text-center text-xs">
           Testimonials are illustrative examples for this portfolio demo.
         </p>
       </div>
