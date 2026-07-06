@@ -83,18 +83,21 @@ export function ServicesBand() {
         </div>
       </div>
 
-      {/* The rail — full-bleed so cards can scroll past the container edge. */}
+      {/* The rail — full-bleed so cards can scroll past the container edge. The
+          left padding aligns the first card with the section heading above, and
+          scroll-padding makes cards snap to that same line; a small right padding
+          lets the last card fill to the edge with no leftover gap. */}
       <ul
         ref={railRef}
-        className="group/rail mt-12 flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth pt-2 pb-6 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        style={
+          { "--gutter": "calc(max(0px, (100vw - 72rem) / 2) + 1.5rem)" } as React.CSSProperties
+        }
+        className="group/rail mt-12 flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth pt-2 pr-6 pb-6 pl-[var(--gutter)] scroll-pl-[var(--gutter)] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
-        {/* Leading spacer keeps the first card aligned to the container gutter. */}
-        <li aria-hidden="true" className="w-[max(1rem,calc((100vw-72rem)/2))] shrink-0" />
-
         {BROKERAGE_SERVICES.map((service) => (
           <li
             key={service.label}
-            className="w-[82vw] shrink-0 snap-start sm:w-[340px]"
+            className="w-[80%] shrink-0 snap-start sm:w-[360px]"
           >
             <Link
               href={service.href}
@@ -134,9 +137,6 @@ export function ServicesBand() {
             </Link>
           </li>
         ))}
-
-        {/* Trailing spacer so the last card can rest at the gutter too. */}
-        <li aria-hidden="true" className="w-[max(1rem,calc((100vw-72rem)/2))] shrink-0" />
       </ul>
     </section>
   );

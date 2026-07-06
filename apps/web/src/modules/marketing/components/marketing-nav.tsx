@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut, Menu, X } from "lucide-react";
+import { ArrowRight, LogOut, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -10,6 +10,57 @@ import { cn } from "@/lib/utils";
 import { useBuyerSession } from "@/modules/account/use-buyer-session";
 
 import { BrandLogo } from "./brand-logo";
+
+/**
+ * A text link whose rounded outline draws itself around the label on hover — the
+ * stroke traces the full perimeter and closes (a premium touch reserved for the
+ * two account links). `tone` carries the over-hero vs. solid text colour.
+ */
+function OutlineLink({
+  href,
+  tone,
+  className,
+  children,
+}: {
+  href: string;
+  tone: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "group relative inline-flex items-center rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors",
+        tone,
+        className,
+      )}
+    >
+      <span className="relative z-10">{children}</span>
+      {/* No viewBox → the SVG's units are CSS pixels, so ry="50%" resolves to
+          half the height and (with rx omitted) rx=ry, giving a true pill outline
+          at any width — matching the "Book a consultation" button. */}
+      <svg
+        fill="none"
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
+      >
+        <rect
+          x="0"
+          y="0"
+          width="100%"
+          height="100%"
+          ry="50%"
+          pathLength={100}
+          vectorEffect="non-scaling-stroke"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          className="opacity-0 [stroke-dasharray:100] [stroke-dashoffset:100] transition-[stroke-dashoffset,opacity] duration-500 ease-out group-hover:opacity-100 group-hover:[stroke-dashoffset:0]"
+        />
+      </svg>
+    </Link>
+  );
+}
 
 const NAV_LINKS = [
   { label: "Listings", href: "/#listings" },
@@ -115,15 +166,9 @@ export function MarketingNav() {
         </ul>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          <Link
-            href="/login"
-            className={cn(
-              "hidden text-sm font-medium transition-colors lg:inline-flex",
-              linkTone,
-            )}
-          >
+          <OutlineLink href="/login" tone={linkTone} className="hidden lg:inline-flex">
             Agent login
-          </Link>
+          </OutlineLink>
 
           {buyer ? (
             <div className="hidden items-center gap-3 sm:flex">
@@ -152,24 +197,22 @@ export function MarketingNav() {
             </div>
           ) : (
             <>
-              <Link
-                href="/account/login"
-                className={cn(
-                  "hidden text-sm font-medium transition-colors sm:inline-flex",
-                  linkTone,
-                )}
-              >
+              <OutlineLink href="/account/login" tone={linkTone} className="hidden sm:inline-flex">
                 Sign in
-              </Link>
+              </OutlineLink>
               <Link
                 href="/contact"
-                className={cn(
-                  buttonVariants({ size: "sm" }),
-                  "hidden rounded-full sm:inline-flex",
-                  solid ? "" : "bg-white text-neutral-950 hover:bg-white/90",
-                )}
+                className="group relative hidden items-center gap-1.5 overflow-hidden rounded-full bg-gradient-to-br from-neutral-800 to-neutral-950 px-4 py-2 text-sm font-medium text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl sm:inline-flex"
               >
-                Book a consultation
+                <span className="relative z-10">Book a consultation</span>
+                <ArrowRight
+                  className="relative z-10 size-3.5 transition-transform duration-300 group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-[900ms] ease-out group-hover:translate-x-full"
+                />
               </Link>
             </>
           )}

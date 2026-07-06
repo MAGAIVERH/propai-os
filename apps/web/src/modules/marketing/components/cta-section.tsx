@@ -41,7 +41,7 @@ export function CtaSection() {
               "rounded-full bg-white text-neutral-950 hover:bg-white/90",
             )}
           >
-            Request a demo
+            Get in touch
             <ArrowRight className="size-4" aria-hidden="true" />
           </Link>
           <Link

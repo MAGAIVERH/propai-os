@@ -85,7 +85,7 @@ export default async function InsightArticlePage({
             href="/contact"
             className={cn(buttonVariants({ size: "lg" }), "shrink-0 rounded-full")}
           >
-            Request a demo
+            Get in touch
             <ArrowRight className="size-4" aria-hidden="true" />
           </Link>
         </div>
