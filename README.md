@@ -2,7 +2,9 @@
 
 **An AI-powered Real Estate Operating System for US brokerages.**
 
-**Foundation v0.1.0** — [Sign-off](docs/FOUNDATION-SIGNOFF.md) · [Checklist](docs/BACKEND-FOUNDATION-CHECKLIST.md) · [Release](docs/releases/foundation-v0.1.0.md) · tag `foundation-v0.1.0`
+**Status:** Phases 1–7 complete — multi-tenant backend, AI, real-time CRM, public marketplace, analytics & billing, and a premium landing site with buyer + agent accounts. Latest tag `ui-v0.1.0`. **Next:** Phase 8 (DevOps, tests, deploy). Full breakdown: [docs/PROJECT-STATUS.md](docs/PROJECT-STATUS.md).
+
+**Milestones:** [Foundation sign-off](docs/FOUNDATION-SIGNOFF.md) · [Backend checklist](docs/BACKEND-FOUNDATION-CHECKLIST.md) · tags `foundation-v0.1.0` · `ai-v0.1.0` · `ui-v0.1.0`
 
 ---
 
@@ -21,9 +23,17 @@ PropAI OS is an AI-powered Real Estate Operating System built for US brokerages 
 ---
 
 ## Live demo
-> Live demo coming in Phase 2 (Properties UI). Foundation v0.1 ships multi-tenancy, RLS, auth, and AI feature flags.
+> A public staging deploy lands in **Phase 8**. Until then, the full product runs
+> locally end to end: dashboard, marketplace, and landing site.
 
-Demo credentials will be documented here once staging is deployed.
+```bash
+pnpm dev:all      # API :3333 + dashboard :3000 + marketplace :3001
+pnpm db:seed      # demo tenant (Summit Realty Group) with listings + leads
+```
+
+Local demo credentials (owner): `demo@propai.io` / `DemoPass123!` — see
+[Demo data](#demo-data). Buyers can also self-register at `/account/register`
+(a client-side demo session — see [Marketing site & accounts](#marketing-site--accounts)).
 
 ---
 
@@ -99,7 +109,10 @@ propai-os/
 └── README.md
 ```
 
-> **Note:** Monorepo scaffold is active. `packages/ui` and full Drizzle/RLS in `packages/db` ship in Phase 1 (Days 6+).
+> **Note (as-built):** `packages/db` (Drizzle schema, 13 migrations, RLS policies)
+> and `packages/shared` (Zod contracts) are live. Shared UI lives inside
+> `apps/web` (shadcn/ui components) rather than a separate `packages/ui`. Object
+> storage uses presigned uploads (`uploads` module).
 
 ---
 
@@ -124,14 +137,17 @@ propai-os/
 
 ---
 
-## Core capabilities (roadmap)
+## Core capabilities (delivered — Phases 1–7)
 
-- **Multi-tenant CRM** — organizations, roles (owner, manager, agent, viewer), audit log
-- **Pipeline** — Kanban stages, real-time updates via WebSocket
-- **Properties** — US fields (sq ft, USD, state/ZIP), photos, map, AI-assisted listing generation
-- **Marketplace** — SSR property search, semantic query, lead capture into CRM
-- **AI** — photo analysis, pgvector semantic search, lead scoring, price estimates
-- **Analytics & billing** — funnel metrics, CSV export, Stripe Free / Pro plans
+- **Multi-tenant CRM** — organizations, roles (owner, manager, agent, viewer), PostgreSQL RLS, audit log
+- **Pipeline** — Kanban stages with GSAP FLIP, real-time updates via WebSocket
+- **Properties** — US fields (sq ft, USD, state/ZIP), photo uploads, map picker, AI-assisted listing generation
+- **Marketplace** — SSR property search, semantic query, clustered map, lead capture into CRM
+- **AI** — photo analysis (vision), pgvector semantic search, lead scoring, price estimates
+- **Analytics & billing** — funnel metrics, agent leaderboard, CSV export, Stripe Free / Pro plans + feature gates
+- **Marketing site** — cinematic landing, self-contained pages (listings, insights, about, contact, legal), buyer + agent accounts
+
+See [docs/PROJECT-STATUS.md](docs/PROJECT-STATUS.md) for the day-by-day breakdown (Days 1–75 shipped; Days 76–90 = Phase 8).
 
 ---
 
@@ -148,17 +164,21 @@ propai-os/
 
 Managed with **pnpm workspaces** and **Turborepo**.
 
-## What's included in v0.1 (Foundation)
+## What's built (Phases 1–7)
 
-Phase 1 backend freeze — multi-tenancy only (no Properties UI yet):
+| Phase | Days | Delivered |
+| ----- | ---- | --------- |
+| **1 — Foundation** | 6–15 | PostgreSQL RLS multi-tenancy, Better Auth (organizations), Fastify API scaffold, audit logs, health/ready probes, Docker Compose dev |
+| **2 — Properties** | 16–25 | Properties schema + CRUD API, presigned photo uploads, dashboard scaffold, list/create/edit UI, map picker, photo uploader |
+| **3 — AI** | 26–35 | Vision image analysis, BullMQ + Redis, pgvector embeddings, "Generate with AI", semantic search API, lead scoring, price estimator |
+| **4 — CRM & pipeline** | 36–45 | Leads schema + API, Kanban board with GSAP FLIP, real-time WebSocket sync, lead detail, visits scheduling, async confirmation emails, in-app notifications |
+| **5 — Marketplace** | 46–55 | SSR listings + filters, detail pages (gallery, map, JSON-LD), lead capture, semantic search UI, clustered map, hybrid ranking, Redis cache, legal pages |
+| **6 — Analytics & billing** | 56–65 | Analytics views (RLS `security_invoker`), dashboard (Recharts), CSV export, Stripe checkout/portal/webhooks, Free/Pro feature gates, onboarding, team management, branding |
+| **7 — Landing & polish** | 66–75 | Cinematic landing (GSAP + Lenis), a11y pass, US localization, error boundaries, demo seed, performance pass, middleware→proxy |
 
-- **Row-Level Security** — `test_items` + `audit_logs`; `runInTenantContext`; `propai_app` DB role
-- **Auth** — Better Auth organizations; brokerage sign-up, invite, session; [Auth POC GO](docs/AUTH-POC-FEEDBACK.md)
-- **Audit** — tenant-scoped `audit_logs`; `GET /v1/audit-logs` (owner/manager)
-- **Health** — `GET /health` (liveness), `GET /ready` (Postgres probe)
-- **Local dev** — Docker Compose, `pnpm setup:local`, `pnpm dev`, `pnpm dev:smoke`
+**Post-Phase-7 landing revamp** (see [docs/tasks/PHASE-7-LANDING-REVAMP.md](docs/tasks/PHASE-7-LANDING-REVAMP.md)): the marketing site was made fully self-contained (its own `/listings`, `/insights`, `/about`, `/contact`, `/privacy`, `/terms` pages), a separate **buyer account** identity was added alongside the brokerage/agent login, and all auth screens moved to a premium split-screen layout.
 
-Details: [docs/releases/foundation-v0.1.0.md](./docs/releases/foundation-v0.1.0.md) · [docs/architecture.md](./docs/architecture.md)
+Details: [docs/PROJECT-STATUS.md](docs/PROJECT-STATUS.md) · [docs/architecture.md](./docs/architecture.md)
 
 ---
 
@@ -291,6 +311,11 @@ See [ADR 006](docs/adr/006-ai-vision-listings.md) (vision) and [ADR 007](docs/ad
 
 | Document               | Description                                             |
 | ---------------------- | ------------------------------------------------------- |
+| `docs/PROJECT-STATUS.md` | **Where the project stands** — per-phase status, Days 1–90 |
+| `docs/tasks/` | **Per-day delivery notes** — `PHASE-X-DAY-NN.md` for Days 1–75 |
+| `docs/tasks/PHASE-7-LANDING-REVAMP.md` | Post-Phase-7 self-contained landing + buyer accounts |
+| `docs/MARKETPLACE-CHECKLIST.md` | Phase 5 marketplace sign-off |
+| `docs/ANALYTICS-BILLING-CHECKLIST.md` | Phase 6 analytics + billing sign-off |
 | `docs/LOCAL-DEV.md`    | **Fresh clone** — Docker, migrate, dev, smoke, troubleshooting |
 | `docs/FOUNDATION-SIGNOFF.md` | **Executive summary** — what v0.1 proved / excluded |
 | `docs/BACKEND-FOUNDATION-CHECKLIST.md` | **Phase 1 sign-off** — Days 6–15, pre-tag verification |
@@ -328,6 +353,31 @@ Full sign-off: [docs/MARKETPLACE-CHECKLIST.md](./docs/MARKETPLACE-CHECKLIST.md).
 
 ---
 
+## Marketing site & accounts
+
+The brokerage's marketing site (`apps/web`, the `(marketing)` route group) is a
+premium, **self-contained** experience — every link resolves to a real page in
+the same app, so it runs on `pnpm dev` alone:
+
+- **Landing** — cinematic photographic hero (GSAP + Lenis), featured listings,
+  an interactive services rail, an editorial testimonials marquee, markets,
+  insights, and FAQ.
+- **Pages** — `/listings` (+ `/listings/[slug]` detail), `/insights`
+  (+ `/insights/[slug]` article), `/about`, `/contact`, `/privacy`, `/terms`.
+
+**Two separate identities** (see [PHASE-7-LANDING-REVAMP.md](docs/tasks/PHASE-7-LANDING-REVAMP.md)):
+
+| Identity | Auth | Entry | Lands on |
+| -------- | ---- | ----- | -------- |
+| **Brokerage / agent** | Real (Better Auth) | "Agent login" → `/login` | Dashboard |
+| **Buyer / renter** | Client-side demo session | "Sign in" → `/account/login` | Stays on the site; one-click tour requests |
+
+Brokerage self-serve signup is intentionally discreet (a link on `/login`, not a
+public CTA); buyer CTAs like "Book a consultation" go to the `/contact` lead form.
+All four auth screens share a premium split-screen layout.
+
+---
+
 ## License
 
 TBD.
@@ -336,4 +386,15 @@ TBD.
 
 ## Status
 
-**Foundation v0.1 (Phase 1)** — Multi-tenancy backend frozen: RLS, Better Auth orgs, Fastify API scaffold, audit logs, local Docker dev. Checklist: [docs/BACKEND-FOUNDATION-CHECKLIST.md](./docs/BACKEND-FOUNDATION-CHECKLIST.md). Next: [docs/PHASE-2-PLAN.md](./docs/PHASE-2-PLAN.md) (Properties). See [docs/architecture.md](./docs/architecture.md) for actors, RLS data plane, and brokerage flow.
+**Phases 1–7 complete** (Days 1–75) — multi-tenant backend, AI, real-time CRM,
+public marketplace, analytics & billing, and a premium landing site with buyer +
+agent accounts. Latest tag `ui-v0.1.0`.
+
+**Next — Phase 8 (Days 76–90):** DevOps, tests, and launch — Docker production
+builds, staging/production deploys (Vercel + Railway/Neon/Upstash), full CI/CD,
+Sentry observability, security hardening, Vitest + Playwright suites, staff-level
+docs, and the `v1.0.0` release.
+
+Full breakdown and per-phase status: [docs/PROJECT-STATUS.md](docs/PROJECT-STATUS.md).
+See [docs/architecture.md](./docs/architecture.md) for actors, the RLS data plane,
+and the brokerage flow.
