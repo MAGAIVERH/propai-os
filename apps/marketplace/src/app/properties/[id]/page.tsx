@@ -141,7 +141,7 @@ export default async function PropertyDetailPage({ params }: Props) {
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <Fact label="Bedrooms" value={property.bedrooms} />
             <Fact label="Bathrooms" value={property.bathrooms} />
-            {property.sqFt ? <Fact label="Sq Ft" value={property.sqFt.toLocaleString()} /> : null}
+            {property.sqFt ? <Fact label="Sq Ft" value={property.sqFt.toLocaleString("en-US")} /> : null}
             {property.yearBuilt ? <Fact label="Year Built" value={property.yearBuilt} /> : null}
           </div>
 

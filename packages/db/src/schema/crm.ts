@@ -73,6 +73,7 @@ export const leads = pgTable(
     index("leads_tenant_stage_idx").on(table.tenantId, table.stageId),
     index("leads_tenant_email_idx").on(table.tenantId, table.email),
     index("leads_tenant_created_at_idx").on(table.tenantId, table.createdAt.desc()),
+    index("leads_tenant_agent_idx").on(table.tenantId, table.assignedAgentId),
   ],
 );
 

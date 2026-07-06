@@ -18,6 +18,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { formatUsPhone } from "@/lib/format";
 import {
   Select,
   SelectContent,
@@ -175,9 +176,12 @@ export function CreateLeadSheet({ open, onOpenChange }: Props) {
                   <FormControl>
                     <Input
                       type="tel"
-                      placeholder="+1 555-000-0000"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      placeholder="(555) 123-4567"
                       className="rounded-xl"
                       {...field}
+                      onChange={(e) => field.onChange(formatUsPhone(e.target.value))}
                     />
                   </FormControl>
                   <FormMessage />

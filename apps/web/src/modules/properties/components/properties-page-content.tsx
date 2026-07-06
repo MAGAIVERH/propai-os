@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 
 import { EmptyState } from "@/components/empty-state";
+import { ErrorState } from "@/components/error-state";
 import { ModuleHeader } from "@/components/module-header";
 import { Button } from "@/components/ui/button";
 import { ApiClientError } from "@/lib/api-client";
@@ -41,6 +42,8 @@ export function PropertiesPageContent({ filters }: PropertiesPageContentProps) {
     isPending: isListPending,
     isError: isListError,
     error: listError,
+    refetch: refetchList,
+    isFetching: isListFetching,
   } = usePropertiesQuery(listQuery);
 
   const { data: metricsData, isPending: isMetricsPending } =
@@ -85,6 +88,15 @@ export function PropertiesPageContent({ filters }: PropertiesPageContentProps) {
 
       {isPending ? <PropertiesTableSkeleton /> : null}
 
+      {isError ? (
+        <ErrorState
+          title="Couldn't load properties"
+          description={getPropertiesErrorMessage(listError)}
+          onRetry={() => void refetchList()}
+          retrying={isListFetching}
+        />
+      ) : null}
+
       {showEmptyState ? (
         <EmptyState
           icon={Building}
@@ -97,6 +109,14 @@ export function PropertiesPageContent({ filters }: PropertiesPageContentProps) {
             filters.status
               ? "Try another status filter or create a new listing."
               : "Create your first listing to manage inventory, photos, and pricing in one place."
+          }
+          action={
+            filters.status ? undefined : (
+              <Button render={<Link href="/properties/new" />}>
+                <Plus className="size-4" aria-hidden="true" />
+                Add property
+              </Button>
+            )
           }
         />
       ) : null}

@@ -60,3 +60,5 @@ package-lock.json
 
 # Local-only docs (not for repository)
 guia-desenvolvimento-propai-os-dia-a-dia.md
+*.local.md
+HANDOFF.local.md
