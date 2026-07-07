@@ -1,5 +1,7 @@
+import { Bath, BedDouble, Home, Maximize } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { LucideIcon } from "lucide-react";
 
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -59,74 +61,80 @@ export default async function PropertyDetailPage({
   const addressLabel = formatPropertyAddress(property);
 
   return (
-      <div className="space-y-6">
-        <PageHeader
-          title={property.title}
-          description={addressLabel}
-          back={{ label: "Properties", href: "/properties" }}
-        />
+    <div className="space-y-6">
+      <PageHeader
+        title={property.title}
+        description={addressLabel}
+        back={{ label: "Properties", href: "/properties" }}
+        actions={
+          <Button className="rounded-lg" render={<Link href={`/properties/${property.id}/edit`} />}>
+            Edit property
+          </Button>
+        }
+      />
 
-        <section className="rounded-2xl border border-border bg-card p-6">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">
-                Summary
-              </p>
-              <p className="mt-2 text-2xl font-bold text-foreground">
-                {formatPriceUsdCents(property.priceUsdCents)}
-              </p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {getPropertyTypeLabel(property.type)} ·{" "}
-                {getRentOrSaleLabel(property.rentOrSale)} · {property.sqFt}{" "}
-                sq ft · {property.bedrooms} bed · {property.bathrooms} bath
-              </p>
-            </div>
-            <PropertyStatusBadge
-              status={property.status}
-              label={getPropertyStatusLabel(property.status)}
-            />
-          </div>
-
-          {property.description ? (
-            <p className="mt-6 text-sm leading-7 text-muted-foreground">
-              {property.description}
-            </p>
-          ) : null}
-
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Button
-              className="rounded-xl"
-              render={<Link href={`/properties/${property.id}/edit`} />}
-            >
-              Edit property
-            </Button>
-            <Button
-              variant="outline"
-              className="rounded-xl"
-              render={<Link href="/properties" />}
-            >
-              Back to list
-            </Button>
-          </div>
-        </section>
-
-        <section className="space-y-4">
+      <section className="border-border bg-card rounded-2xl border p-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">
-              Map
+            <p className="text-primary text-3xl font-semibold tracking-tight tabular-nums">
+              {formatPriceUsdCents(property.priceUsdCents)}
             </p>
-            <h2 className="mt-1 text-lg font-semibold text-foreground">
-              Location
-            </h2>
+            <p className="text-muted-foreground mt-1 text-sm">
+              {getRentOrSaleLabel(property.rentOrSale)} · {getPropertyTypeLabel(property.type)}
+            </p>
           </div>
-          <PropertyMap
-            latitude={property.latitude}
-            longitude={property.longitude}
-            addressLabel={addressLabel}
+          <PropertyStatusBadge
+            status={property.status}
+            label={getPropertyStatusLabel(property.status)}
           />
-        </section>
+        </div>
 
-        <PropertyDetailMedia propertyId={property.id} initialImages={images} />
+        <dl className="border-border mt-6 grid grid-cols-2 gap-5 border-t pt-6 sm:grid-cols-4">
+          <SpecItem icon={BedDouble} label="Bedrooms" value={String(property.bedrooms)} />
+          <SpecItem icon={Bath} label="Bathrooms" value={String(property.bathrooms)} />
+          <SpecItem icon={Maximize} label="Square feet" value={`${property.sqFt.toLocaleString()}`} />
+          <SpecItem icon={Home} label="Type" value={getPropertyTypeLabel(property.type)} />
+        </dl>
+
+        {property.description ? (
+          <p className="text-muted-foreground mt-6 text-sm leading-relaxed text-pretty">
+            {property.description}
+          </p>
+        ) : null}
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-lg font-semibold tracking-tight">Location</h2>
+        <PropertyMap
+          latitude={property.latitude}
+          longitude={property.longitude}
+          addressLabel={addressLabel}
+        />
+      </section>
+
+      <PropertyDetailMedia propertyId={property.id} initialImages={images} />
+    </div>
+  );
+}
+
+function SpecItem({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-center gap-3">
+      <span className="bg-primary/10 text-primary inline-flex size-9 shrink-0 items-center justify-center rounded-lg">
+        <Icon className="size-4" aria-hidden="true" />
+      </span>
+      <div className="min-w-0">
+        <dt className="text-muted-foreground text-xs">{label}</dt>
+        <dd className="truncate text-sm font-semibold">{value}</dd>
       </div>
-    );
+    </div>
+  );
 }
