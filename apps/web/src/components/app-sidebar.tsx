@@ -1,7 +1,7 @@
 "use client";
 
 import { APP_NAME } from "@propai/shared";
-import { Building2, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -39,8 +39,13 @@ export function AppSidebar() {
               className="h-10 rounded-xl px-2"
               render={<Link href="/dashboard" />}
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/15 text-primary">
-                <Building2 className="h-4 w-4" />
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#1b2947] shadow-sm">
+                <svg viewBox="0 0 32 32" className="size-5" aria-hidden="true">
+                  <path
+                    d="M16 5 L27 14 L27 27 L19 27 L19 20 L13 20 L13 27 L5 27 L5 14 Z"
+                    fill="#ffffff"
+                  />
+                </svg>
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">{APP_NAME}</span>
