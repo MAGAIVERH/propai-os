@@ -40,11 +40,13 @@ export function LeadsPageContent() {
         description="Track prospects and nurture your sales pipeline."
       />
 
-      <div className="flex justify-end">
-        <Button
-          className="rounded-xl"
-          onClick={() => setIsCreateOpen(true)}
-        >
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-muted-foreground text-sm">
+          {isPending
+            ? "Loading pipeline…"
+            : `${leads.length} ${leads.length === 1 ? "lead" : "leads"} in your pipeline`}
+        </p>
+        <Button className="rounded-lg" onClick={() => setIsCreateOpen(true)}>
           <Plus className="mr-2 size-4" />
           New Lead
         </Button>
@@ -59,12 +61,6 @@ export function LeadsPageContent() {
       ) : (
         <KanbanBoard />
       )}
-
-      {!isPending && !isError && stages.length > 0 && leads.length === 0 ? (
-        <p className="py-2 text-center text-sm text-muted-foreground">
-          No leads yet — click &ldquo;New Lead&rdquo; to add your first prospect.
-        </p>
-      ) : null}
 
       <CreateLeadSheet open={isCreateOpen} onOpenChange={setIsCreateOpen} />
     </div>

@@ -97,8 +97,8 @@ export function KanbanBoard() {
 
   if (isPending) {
     return (
-      <div className="flex gap-4 overflow-x-auto pb-4">
-        {Array.from({ length: 4 }, (_, i) => (
+      <div className="flex gap-3">
+        {Array.from({ length: 5 }, (_, i) => (
           <KanbanColumnSkeleton key={`skel-${i}`} />
         ))}
       </div>
@@ -111,7 +111,9 @@ export function KanbanBoard() {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      {/* Columns share the width equally (flex-1) so every stage fits without a
+          page or board horizontal scrollbar. */}
+      <div className="flex items-stretch gap-3">
         {stages.map((stage) => (
           <KanbanColumn
             key={stage.id}

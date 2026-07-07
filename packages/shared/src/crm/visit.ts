@@ -32,6 +32,32 @@ export const scheduleVisitResponseSchema = z.object({
 
 export type ScheduleVisitResponse = z.infer<typeof scheduleVisitResponseSchema>;
 
+// ── Visits list (derived from visit_scheduled activities) ───────────────────────
+
+/**
+ * A scheduled showing, surfaced from the `visit_scheduled` lead activity joined
+ * to its lead and (optional) property. `content` holds the scheduling note (for
+ * product-created visits it includes the formatted local date/time).
+ */
+export const visitListItemSchema = z.object({
+  id: z.uuid(),
+  leadId: z.uuid(),
+  leadName: z.string(),
+  propertyId: z.uuid().nullable(),
+  propertyTitle: z.string().nullable(),
+  agentId: z.string().nullable(),
+  content: z.string(),
+  createdAt: z.iso.datetime(),
+});
+
+export type VisitListItem = z.infer<typeof visitListItemSchema>;
+
+export const visitListResponseSchema = z.object({
+  visits: z.array(visitListItemSchema),
+});
+
+export type VisitListResponse = z.infer<typeof visitListResponseSchema>;
+
 // ── Confirmation email job payload ──────────────────────────────────────────────
 
 export const sendVisitConfirmationJobDataSchema = z.object({
