@@ -7,9 +7,6 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useSessionQuery } from "@/hooks/use-session";
@@ -31,7 +28,7 @@ function UserAvatar({ initials, className }: { initials: string; className?: str
   return (
     <span
       className={cn(
-        "bg-primary text-primary-foreground flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ring-2 ring-white/70 dark:ring-white/10",
+        "bg-primary/15 text-primary flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold",
         className,
       )}
       aria-hidden
@@ -40,6 +37,9 @@ function UserAvatar({ initials, className }: { initials: string; className?: str
     </span>
   );
 }
+
+const ROW =
+  "flex w-full items-center gap-2.5 px-3 py-2 text-sm font-medium transition-colors hover:bg-muted";
 
 export function UserNav() {
   const { data: session } = useSessionQuery();
@@ -66,44 +66,45 @@ export function UserNav() {
         </span>
         <ChevronDown className="text-muted-foreground hidden size-4 shrink-0 sm:inline" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-60 rounded-xl">
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex items-center gap-3">
-            <UserAvatar initials={initials} />
-            <div className="min-w-0 flex-1">
-              <p className="text-foreground truncate text-sm font-medium">{displayName}</p>
-              {user?.email ? (
-                <p className="text-muted-foreground truncate text-xs">{user.email}</p>
-              ) : null}
-            </div>
+
+      <DropdownMenuContent align="end" className="w-60 rounded-xl p-0">
+        {/* Account header */}
+        <div className="flex items-center gap-3 px-3 py-3">
+          <UserAvatar initials={initials} className="size-9 text-sm" />
+          <div className="min-w-0 flex-1">
+            <p className="text-foreground truncate text-sm font-medium">{displayName}</p>
+            {user?.email ? (
+              <p className="text-muted-foreground truncate text-xs">{user.email}</p>
+            ) : null}
           </div>
-        </DropdownMenuLabel>
+        </div>
 
-        <DropdownMenuSeparator />
+        <div className="border-border border-t py-1">
+          <Link href="/profile" className={ROW}>
+            <UserCog className="text-muted-foreground size-4" />
+            Your profile
+          </Link>
+          <Link href="/settings/general" className={ROW}>
+            <Settings className="text-muted-foreground size-4" />
+            Brokerage settings
+          </Link>
+          <Link href="/settings/billing" className={ROW}>
+            <CreditCard className="text-muted-foreground size-4" />
+            Billing &amp; plan
+          </Link>
+        </div>
 
-        <DropdownMenuItem render={<Link href="/profile" />}>
-          <UserCog className="size-4" />
-          Your profile
-        </DropdownMenuItem>
-        <DropdownMenuItem render={<Link href="/settings/general" />}>
-          <Settings className="size-4" />
-          Brokerage settings
-        </DropdownMenuItem>
-        <DropdownMenuItem render={<Link href="/settings/billing" />}>
-          <CreditCard className="size-4" />
-          Billing &amp; plan
-        </DropdownMenuItem>
-
-        <DropdownMenuSeparator />
-
-        <DropdownMenuItem
-          onClick={handleSignOut}
-          disabled={isPending}
-          className="text-destructive focus:text-destructive"
-        >
-          <LogOut className="size-4" />
-          {isPending ? "Signing out…" : "Sign out"}
-        </DropdownMenuItem>
+        <div className="border-border border-t py-1">
+          <button
+            type="button"
+            onClick={handleSignOut}
+            disabled={isPending}
+            className={cn(ROW, "text-destructive disabled:opacity-60")}
+          >
+            <LogOut className="size-4" />
+            {isPending ? "Signing out…" : "Sign out"}
+          </button>
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );
