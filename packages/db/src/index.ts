@@ -49,6 +49,8 @@ export {
   testItems,
   user,
   verification,
+  visits,
+  visitStatusEnum,
 } from "./schema/index.js";
 export {
   runInTenantContext,

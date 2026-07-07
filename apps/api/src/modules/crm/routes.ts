@@ -5,6 +5,7 @@ import {
   properties,
   runInTenantContext,
   TenantContextRequiredError,
+  visits,
 } from "@propai/db";
 import {
   createLeadActivitySchema,
@@ -256,7 +257,7 @@ export async function registerCrmRoutes(
     },
   );
 
-  // GET /visits — scheduled showings, derived from visit_scheduled activities.
+  // GET /visits — scheduled showings from the visits table (newest showing first).
   zodApp.get(
     "/visits",
     {
@@ -269,22 +270,25 @@ export async function registerCrmRoutes(
       const rows = await runInTenantContext(tenantId, async (tx) => {
         return tx
           .select({
-            id: leadActivities.id,
-            leadId: leads.id,
+            id: visits.id,
+            leadId: visits.leadId,
             firstName: leads.firstName,
             lastName: leads.lastName,
-            propertyId: properties.id,
+            propertyId: visits.propertyId,
             propertyTitle: properties.title,
-            agentId: leads.assignedAgentId,
-            content: leadActivities.content,
-            createdAt: leadActivities.createdAt,
+            agentId: visits.agentId,
+            scheduledAt: visits.scheduledAt,
+            timezone: visits.timezone,
+            status: visits.status,
+            notes: visits.notes,
+            createdAt: visits.createdAt,
           })
-          .from(leadActivities)
-          .innerJoin(leads, eq(leads.id, leadActivities.leadId))
-          .leftJoin(properties, eq(properties.id, leads.propertyId))
-          .where(and(eq(leadActivities.type, "visit_scheduled"), isNull(leads.softDeletedAt)))
-          .orderBy(desc(leadActivities.createdAt))
-          .limit(100);
+          .from(visits)
+          .innerJoin(leads, eq(leads.id, visits.leadId))
+          .leftJoin(properties, eq(properties.id, visits.propertyId))
+          .where(isNull(leads.softDeletedAt))
+          .orderBy(desc(visits.scheduledAt))
+          .limit(200);
       });
 
       return reply.status(200).send({
@@ -295,7 +299,10 @@ export async function registerCrmRoutes(
           propertyId: r.propertyId ?? null,
           propertyTitle: r.propertyTitle ?? null,
           agentId: r.agentId ?? null,
-          content: r.content,
+          scheduledAt: r.scheduledAt.toISOString(),
+          timezone: r.timezone,
+          status: r.status,
+          notes: r.notes ?? null,
           createdAt: r.createdAt.toISOString(),
         })),
       });
@@ -933,6 +940,17 @@ export async function registerCrmRoutes(
             createdBy: actorId ?? sessionUserId,
           })
           .returning(activitySelectFields);
+
+        // Structured showing record (powers the /visits agenda).
+        await tx.insert(visits).values({
+          tenantId,
+          leadId: id,
+          propertyId,
+          agentId: lead.assignedAgentId,
+          scheduledAt: new Date(body.scheduledAt),
+          timezone: body.timezone,
+          notes: body.notes ?? null,
+        });
 
         return {
           type: "success",

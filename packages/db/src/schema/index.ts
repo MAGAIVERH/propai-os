@@ -32,7 +32,14 @@ export {
 };
 export { analyticsEvents, analyticsEventTypeEnum } from "./analytics.js";
 export { auditLogs } from "./audit-logs.js";
-export { leadActivities, leadActivityTypeEnum, leads, pipelineStages } from "./crm.js";
+export {
+  leadActivities,
+  leadActivityTypeEnum,
+  leads,
+  pipelineStages,
+  visits,
+  visitStatusEnum,
+} from "./crm.js";
 export { notifications, notificationTypeEnum } from "./notifications.js";
 export {
   properties,

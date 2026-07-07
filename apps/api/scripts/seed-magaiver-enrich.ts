@@ -22,8 +22,9 @@ import {
   pipelineStages,
   runInTenantContext,
   user,
+  visits,
 } from "@propai/db";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, sql } from "drizzle-orm";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "../../..");
@@ -141,11 +142,51 @@ async function main() {
     }
   }
 
+  // 5) Seed structured visits (agenda) — only if the table is empty for this tenant.
+  const existingVisits = await runInTenantContext(TENANT_ID, (tx) =>
+    tx.select({ id: visits.id }).from(visits),
+  );
+  let visitsSeeded = 0;
+  if (existingVisits.length === 0) {
+    const leadRows = await runInTenantContext(TENANT_ID, (tx) =>
+      tx
+        .select({ id: leads.id, propertyId: leads.propertyId, agentId: leads.assignedAgentId })
+        .from(leads)
+        .where(isNotNull(leads.propertyId))
+        .limit(6),
+    );
+    // Upcoming (positive) + past (negative) day offsets, at varied hours.
+    const plan = [
+      { off: 1, hour: 10 }, { off: 2, hour: 14 }, { off: 4, hour: 11 },
+      { off: 7, hour: 16 }, { off: -3, hour: 13 }, { off: -10, hour: 15 },
+    ];
+    const rows = leadRows.slice(0, plan.length).map((lead, i) => {
+      const when = new Date();
+      when.setDate(when.getDate() + plan[i]!.off);
+      when.setHours(plan[i]!.hour, 0, 0, 0);
+      return {
+        tenantId: TENANT_ID,
+        leadId: lead.id,
+        propertyId: lead.propertyId,
+        agentId: lead.agentId,
+        scheduledAt: when,
+        timezone: "America/Denver",
+        status: (plan[i]!.off < 0 ? "completed" : "scheduled") as "scheduled" | "completed",
+        notes: "Private property showing with the buyer.",
+      };
+    });
+    if (rows.length > 0) {
+      await runInTenantContext(TENANT_ID, (tx) => tx.insert(visits).values(rows));
+      visitsSeeded = rows.length;
+    }
+  }
+
   console.log("\nEnrichment complete — magaiver test Brokerage\n");
   console.log(`  Agent:                ${AGENT_NAME} (${agentId})`);
   console.log(`  Leads reassigned:     ${toAgent.length}`);
   console.log(`  Won leads dated:      ${closedFixed}`);
-  console.log(`  This-week visits:     ${visitsAdded} (already had ${alreadyThisWeek})\n`);
+  console.log(`  This-week visits:     ${visitsAdded} (already had ${alreadyThisWeek})`);
+  console.log(`  Structured visits:    ${visitsSeeded}\n`);
 }
 
 main()
