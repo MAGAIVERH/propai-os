@@ -19,27 +19,27 @@ export function KanbanColumn({ stage, leads, activeLeadId, isWonCelebrating = fa
 
   return (
     <div
-      className="flex w-64 shrink-0 flex-col gap-3"
+      className="flex min-w-0 flex-1 flex-col gap-3"
       data-column-id={stage.id}
     >
       {/* Column header */}
-      <div className="flex items-center gap-2 px-1">
+      <div className="flex items-center gap-2 px-0.5">
         <span
-          className="size-2.5 rounded-full"
+          className="size-2.5 shrink-0 rounded-full"
           style={{ backgroundColor: stage.color }}
         />
-        <h3 className="text-sm font-semibold text-foreground">{stage.name}</h3>
-        <span className="ml-auto text-xs tabular-nums text-muted-foreground">
+        <h3 className="truncate text-sm font-semibold text-foreground">{stage.name}</h3>
+        <span className="bg-muted text-muted-foreground ml-auto rounded-full px-2 py-0.5 text-xs font-medium tabular-nums">
           {leads.length}
         </span>
       </div>
 
-      {/* Drop zone */}
+      {/* Drop zone / lane */}
       <div
         ref={setNodeRef}
         className={cn(
-          "flex min-h-48 flex-col gap-2 rounded-2xl border border-border bg-muted/40 p-2 transition-colors",
-          isOver && "border-primary/50 bg-primary/5",
+          "border-border/60 bg-muted/30 flex min-h-[26rem] flex-1 flex-col gap-2.5 rounded-2xl border p-2.5 transition-colors",
+          isOver && "border-primary/50 bg-primary/5 border-solid",
           isWonCelebrating && "border-emerald-400/60 bg-emerald-50/40 dark:bg-emerald-950/20",
         )}
       >
@@ -52,9 +52,9 @@ export function KanbanColumn({ stage, leads, activeLeadId, isWonCelebrating = fa
         ))}
 
         {leads.length === 0 ? (
-          <p className="py-4 text-center text-xs text-muted-foreground">
-            Drop leads here
-          </p>
+          <div className="text-muted-foreground/60 flex flex-1 items-center justify-center py-8 text-xs">
+            No leads
+          </div>
         ) : null}
       </div>
     </div>
@@ -63,16 +63,16 @@ export function KanbanColumn({ stage, leads, activeLeadId, isWonCelebrating = fa
 
 export function KanbanColumnSkeleton() {
   return (
-    <div className="flex w-64 shrink-0 flex-col gap-3">
-      <div className="flex items-center gap-2 px-1">
+    <div className="flex min-w-0 flex-1 flex-col gap-3">
+      <div className="flex items-center gap-2 px-0.5">
         <Skeleton className="size-2.5 rounded-full" />
         <Skeleton className="h-4 w-24" />
       </div>
-      <div className="flex min-h-48 flex-col gap-2 rounded-2xl border border-border bg-muted/40 p-2">
+      <div className="border-border/60 bg-muted/30 flex min-h-[26rem] flex-col gap-2.5 rounded-2xl border p-2.5">
         {Array.from({ length: 3 }, (_, i) => (
           <div
             key={`col-skel-${i}`}
-            className="flex flex-col gap-2 rounded-xl border border-border bg-card p-3"
+            className="border-border bg-card flex flex-col gap-2 rounded-xl border p-3"
           >
             <Skeleton className="h-4 w-32" />
             <Skeleton className="h-3 w-20" />

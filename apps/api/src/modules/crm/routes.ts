@@ -20,6 +20,7 @@ import {
   scheduleVisitResponseSchema,
   scheduleVisitSchema,
   updateLeadSchema,
+  visitListResponseSchema,
   type LeadActivityResponse,
   type LeadActivityType,
   type LeadResponse,
@@ -250,6 +251,52 @@ export async function registerCrmRoutes(
         stages: rows.map((s) => ({
           ...s,
           createdAt: s.createdAt.toISOString(),
+        })),
+      });
+    },
+  );
+
+  // GET /visits — scheduled showings, derived from visit_scheduled activities.
+  zodApp.get(
+    "/visits",
+    {
+      schema: { response: { 200: visitListResponseSchema } },
+      preHandler: requireLeadsWrite,
+    },
+    async (request, reply: FastifyReply) => {
+      const tenantId = requireTenantId(request);
+
+      const rows = await runInTenantContext(tenantId, async (tx) => {
+        return tx
+          .select({
+            id: leadActivities.id,
+            leadId: leads.id,
+            firstName: leads.firstName,
+            lastName: leads.lastName,
+            propertyId: properties.id,
+            propertyTitle: properties.title,
+            agentId: leads.assignedAgentId,
+            content: leadActivities.content,
+            createdAt: leadActivities.createdAt,
+          })
+          .from(leadActivities)
+          .innerJoin(leads, eq(leads.id, leadActivities.leadId))
+          .leftJoin(properties, eq(properties.id, leads.propertyId))
+          .where(and(eq(leadActivities.type, "visit_scheduled"), isNull(leads.softDeletedAt)))
+          .orderBy(desc(leadActivities.createdAt))
+          .limit(100);
+      });
+
+      return reply.status(200).send({
+        visits: rows.map((r) => ({
+          id: r.id,
+          leadId: r.leadId,
+          leadName: `${r.firstName} ${r.lastName}`,
+          propertyId: r.propertyId ?? null,
+          propertyTitle: r.propertyTitle ?? null,
+          agentId: r.agentId ?? null,
+          content: r.content,
+          createdAt: r.createdAt.toISOString(),
         })),
       });
     },

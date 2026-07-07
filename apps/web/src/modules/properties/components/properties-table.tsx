@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PropertyStatusBadge } from "@/modules/properties/components/property-status-badge";
+import { PropertyThumb } from "@/modules/properties/components/property-thumb";
 import type { PropertyListItem } from "@/modules/properties/types/property";
 
 type PropertiesTableProps = {
@@ -42,15 +43,20 @@ export function PropertiesTable({ items }: PropertiesTableProps) {
           {items.map((property) => (
             <TableRow key={property.id} className="border-border">
               <TableCell className="px-6 py-4">
-                <Link
-                  href={`/properties/${property.id}`}
-                  className="font-medium text-foreground hover:text-primary"
-                >
-                  {property.title}
-                </Link>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {property.typeLabel} · {property.rentOrSaleLabel}
-                </p>
+                <div className="flex items-center gap-3">
+                  <PropertyThumb propertyId={property.id} className="size-12" />
+                  <div className="min-w-0">
+                    <Link
+                      href={`/properties/${property.id}`}
+                      className="font-medium text-foreground hover:text-primary"
+                    >
+                      {property.title}
+                    </Link>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {property.typeLabel} · {property.rentOrSaleLabel}
+                    </p>
+                  </div>
+                </div>
               </TableCell>
               <TableCell className="px-6 py-4 text-muted-foreground">
                 {property.addressLine1}

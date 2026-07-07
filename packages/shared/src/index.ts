@@ -230,11 +230,15 @@ export {
   scheduleVisitResponseSchema,
   scheduleVisitSchema,
   sendVisitConfirmationJobDataSchema,
+  visitListItemSchema,
+  visitListResponseSchema,
   VISITS_SEND_CONFIRMATION_JOB_NAME,
   VISITS_SEND_CONFIRMATION_QUEUE_NAME,
   type ScheduleVisitInput,
   type ScheduleVisitResponse,
   type SendVisitConfirmationJobData,
+  type VisitListItem,
+  type VisitListResponse,
 } from "./crm/visit.js";
 export {
   publicBrandingSchema,

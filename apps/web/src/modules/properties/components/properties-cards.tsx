@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { PropertyStatusBadge } from "@/modules/properties/components/property-status-badge";
+import { PropertyThumb } from "@/modules/properties/components/property-thumb";
 import type { PropertyListItem } from "@/modules/properties/types/property";
 
 type PropertiesCardsProps = {
@@ -20,8 +21,11 @@ export function PropertiesCards({ items }: PropertiesCardsProps) {
       {items.map((property) => (
         <Card
           key={property.id}
-          className="rounded-2xl border border-border bg-card ring-0"
+          className="overflow-hidden rounded-2xl border border-border bg-card ring-0"
         >
+          <Link href={`/properties/${property.id}`} className="block">
+            <PropertyThumb propertyId={property.id} className="h-40 w-full rounded-none" />
+          </Link>
           <CardHeader className="border-b border-border">
             <div className="flex items-start justify-between gap-3">
               <div className="space-y-1">
