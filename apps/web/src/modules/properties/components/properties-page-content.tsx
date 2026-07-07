@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
-import { ModuleHeader } from "@/components/module-header";
+import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { ApiClientError } from "@/lib/api-client";
 import { PropertiesList } from "@/modules/properties/components/properties-list";
@@ -65,20 +65,16 @@ export function PropertiesPageContent({ filters }: PropertiesPageContentProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <ModuleHeader
-          label="Module"
-          title="Properties"
-          description="Manage listings, photos, and property details for your brokerage."
-        />
-        <Button
-          className="shrink-0 rounded-xl"
-          render={<Link href="/properties/new" />}
-        >
-          <Plus className="size-4" />
-          New property
-        </Button>
-      </div>
+      <PageHeader
+        title="Properties"
+        description="Manage listings, photos, and property details for your brokerage."
+        actions={
+          <Button className="rounded-lg" render={<Link href="/properties/new" />}>
+            <Plus className="size-4" />
+            New property
+          </Button>
+        }
+      />
 
       {!isPending && !isError && metricsData ? (
         <PropertiesMetrics metrics={metrics} />

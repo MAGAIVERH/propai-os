@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import { ModuleHeader } from "@/components/module-header";
+import { PageHeader } from "@/components/page-header";
 import { ApiClientError } from "@/lib/api-client";
 import { PropertyEditForm } from "@/modules/properties/components/property-edit-form";
 import { getPropertyById } from "@/modules/properties/queries/get-property-by-id";
@@ -29,10 +29,10 @@ export default async function EditPropertyPage({
 
   return (
     <div className="space-y-6">
-      <ModuleHeader
-        label="Module"
+      <PageHeader
         title="Edit property"
         description="Update address, square footage, price, and status."
+        back={{ label: "Property", href: `/properties/${property.id}` }}
       />
       <PropertyEditForm
         propertyId={property.id}

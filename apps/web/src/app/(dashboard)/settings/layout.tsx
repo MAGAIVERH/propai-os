@@ -1,4 +1,4 @@
-import { ModuleHeader } from "@/components/module-header";
+import { PageHeader } from "@/components/page-header";
 import { SettingsNav } from "@/modules/settings/components/settings-nav";
 
 export default function SettingsLayout({
@@ -8,8 +8,7 @@ export default function SettingsLayout({
 }) {
   return (
     <div className="space-y-6">
-      <ModuleHeader
-        label="Module"
+      <PageHeader
         title="Settings"
         description="Manage your organization, team members, billing, and branding."
       />
