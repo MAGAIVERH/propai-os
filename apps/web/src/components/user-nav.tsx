@@ -39,7 +39,8 @@ function UserAvatar({ initials, className }: { initials: string; className?: str
 }
 
 const ROW =
-  "flex w-full items-center gap-2.5 px-3 py-2 text-sm font-medium transition-colors hover:bg-muted";
+  "group/row flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors hover:bg-muted";
+const ROW_ICON = "text-muted-foreground group-hover/row:text-foreground size-4 transition-colors";
 
 export function UserNav() {
   const { data: session } = useSessionQuery();
@@ -79,27 +80,30 @@ export function UserNav() {
           </div>
         </div>
 
-        <div className="border-border border-t py-1">
+        <div className="border-border border-t p-1">
           <Link href="/profile" className={ROW}>
-            <UserCog className="text-muted-foreground size-4" />
+            <UserCog className={ROW_ICON} />
             Your profile
           </Link>
           <Link href="/settings/general" className={ROW}>
-            <Settings className="text-muted-foreground size-4" />
+            <Settings className={ROW_ICON} />
             Brokerage settings
           </Link>
           <Link href="/settings/billing" className={ROW}>
-            <CreditCard className="text-muted-foreground size-4" />
+            <CreditCard className={ROW_ICON} />
             Billing &amp; plan
           </Link>
         </div>
 
-        <div className="border-border border-t py-1">
+        <div className="border-border border-t p-1">
           <button
             type="button"
             onClick={handleSignOut}
             disabled={isPending}
-            className={cn(ROW, "text-destructive disabled:opacity-60")}
+            className={cn(
+              ROW,
+              "text-destructive hover:bg-destructive/10 disabled:opacity-60",
+            )}
           >
             <LogOut className="size-4" />
             {isPending ? "Signing out…" : "Sign out"}
