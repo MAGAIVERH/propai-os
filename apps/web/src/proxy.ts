@@ -115,6 +115,8 @@ export const config = {
     "/visits/:path*",
     "/analytics/:path*",
     "/settings/:path*",
+    "/profile/:path*",
+    "/profile",
     "/login",
     "/signup",
     "/setup",
