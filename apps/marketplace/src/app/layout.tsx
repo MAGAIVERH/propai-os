@@ -15,27 +15,52 @@ const inter = Inter({
   display: "swap",
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_MARKETPLACE_URL || "http://localhost:3001";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "PropAI OS Marketplace — US Real Estate",
-    template: "%s · PropAI OS",
+    default: "PropAI Marketplace — Homes & Rentals Across the US",
+    template: "%s · PropAI Marketplace",
   },
   description:
-    "Browse homes and rentals across the United States. AI-powered property search for buyers and renters, powered by PropAI OS.",
+    "Browse homes and rentals across the United States. AI-powered property search for buyers and renters, powered by PropAI.",
+  applicationName: "PropAI Marketplace",
   keywords: [
     "real estate",
     "homes for sale",
     "apartments for rent",
     "property search",
     "US real estate",
+    "AI real estate search",
   ],
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   openGraph: {
     type: "website",
-    siteName: "PropAI OS Marketplace",
+    url: "/",
+    siteName: "PropAI Marketplace",
+    title: "PropAI Marketplace — Homes & Rentals Across the US",
+    description:
+      "AI-powered property search for buyers and renters across the United States.",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
+    title: "PropAI Marketplace — Homes & Rentals Across the US",
+    description:
+      "AI-powered property search for buyers and renters across the United States.",
   },
 };
 
