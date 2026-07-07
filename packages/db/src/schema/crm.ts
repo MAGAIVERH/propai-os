@@ -20,6 +20,12 @@ export const leadActivityTypeEnum = pgEnum("lead_activity_type", [
   "visit_scheduled",
 ]);
 
+export const visitStatusEnum = pgEnum("visit_status", [
+  "scheduled",
+  "completed",
+  "canceled",
+]);
+
 /** Kanban columns per brokerage tenant (Day 36). Tenant-scoped via RLS on tenant_id. */
 export const pipelineStages = pgTable(
   "pipeline_stages",
@@ -74,6 +80,34 @@ export const leads = pgTable(
     index("leads_tenant_email_idx").on(table.tenantId, table.email),
     index("leads_tenant_created_at_idx").on(table.tenantId, table.createdAt.desc()),
     index("leads_tenant_agent_idx").on(table.tenantId, table.assignedAgentId),
+  ],
+);
+
+/** Scheduled property showings with a structured date/time. Tenant-scoped via RLS. */
+export const visits = pgTable(
+  "visits",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    leadId: uuid("lead_id")
+      .notNull()
+      .references(() => leads.id, { onDelete: "cascade" }),
+    propertyId: uuid("property_id").references(() => properties.id, {
+      onDelete: "set null",
+    }),
+    agentId: text("agent_id").references(() => user.id, { onDelete: "set null" }),
+    scheduledAt: timestamp("scheduled_at", { withTimezone: true, mode: "date" }).notNull(),
+    timezone: text("timezone").notNull(),
+    status: visitStatusEnum("status").notNull().default("scheduled"),
+    notes: text("notes"),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("visits_tenant_scheduled_idx").on(table.tenantId, table.scheduledAt),
+    index("visits_lead_idx").on(table.leadId),
   ],
 );
 

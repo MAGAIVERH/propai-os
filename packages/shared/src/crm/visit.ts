@@ -34,10 +34,13 @@ export type ScheduleVisitResponse = z.infer<typeof scheduleVisitResponseSchema>;
 
 // ── Visits list (derived from visit_scheduled activities) ───────────────────────
 
+export const visitStatusSchema = z.enum(["scheduled", "completed", "canceled"]);
+export type VisitStatus = z.infer<typeof visitStatusSchema>;
+
 /**
- * A scheduled showing, surfaced from the `visit_scheduled` lead activity joined
- * to its lead and (optional) property. `content` holds the scheduling note (for
- * product-created visits it includes the formatted local date/time).
+ * A scheduled property showing from the `visits` table, joined to its lead and
+ * (optional) property. `scheduledAt` is the UTC instant of the showing;
+ * `timezone` is the IANA zone it was booked in.
  */
 export const visitListItemSchema = z.object({
   id: z.uuid(),
@@ -46,7 +49,10 @@ export const visitListItemSchema = z.object({
   propertyId: z.uuid().nullable(),
   propertyTitle: z.string().nullable(),
   agentId: z.string().nullable(),
-  content: z.string(),
+  scheduledAt: z.iso.datetime(),
+  timezone: z.string(),
+  status: visitStatusSchema,
+  notes: z.string().nullable(),
   createdAt: z.iso.datetime(),
 });
 

@@ -232,6 +232,7 @@ export {
   sendVisitConfirmationJobDataSchema,
   visitListItemSchema,
   visitListResponseSchema,
+  visitStatusSchema,
   VISITS_SEND_CONFIRMATION_JOB_NAME,
   VISITS_SEND_CONFIRMATION_QUEUE_NAME,
   type ScheduleVisitInput,
@@ -239,6 +240,7 @@ export {
   type SendVisitConfirmationJobData,
   type VisitListItem,
   type VisitListResponse,
+  type VisitStatus,
 } from "./crm/visit.js";
 export {
   publicBrandingSchema,
