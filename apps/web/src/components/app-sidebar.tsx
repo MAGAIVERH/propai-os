@@ -93,7 +93,7 @@ export function AppSidebar() {
               disabled={isSigningOut}
               onClick={handleSignOut}
               tooltip="Sign out"
-              className="h-10 rounded-xl px-3 transition-colors"
+              className="text-destructive hover:text-destructive h-10 rounded-xl px-3 transition-colors"
             >
               <LogOut className="size-4" />
               <span className="font-medium">
