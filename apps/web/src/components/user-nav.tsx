@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, CreditCard, LogOut, Settings } from "lucide-react";
+import { ChevronDown, CreditCard, LogOut, Settings, UserCog } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -81,9 +81,13 @@ export function UserNav() {
 
         <DropdownMenuSeparator />
 
+        <DropdownMenuItem render={<Link href="/profile" />}>
+          <UserCog className="size-4" />
+          Your profile
+        </DropdownMenuItem>
         <DropdownMenuItem render={<Link href="/settings/general" />}>
           <Settings className="size-4" />
-          Settings
+          Brokerage settings
         </DropdownMenuItem>
         <DropdownMenuItem render={<Link href="/settings/billing" />}>
           <CreditCard className="size-4" />

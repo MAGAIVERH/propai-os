@@ -243,3 +243,37 @@ export async function signOut(): Promise<void> {
     throw await parseApiErrorResponse(response);
   }
 }
+
+/** Updates the signed-in user's profile (name and/or avatar URL) via Better Auth. */
+export async function updateUserProfile(input: {
+  name?: string;
+  image?: string | null;
+}): Promise<void> {
+  const response = await apiFetch("/api/auth/update-user", {
+    method: "POST",
+    json: input,
+  });
+
+  if (!response.ok) {
+    throw await parseApiErrorResponse(response);
+  }
+}
+
+/** Changes the signed-in user's password via Better Auth. */
+export async function changePassword(input: {
+  currentPassword: string;
+  newPassword: string;
+}): Promise<void> {
+  const response = await apiFetch("/api/auth/change-password", {
+    method: "POST",
+    json: {
+      currentPassword: input.currentPassword,
+      newPassword: input.newPassword,
+      revokeOtherSessions: false,
+    },
+  });
+
+  if (!response.ok) {
+    throw await parseApiErrorResponse(response);
+  }
+}

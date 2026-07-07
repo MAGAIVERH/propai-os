@@ -5,6 +5,7 @@ export const DASHBOARD_PROTECTED_PREFIXES = [
   "/visits",
   "/analytics",
   "/settings",
+  "/profile",
 ] as const;
 
 export function isProtectedDashboardPath(pathname: string): boolean {
