@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import { ModuleHeader } from "@/components/module-header";
+import { PageHeader } from "@/components/page-header";
 import { ApiClientError } from "@/lib/api-client";
 import { LeadDetailContent } from "@/modules/crm/components/lead-detail-content";
 import { getLead } from "@/modules/crm/queries/get-lead";
@@ -28,10 +28,10 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
 
   return (
     <div className="space-y-6">
-      <ModuleHeader
-        label="CRM"
+      <PageHeader
         title={`${lead.firstName} ${lead.lastName}`}
         description={lead.email}
+        back={{ label: "Leads", href: "/leads" }}
       />
       <LeadDetailContent lead={lead} initialActivities={activities} />
     </div>

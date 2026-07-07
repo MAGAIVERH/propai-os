@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { ModuleHeader } from "@/components/module-header";
+import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { ApiClientError } from "@/lib/api-client";
 import { PropertyDetailMedia } from "@/modules/properties/components/property-detail-media";
@@ -60,10 +60,10 @@ export default async function PropertyDetailPage({
 
   return (
       <div className="space-y-6">
-        <ModuleHeader
-          label="Module"
+        <PageHeader
           title={property.title}
           description={addressLabel}
+          back={{ label: "Properties", href: "/properties" }}
         />
 
         <section className="rounded-2xl border border-border bg-card p-6">

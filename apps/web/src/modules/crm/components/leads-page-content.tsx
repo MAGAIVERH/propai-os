@@ -5,7 +5,7 @@ import { Plus, Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { EmptyState } from "@/components/empty-state";
-import { ModuleHeader } from "@/components/module-header";
+import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { ApiClientError } from "@/lib/api-client";
 import { useKanban } from "../hooks/use-kanban";
@@ -34,23 +34,22 @@ export function LeadsPageContent() {
 
   return (
     <div className="space-y-6">
-      <ModuleHeader
-        label="CRM"
+      <PageHeader
         title="Leads"
         description="Track prospects and nurture your sales pipeline."
+        actions={
+          <Button className="rounded-lg" onClick={() => setIsCreateOpen(true)}>
+            <Plus className="mr-2 size-4" />
+            New Lead
+          </Button>
+        }
       />
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-muted-foreground text-sm">
-          {isPending
-            ? "Loading pipeline…"
-            : `${leads.length} ${leads.length === 1 ? "lead" : "leads"} in your pipeline`}
-        </p>
-        <Button className="rounded-lg" onClick={() => setIsCreateOpen(true)}>
-          <Plus className="mr-2 size-4" />
-          New Lead
-        </Button>
-      </div>
+      <p className="text-muted-foreground text-sm">
+        {isPending
+          ? "Loading pipeline…"
+          : `${leads.length} ${leads.length === 1 ? "lead" : "leads"} in your pipeline`}
+      </p>
 
       {isEmpty ? (
         <EmptyState

@@ -8,7 +8,7 @@ import { toast } from "sonner";
 
 import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
-import { ModuleHeader } from "@/components/module-header";
+import { PageHeader } from "@/components/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ApiClientError } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
@@ -119,8 +119,7 @@ export function VisitsPageContent() {
 
   return (
     <div className="space-y-6">
-      <ModuleHeader
-        label="CRM"
+      <PageHeader
         title="Visits"
         description="Property showings scheduled with your buyers."
       />
