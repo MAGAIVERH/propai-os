@@ -25,13 +25,10 @@ export function PropertyDetailMedia({
   return (
     <section className="space-y-4 rounded-2xl border border-border bg-card p-6">
       <div>
-        <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">
-          Photos
-        </p>
-        <h2 className="mt-1 text-lg font-semibold text-foreground">Gallery</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <h2 className="text-lg font-semibold tracking-tight">Photos</h2>
+        <p className="text-muted-foreground mt-1 text-sm">
           Upload listing photos here. Files go directly to secure storage via a
-          presigned URL — this is separate from the create/edit form.
+          presigned URL — separate from the create/edit form.
         </p>
       </div>
 

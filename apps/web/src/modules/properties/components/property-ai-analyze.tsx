@@ -112,13 +112,11 @@ export function PropertyAiAnalyze({ propertyId }: PropertyAiAnalyzeProps) {
     <div className="space-y-4 rounded-2xl border border-border bg-card p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">
-            AI
-          </p>
-          <h2 className="mt-1 text-lg font-semibold text-foreground">
-            Photo analysis
+          <h2 className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+            <Sparkles className="text-primary size-4" aria-hidden="true" />
+            AI photo analysis
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="text-muted-foreground mt-1 text-sm">
             Generate listing suggestions from uploaded photos.
           </p>
         </div>
