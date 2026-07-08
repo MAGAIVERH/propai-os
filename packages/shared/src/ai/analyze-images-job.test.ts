@@ -14,8 +14,9 @@ import {
 const tenantId = "550e8400-e29b-41d4-a716-446655440000";
 
 describe("AI_ANALYZE_IMAGES_QUEUE_NAME", () => {
-  it("uses the ai:analyze-images queue name", () => {
-    expect(AI_ANALYZE_IMAGES_QUEUE_NAME).toBe("ai:analyze-images");
+  it("uses a colon-free BullMQ queue name", () => {
+    expect(AI_ANALYZE_IMAGES_QUEUE_NAME).toBe("ai-analyze-images");
+    expect(AI_ANALYZE_IMAGES_QUEUE_NAME).not.toContain(":");
   });
 });
 

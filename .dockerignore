@@ -1,0 +1,23 @@
+# Keep the Docker build context small and reproducible.
+**/node_modules
+**/.next
+**/dist
+**/.turbo
+.git
+.github
+**/*.log
+
+# Local env / secrets
+.env
+.env.*
+!.env.example
+
+# Editor / OS
+.vscode
+.idea
+.DS_Store
+
+# Tests & docs not needed in the runtime image
+**/*.test.ts
+**/coverage
+docs

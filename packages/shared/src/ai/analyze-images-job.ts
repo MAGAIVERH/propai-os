@@ -2,7 +2,8 @@ import { z } from "zod";
 
 import { propertyImageAnalysisSchema } from "./property-image-analysis.js";
 
-export const AI_ANALYZE_IMAGES_QUEUE_NAME = "ai:analyze-images";
+// BullMQ v5 forbids ":" in queue names (it's the Redis key separator), so use hyphens.
+export const AI_ANALYZE_IMAGES_QUEUE_NAME = "ai-analyze-images";
 
 export const AI_JOB_STATUSES = ["queued", "processing", "completed", "failed"] as const;
 
