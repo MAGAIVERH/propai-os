@@ -13,6 +13,16 @@ export function getFastifyLoggerConfig(
 
   return {
     level: process.env.LOG_LEVEL ?? "info",
+    // Never let credentials reach the logs. Fastify serializes req/res headers,
+    // which would otherwise expose session cookies and bearer tokens.
+    redact: {
+      paths: [
+        "req.headers.authorization",
+        "req.headers.cookie",
+        'res.headers["set-cookie"]',
+      ],
+      censor: "[redacted]",
+    },
     transport: isDev
       ? {
           target: "pino-pretty",

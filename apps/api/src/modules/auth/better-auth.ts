@@ -9,6 +9,7 @@ import {
   tenantSettings,
 } from "@propai/db";
 
+import { parseTrustedOrigins } from "../../lib/trusted-origins.js";
 import { recordDevInvitation } from "../../lib/invitation-dev-store.js";
 import {
   brokerageOrganizationAccess,
@@ -20,10 +21,7 @@ const authSecret =
 
 const authBaseUrl = process.env.BETTER_AUTH_URL ?? "http://localhost:3333";
 
-export const TRUSTED_ORIGINS = [
-  "http://localhost:3000",
-  "http://localhost:3333",
-] as const;
+export const TRUSTED_ORIGINS = parseTrustedOrigins(process.env.TRUSTED_ORIGINS);
 
 export const auth = betterAuth({
   secret: authSecret,

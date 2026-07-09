@@ -28,6 +28,7 @@ import { registerUploadsModule } from "./modules/uploads/index.js";
 import { registerTestItemsModule } from "./modules/test-items/index.js";
 import { authPlugin } from "./plugins/auth.js";
 import { errorHandlerPlugin } from "./plugins/error-handler.js";
+import { rateLimitPlugin } from "./plugins/rate-limit.js";
 import { memberRolePlugin } from "./plugins/require-member-role.js";
 import { securityPlugin } from "./plugins/security.js";
 import { tenantContextPlugin } from "./plugins/tenant-context.js";
@@ -43,6 +44,10 @@ export async function buildApp(
 ): Promise<FastifyInstance> {
   const app = Fastify({
     logger: getFastifyLoggerConfig(options.logger ?? false),
+    // Behind the Railway/Fly edge proxy (production/staging), honor X-Forwarded-*
+    // so request.ip is the real client IP (used by rate limiting and audit logs),
+    // not the proxy. No proxy in dev/test, so leave it off there.
+    trustProxy: process.env.NODE_ENV === "production",
     ...requestIdOptions,
   });
   const mountAuthRoutes = options.mountAuthRoutes ?? true;
@@ -57,6 +62,7 @@ export async function buildApp(
   });
 
   await app.register(securityPlugin);
+  await app.register(rateLimitPlugin);
   await app.register(websocket);
   await registerHealthModule(app);
 
