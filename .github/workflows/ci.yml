@@ -95,3 +95,29 @@ jobs:
         run: pnpm db:migrate
       - name: Run API integration tests
         run: pnpm test:api
+  docker-build:
+    name: Docker image build (API + worker)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build production image (docker/api/Dockerfile)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/api/Dockerfile
+          push: false
+          load: true
+          tags: propai-api:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Smoke-check runtime (tsx + both entrypoints, no DB/Redis needed)
+        run: |
+          docker run --rm --entrypoint sh propai-api:ci -c \
+            "node_modules/.bin/tsx --version \
+             && test -f src/index.ts \
+             && test -f src/worker.ts \
+             && echo 'image OK: tsx present, API + worker entrypoints present'"
