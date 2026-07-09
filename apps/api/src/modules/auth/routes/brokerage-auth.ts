@@ -17,6 +17,7 @@ import {
 } from "../../../lib/forward-auth-cookies.js";
 import { slugifyOrganizationName } from "../../../lib/organization-slug.js";
 import { writeAuditEventSafe } from "../../../lib/write-audit-event.js";
+import { AUTH_RATE_LIMIT } from "../../../plugins/rate-limit.js";
 import { auth } from "../better-auth.js";
 import { brokerageCreateOrganizationSchema } from "../schemas/brokerage-create-organization.js";
 import { brokerageSignInSchema } from "../schemas/brokerage-sign-in.js";
@@ -57,6 +58,7 @@ export async function registerBrokerageAuthRoutes(
 ): Promise<void> {
   app.post(
     "/api/auth/brokerage-sign-up",
+    { config: { rateLimit: AUTH_RATE_LIMIT } },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const parsed = brokerageSignUpSchema.safeParse(request.body);
 
@@ -193,6 +195,7 @@ export async function registerBrokerageAuthRoutes(
 
   app.post(
     "/api/auth/brokerage-sign-in",
+    { config: { rateLimit: AUTH_RATE_LIMIT } },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const parsed = brokerageSignInSchema.safeParse(request.body);
 
@@ -278,6 +281,7 @@ export async function registerBrokerageAuthRoutes(
   // has no organization (e.g. their org was lost after a DB reset in development).
   app.post(
     "/api/auth/brokerage-create-organization",
+    { config: { rateLimit: AUTH_RATE_LIMIT } },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const session = await auth.api.getSession({
         headers: fromNodeHeaders(request.headers),
