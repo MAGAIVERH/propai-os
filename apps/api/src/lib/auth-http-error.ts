@@ -1,11 +1,15 @@
+// Either `status` or `statusCode` must be present (see isAuthHttpError);
+// getAuthHttpErrorStatus reads whichever is set. Modeling it as a union keeps
+// the type guard meaningful (a plain FastifyError isn't structurally one).
 type AuthHttpError = {
-  status: number | string;
   message?: string;
-  statusCode?: number | string;
   body?: {
     message?: string;
   };
-};
+} & (
+  | { status: number | string; statusCode?: number | string }
+  | { status?: number | string; statusCode: number | string }
+);
 
 /** Better Auth may expose string status codes (e.g. UNPROCESSABLE_ENTITY). */
 export function normalizeAuthHttpStatus(value: unknown): number {
