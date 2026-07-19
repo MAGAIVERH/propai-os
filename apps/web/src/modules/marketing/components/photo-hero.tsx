@@ -14,6 +14,9 @@ import { cn } from "@/lib/utils";
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const HERO_IMG = "/listings/listing-17.jpg";
+// A portrait-friendly shot used only on phones, where a tall crop fills the
+// viewport cleanly (the wide HERO_IMG is kept for sm+).
+const HERO_IMG_MOBILE = "/listings/listing-14.jpg";
 
 /**
  * Cinematic, volumetric atmosphere: a soft edge vignette frames the shot, a low
@@ -32,7 +35,7 @@ function Atmosphere() {
         }}
       />
       <div className="absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-black/35 via-black/10 to-transparent" />
-      <div data-fog className="absolute inset-x-0 bottom-0 h-[58%] opacity-25 sm:opacity-100">
+      <div data-fog className="absolute inset-x-0 bottom-0 h-[58%]">
         <div className="absolute inset-0 bg-gradient-to-t from-white via-white/70 to-transparent" />
         <div className="absolute bottom-[-12%] left-[-15%] h-[70%] w-[75%] rounded-[50%] bg-white/80 blur-[90px]" />
         <div className="absolute bottom-[-6%] left-[28%] h-[62%] w-[70%] rounded-[50%] bg-white/65 blur-[110px]" />
@@ -151,22 +154,20 @@ export function PhotoHero() {
       {/* House photo — wrapper is scaled past the viewport so parallax never
           exposes an edge. */}
       <div ref={imgWrapRef} className="absolute inset-0 z-10 origin-center will-change-transform">
-        {/* Phones only: a blurred, zoomed copy fills the frame so the letterboxed
-            bands above/below the contained photo read as a soft backdrop rather
-            than empty space. Hidden from sm up, where the sharp cover layer below
-            fills the whole hero on its own (desktop unchanged). */}
+        {/* Phones: a portrait-oriented shot that fills the tall viewport cleanly
+            with cover — no crop-zoom, no letterboxing. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={HERO_IMG}
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 h-full w-full scale-125 object-cover blur-2xl sm:hidden"
+          src={HERO_IMG_MOBILE}
+          alt="A modern luxury home at dusk"
+          className="absolute inset-0 h-full w-full object-cover sm:hidden"
         />
+        {/* sm and up: the original wide hero shot (unchanged). */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={HERO_IMG}
           alt="A modern luxury home at dusk"
-          className="absolute inset-0 h-full w-full object-contain object-center sm:object-cover"
+          className="absolute inset-0 hidden h-full w-full object-cover sm:block"
         />
       </div>
       <div
