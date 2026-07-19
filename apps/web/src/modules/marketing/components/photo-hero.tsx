@@ -155,7 +155,7 @@ export function PhotoHero() {
         <img
           src={HERO_IMG}
           alt="A modern luxury home at dusk"
-          className="h-full w-full object-cover"
+          className="h-full w-full object-contain object-center sm:object-cover"
         />
       </div>
       <div

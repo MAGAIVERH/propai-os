@@ -18,15 +18,16 @@ export function ShowcaseSection() {
   return (
     <section id="platform" className="scroll-mt-20 py-24 sm:py-32">
       <div className="mx-auto grid w-full max-w-6xl gap-12 px-4 sm:px-6 lg:grid-cols-[0.85fr_1fr] lg:gap-16">
-        {/* Sticky left — the anchor headline. */}
-        <div className="lg:sticky lg:top-28 lg:self-start">
+        {/* Sticky left — the anchor headline. Centered on mobile so it reads as
+            a proper section intro; left-aligned and sticky from lg up. */}
+        <div className="text-center lg:sticky lg:top-28 lg:self-start lg:text-left">
           <p className="text-primary text-sm font-semibold tracking-[0.2em] uppercase">
             How it works
           </p>
           <h2 className="mt-5 text-[clamp(2rem,4vw,3.25rem)] leading-[1.05] font-semibold tracking-tight text-balance">
             Your move, guided from first look to closing day
           </h2>
-          <p className="text-muted-foreground mt-6 max-w-md text-lg leading-relaxed">
+          <p className="text-muted-foreground mx-auto mt-6 max-w-md text-lg leading-relaxed text-pretty lg:mx-0">
             Whether you&rsquo;re buying or selling, the journey is the same: clear,
             guided, and built entirely around you.
           </p>

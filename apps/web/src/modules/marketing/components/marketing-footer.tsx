@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { cn } from "@/lib/utils";
+
 import { FAIR_HOUSING, NEWSLETTER } from "../content";
 import { BrandLogo } from "./brand-logo";
 import { NewsletterForm } from "./newsletter-form";
@@ -94,23 +96,38 @@ export function MarketingFooter() {
             </div>
           </div>
 
-          {FOOTER_GROUPS.map((group) => (
-            <div key={group.heading}>
-              <h3 className="mb-4 text-sm font-medium">{group.heading}</h3>
-              <ul className="space-y-2.5 text-sm">
-                {group.links.map((link) => (
-                  <li key={link.label}>
-                    <Link
-                      href={link.href}
-                      className="text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          {/* Link groups: a tidy 2-up grid on mobile (so the columns fill the
+              width instead of stacking with dead space on the right); on lg they
+              dissolve into the parent 4-column grid via `contents`. Legal spans
+              the full width with its two links laid out side by side. */}
+          <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:gap-x-10 lg:contents">
+            {FOOTER_GROUPS.map((group) => {
+              const isLegal = group.heading === "Legal";
+              return (
+                <div key={group.heading} className={cn(isLegal && "col-span-2 lg:col-span-1")}>
+                  <h3 className="mb-4 text-sm font-medium">{group.heading}</h3>
+                  <ul
+                    className={cn(
+                      "space-y-2.5 text-sm",
+                      isLegal &&
+                        "flex flex-wrap gap-x-8 gap-y-2 space-y-0 lg:block lg:space-y-2.5",
+                    )}
+                  >
+                    {group.links.map((link) => (
+                      <li key={link.label}>
+                        <Link
+                          href={link.href}
+                          className="text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          {link.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         <div className="border-border mt-14 flex flex-col gap-6 border-t pt-8 sm:flex-row sm:items-center sm:justify-between">

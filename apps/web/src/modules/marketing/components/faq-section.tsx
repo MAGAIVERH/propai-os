@@ -13,8 +13,8 @@ import { FAQ } from "../content";
  */
 export function FaqSection() {
   return (
-    <section id="faq" className="scroll-mt-20 py-24 sm:py-28">
-      <div className="mx-auto grid w-full max-w-6xl gap-12 px-4 sm:px-6 lg:grid-cols-[0.85fr_1.15fr]">
+    <section id="faq" className="scroll-mt-20 pt-14 pb-24 sm:py-28">
+      <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 sm:px-6 lg:grid-cols-[0.85fr_1.15fr] lg:gap-12">
         <div className="lg:sticky lg:top-28 lg:self-start">
           <div className="relative aspect-[4/5] overflow-hidden rounded-3xl">
             {/* eslint-disable-next-line @next/next/no-img-element */}
