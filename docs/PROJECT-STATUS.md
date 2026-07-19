@@ -1,8 +1,10 @@
 # Project status — PropAI OS
 
 **Snapshot of how far the build has progressed against the 90-day development
-guide.** Days 1–75 (Phases 0–7) are shipped and merged to `main`; Phase 8
-(Days 76–90 — DevOps, tests, launch) has not started.
+guide.** Days 1–75 (Phases 0–7) are shipped and merged to `main`; **Phase 8
+(Days 76–90 — DevOps, tests, launch) is in progress** — Docker image build in CI,
+staging deploy config, security hardening, unit tests, and a mobile-responsive
+pass on the landing site (with the unused `apps/marketplace` app removed).
 
 Latest tag: `ui-v0.1.0`. Milestone tags: `foundation-v0.1.0`, `ai-v0.1.0`, `ui-v0.1.0`.
 
@@ -21,9 +23,9 @@ Latest tag: `ui-v0.1.0`. Milestone tags: `foundation-v0.1.0`, `ai-v0.1.0`, `ui-v
 | 6 | 56–65 | Analytics & billing — views, dashboard, CSV, Stripe, gates, onboarding, team, branding | ✅ Complete |
 | 7 | 66–75 | Landing & polish — cinematic landing, a11y, i18n, error boundaries, seed, perf | ✅ Complete (`ui-v0.1.0`) |
 | 7+ | — | Landing revamp — self-contained pages, buyer accounts, premium auth (post-Day-75) | ✅ Complete (PRs #34, #35) |
-| 8 | 76–90 | DevOps, tests, and launch | ☐ Not started |
+| 8 | 76–90 | DevOps, tests, and launch | 🔄 In progress (Days 76–83 shipped) |
 
-Per-day delivery notes live in [`docs/tasks/`](tasks/) (`PHASE-X-DAY-NN.md`, Days 1–75).
+Per-day delivery notes live in [`docs/tasks/`](tasks/) (`PHASE-X-DAY-NN.md`).
 
 ---
 
@@ -38,11 +40,13 @@ Per-day delivery notes live in [`docs/tasks/`](tasks/) (`PHASE-X-DAY-NN.md`, Day
 - **Dashboard (`apps/web`).** Routes: `dashboard`, `properties`, `leads`,
   `visits`, `analytics`, `settings` (general / team / billing), plus error and
   loading boundaries. Real-time Kanban, AI listing generation, analytics charts.
-- **Marketplace (`apps/marketplace`, port 3001).** SSR listings, detail pages,
-  semantic search, clustered map, lead capture, legal pages.
-- **Marketing site (`apps/web` `(marketing)`).** Cinematic landing + self-contained
+- **Public site (`apps/web` `(marketing)`).** Cinematic landing + self-contained
   `/listings`, `/insights`, `/about`, `/contact`, `/privacy`, `/terms`; buyer +
-  agent accounts. See [`PHASE-7-LANDING-REVAMP.md`](tasks/PHASE-7-LANDING-REVAMP.md).
+  agent accounts; mobile-responsive (Day 83). See
+  [`PHASE-7-LANDING-REVAMP.md`](tasks/PHASE-7-LANDING-REVAMP.md). The separate
+  `apps/marketplace` SEO app (SSR listings, semantic search, clustered map) was
+  built in Phase 5 and **removed in Phase 8 (Day 83)** — its public browsing lives
+  in `apps/web`; the `/public/*` + `/search/semantic` API routes are unchanged.
 - **AI.** Four feature-flagged capabilities (vision, semantic search, lead
   scoring, pricing) with deterministic mocks when keys are absent.
 
@@ -71,18 +75,19 @@ The plan held closely; the meaningful differences are:
 
 ---
 
-## Phase 8 — remaining (Days 76–90)
+## Phase 8 — progress (Days 76–90)
 
-Not started. Planned scope (full spec kept alongside this repo):
+In progress. Actual delivery has diverged slightly from the original day plan:
 
-- [ ] **76** — Multi-stage Docker builds for API + worker.
-- [ ] **77** — Deploy API + worker to staging (Neon branch + Upstash).
-- [ ] **78** — Deploy web + marketplace to Vercel; update CORS.
-- [ ] **79** — Full GitHub Actions CI/CD (lint → build → preview; tag → prod).
+- [x] **76** — Multi-stage Docker build for API + worker (`docker/api/Dockerfile`).
+- [~] **77** — Staging deploy **config** prepped (Railway/Neon/Upstash, `.env.staging.example`) — not yet deployed.
+- [ ] **78** — Deploy web to Vercel; update CORS. *(marketplace app removed — web only)*
+- [x] **79** — CI docker-build job (Buildx + gha cache + runtime smoke) on top of lint/typecheck/test CI (PR #49).
 - [ ] **80** — Sentry + pino request IDs + uptime monitor.
-- [ ] **81** — Security hardening + `docs/SECURITY-TEST.md`.
-- [ ] **82** — 20–30 Vitest unit/integration tests (critical paths).
-- [ ] **83** — Playwright E2E (signup, AI publish, marketplace lead).
+- [x] **81** — Security hardening (env-driven trusted origins, log redaction, rate limit, trustProxy) (PR #50).
+- [x] **82** — Vitest unit tests for core pure logic (PR #51).
+- [x] **83** — Removed unused `apps/marketplace` app + mobile-responsive landing pass (PRs #52, #53).
+- [ ] **—** — Playwright E2E (signup, AI publish, public lead).
 - [ ] **84** — Staff-level README (architecture, live demo, ADRs).
 - [ ] **85** — 3-minute demo video + `docs/demo-script.md`.
 - [ ] **86** — Production deploy (Neon prod, rotated secrets).
@@ -93,4 +98,4 @@ Not started. Planned scope (full spec kept alongside this repo):
 
 ---
 
-*Last updated: 2026-07-06.*
+*Last updated: 2026-07-18.*
