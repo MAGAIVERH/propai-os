@@ -14,6 +14,9 @@ import { cn } from "@/lib/utils";
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const HERO_IMG = "/listings/listing-17.jpg";
+// A portrait-friendly shot used only on phones, where a tall crop fills the
+// viewport cleanly (the wide HERO_IMG is kept for sm+).
+const HERO_IMG_MOBILE = "/listings/listing-14.jpg";
 
 /**
  * Cinematic, volumetric atmosphere: a soft edge vignette frames the shot, a low
@@ -151,11 +154,20 @@ export function PhotoHero() {
       {/* House photo — wrapper is scaled past the viewport so parallax never
           exposes an edge. */}
       <div ref={imgWrapRef} className="absolute inset-0 z-10 origin-center will-change-transform">
+        {/* Phones: a portrait-oriented shot that fills the tall viewport cleanly
+            with cover — no crop-zoom, no letterboxing. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={HERO_IMG_MOBILE}
+          alt="A modern luxury home at dusk"
+          className="absolute inset-0 h-full w-full object-cover sm:hidden"
+        />
+        {/* sm and up: the original wide hero shot (unchanged). */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={HERO_IMG}
           alt="A modern luxury home at dusk"
-          className="h-full w-full object-cover"
+          className="absolute inset-0 hidden h-full w-full object-cover sm:block"
         />
       </div>
       <div
@@ -198,11 +210,11 @@ export function PhotoHero() {
       </div>
 
       {/* Headline */}
-      <div ref={contentRef} className="relative z-30 mx-auto w-full max-w-4xl px-6 text-center will-change-transform">
-        <h1 className="text-[clamp(2.75rem,9vw,8rem)] leading-[0.95] font-semibold tracking-tight text-white drop-shadow-[0_2px_30px_rgba(0,0,0,0.5)]">
+      <div ref={contentRef} className="relative z-30 mx-auto mt-[16vh] w-full max-w-4xl px-6 text-center will-change-transform sm:mt-0">
+        <h1 className="text-[clamp(2.75rem,9vw,8rem)] leading-[0.95] font-semibold tracking-tight text-neutral-900 drop-shadow-[0_1px_12px_rgba(255,255,255,0.6)] sm:text-white sm:drop-shadow-[0_2px_30px_rgba(0,0,0,0.5)]">
           Find what moves you
         </h1>
-        <p className="mx-auto mt-6 max-w-xl text-lg text-pretty text-white/90 drop-shadow-[0_1px_12px_rgba(0,0,0,0.5)]">
+        <p className="mx-auto mt-6 max-w-xl text-lg text-pretty text-neutral-800 drop-shadow-[0_1px_8px_rgba(255,255,255,0.6)] sm:text-white/90 sm:drop-shadow-[0_1px_12px_rgba(0,0,0,0.5)]">
           Expert agents. Real guidance. A curated collection of exceptional homes.
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">

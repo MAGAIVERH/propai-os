@@ -1,6 +1,7 @@
 import { STATS } from "../content";
+import { StatCounter } from "./stat-counter";
 
-/** Symmetric trust band — four evenly-weighted figures. */
+/** Symmetric trust band — four evenly-weighted figures that count up on loop. */
 export function StatsBand() {
   return (
     <section className="border-border bg-muted/40 border-y py-16">
@@ -9,7 +10,7 @@ export function StatsBand() {
           {STATS.map((stat) => (
             <div key={stat.label} data-animate>
               <dt className="text-4xl font-semibold tracking-tight tabular-nums sm:text-5xl">
-                {stat.value}
+                <StatCounter value={stat.value} />
               </dt>
               <dd className="text-muted-foreground mt-2 text-sm">{stat.label}</dd>
             </div>

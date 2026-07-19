@@ -11,12 +11,21 @@ import { cn } from "@/lib/utils";
 export function CtaSection() {
   return (
     <section className="relative isolate flex min-h-[72svh] items-center justify-center overflow-hidden">
+      {/* Phones: the wide shot swapped down from the top hero (portrait shot
+          lives up there on mobile). sm+ keeps the original. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/listings/listing-17.jpg"
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 -z-10 h-full w-full object-cover sm:hidden"
+      />
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/listings/listing-14.jpg"
         alt=""
         aria-hidden="true"
-        className="absolute inset-0 -z-10 h-full w-full object-cover"
+        className="absolute inset-0 -z-10 hidden h-full w-full object-cover sm:block"
       />
       <div
         aria-hidden="true"

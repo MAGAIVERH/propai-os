@@ -81,8 +81,8 @@ export function MarketingFooter() {
   return (
     <footer className="border-border bg-muted/30 border-t">
       <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6">
-        <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
-          <div className="max-w-sm">
+        <div className="grid gap-12 text-center lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:text-left">
+          <div className="mx-auto max-w-sm lg:mx-0">
             <BrandLogo />
             <p className="text-muted-foreground mt-4 text-sm leading-relaxed">
               The intelligent platform behind modern real estate brokerages. Listings,
@@ -94,26 +94,31 @@ export function MarketingFooter() {
             </div>
           </div>
 
-          {FOOTER_GROUPS.map((group) => (
-            <div key={group.heading}>
-              <h3 className="mb-4 text-sm font-medium">{group.heading}</h3>
-              <ul className="space-y-2.5 text-sm">
-                {group.links.map((link) => (
-                  <li key={link.label}>
-                    <Link
-                      href={link.href}
-                      className="text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          {/* Link groups: three centered columns on mobile (Explore / Company /
+              Legal); on lg they dissolve into the parent 4-column grid via
+              `contents`. */}
+          <div className="grid grid-cols-3 gap-x-4 gap-y-8 lg:contents">
+            {FOOTER_GROUPS.map((group) => (
+              <div key={group.heading}>
+                <h3 className="mb-4 text-sm font-medium">{group.heading}</h3>
+                <ul className="space-y-2.5 text-sm">
+                  {group.links.map((link) => (
+                    <li key={link.label}>
+                      <Link
+                        href={link.href}
+                        className="text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="border-border mt-14 flex flex-col gap-6 border-t pt-8 sm:flex-row sm:items-center sm:justify-between">
+        <div className="border-border mt-14 flex flex-col items-center gap-6 border-t pt-8 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
           <p className="text-muted-foreground text-xs">
             © {year} PropAI. Software for brokerages, not a licensed brokerage.
             <span className="text-muted-foreground/80 mt-1 block">
@@ -137,7 +142,7 @@ export function MarketingFooter() {
             ))}
           </ul>
         </div>
-        <p className="text-muted-foreground/80 mt-6 text-xs leading-relaxed">
+        <p className="text-muted-foreground/80 mt-6 text-center text-xs leading-relaxed sm:text-left">
           {FAIR_HOUSING}
         </p>
       </div>
