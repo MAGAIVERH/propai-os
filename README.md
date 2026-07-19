@@ -2,7 +2,7 @@
 
 **An AI-powered Real Estate Operating System for US brokerages.**
 
-**Status:** Phases 1–7 complete — multi-tenant backend, AI, real-time CRM, public marketplace, analytics & billing, and a premium landing site with buyer + agent accounts. Latest tag `ui-v0.1.0`. **Next:** Phase 8 (DevOps, tests, deploy). Full breakdown: [docs/PROJECT-STATUS.md](docs/PROJECT-STATUS.md).
+**Status:** Phases 1–7 complete; **Phase 8 in progress** (DevOps, tests, deploy) — CI + Docker image builds, security hardening, unit tests, and a mobile-responsive pass on the landing site. The standalone marketplace app was consolidated into `apps/web` (its public listings live under the `(marketing)` route group). Latest tag `ui-v0.1.0`. Full breakdown: [docs/PROJECT-STATUS.md](docs/PROJECT-STATUS.md).
 
 **Milestones:** [Foundation sign-off](docs/FOUNDATION-SIGNOFF.md) · [Backend checklist](docs/BACKEND-FOUNDATION-CHECKLIST.md) · tags `foundation-v0.1.0` · `ai-v0.1.0` · `ui-v0.1.0`
 
@@ -27,7 +27,7 @@ PropAI OS is an AI-powered Real Estate Operating System built for US brokerages 
 > locally end to end: dashboard, marketplace, and landing site.
 
 ```bash
-pnpm dev:all      # API :3333 + dashboard :3000 + marketplace :3001
+pnpm dev:all      # API :3333 + web :3000 (dashboard + public site)
 pnpm db:seed      # demo tenant (Summit Realty Group) with listings + leads
 ```
 
@@ -45,8 +45,7 @@ High-level system view (target monorepo):
 flowchart TB
   subgraph clients [Clients]
     Web[apps/web — Brokerage dashboard]
-    Marketplace[apps/marketplace — Public SEO marketplace]
-    Landing[Landing / marketing]
+    Public[apps/web — Public site: landing + listings]
   end
 
   subgraph api [apps/api — Fastify]
@@ -72,8 +71,7 @@ flowchart TB
 
   Web --> REST
   Web --> WS
-  Marketplace --> REST
-  Landing --> Web
+  Public --> REST
 
   REST --> Shared
   REST --> DB
@@ -91,8 +89,7 @@ flowchart TB
 propai-os/
 ├── apps/
 │   ├── api/              # Fastify — REST + WebSocket + worker entry
-│   ├── web/              # Next.js — SaaS dashboard (brokerages)
-│   └── marketplace/      # Next.js — public property search (SEO/SSR)
+│   └── web/              # Next.js — dashboard + public site (landing, listings)
 ├── packages/
 │   ├── db/               # Drizzle schema, migrations, RLS policies
 │   ├── shared/           # Zod contracts, enums, constants, helpers
@@ -142,7 +139,7 @@ propai-os/
 - **Multi-tenant CRM** — organizations, roles (owner, manager, agent, viewer), PostgreSQL RLS, audit log
 - **Pipeline** — Kanban stages with GSAP FLIP, real-time updates via WebSocket
 - **Properties** — US fields (sq ft, USD, state/ZIP), photo uploads, map picker, AI-assisted listing generation
-- **Marketplace** — SSR property search, semantic query, clustered map, lead capture into CRM
+- **Public site & listings** — SSR listing/detail pages in `apps/web`, semantic query, lead capture into the CRM (`POST /public/leads`)
 - **AI** — photo analysis (vision), pgvector semantic search, lead scoring, price estimates
 - **Analytics & billing** — funnel metrics, agent leaderboard, CSV export, Stripe Free / Pro plans + feature gates
 - **Marketing site** — cinematic landing, self-contained pages (listings, insights, about, contact, legal), buyer + agent accounts
@@ -155,8 +152,7 @@ See [docs/PROJECT-STATUS.md](docs/PROJECT-STATUS.md) for the day-by-day breakdow
 
 | Path | Package | Description |
 | ---- | ------- | ----------- |
-| `apps/web` | `@propai/web` | Brokerage SaaS dashboard (Next.js) |
-| `apps/marketplace` | `@propai/marketplace` | Public property search (Next.js, SEO) |
+| `apps/web` | `@propai/web` | Brokerage SaaS dashboard + public site: landing & listings (Next.js) |
 | `apps/api` | `@propai/api` | REST API entry (Fastify) — WebSocket/workers later |
 | `packages/shared` | `@propai/shared` | Zod contracts, constants, shared types |
 | `packages/db` | `@propai/db` | Drizzle schema, migrations, RLS (Phase 1) |
@@ -209,15 +205,14 @@ pnpm dev:smoke --spawn-api            # smoke without pnpm dev (spawns temp API)
 
 | Command | Apps |
 | ------- | ---- |
-| `pnpm dev` | API + dashboard (default — Turbo filters `@propai/api` + `@propai/web`) |
-| `pnpm dev:all` | API + dashboard + marketplace (`:3001`) |
+| `pnpm dev` | API + web (default — Turbo filters `@propai/api` + `@propai/web`) |
+| `pnpm dev:all` | All packages via Turbo (currently API + web) |
 | `pnpm setup:local` | `.env` + `docker:up` + `db:migrate` |
 
 Run a single app:
 
 ```bash
 pnpm --filter @propai/web dev          # http://localhost:3000
-pnpm --filter @propai/marketplace dev  # http://localhost:3001
 pnpm --filter @propai/api dev          # http://localhost:3333
 ```
 
@@ -257,8 +252,7 @@ API scaffold (Day 12): [docs/api/api-scaffold.md](./docs/api/api-scaffold.md)
 
 | App | Default URL |
 | --- | ----------- |
-| Dashboard (`apps/web`) | http://localhost:3000 |
-| Marketplace (`apps/marketplace`) | http://localhost:3001 |
+| Web — dashboard + public site (`apps/web`) | http://localhost:3000 |
 | API (`apps/api`) | http://localhost:3333 |
 
 ---
@@ -330,10 +324,16 @@ See [ADR 006](docs/adr/006-ai-vision-listings.md) (vision) and [ADR 007](docs/ad
 
 ---
 
-## Public marketplace (Phase 5)
+## Public listings & marketplace API (Phase 5)
 
-The public, SEO-first marketplace (`apps/marketplace`, port 3001) lets visitors
-browse and convert into CRM leads — no auth required.
+> **Consolidated in Phase 8:** the standalone `apps/marketplace` app (`:3001`)
+> was removed and its public browsing folded into `apps/web` (`/listings`). The
+> public API surface below (`/public/*`, `/search/semantic`) is unchanged and
+> still powers the listing pages and lead capture. The rest of this section
+> documents what Phase 5 shipped.
+
+The public, SEO-first listings experience lets visitors browse and convert into
+CRM leads — no auth required.
 
 - **SSR listing grid** with URL-bound filters (`/properties?city=Austin&beds=2`) and cursor "Load more".
 - **Detail pages** with a photo gallery, location map, `RealEstateListing` JSON-LD, and Open Graph/Twitter cards.
@@ -390,10 +390,12 @@ TBD.
 public marketplace, analytics & billing, and a premium landing site with buyer +
 agent accounts. Latest tag `ui-v0.1.0`.
 
-**Next — Phase 8 (Days 76–90):** DevOps, tests, and launch — Docker production
-builds, staging/production deploys (Vercel + Railway/Neon/Upstash), full CI/CD,
-Sentry observability, security hardening, Vitest + Playwright suites, staff-level
-docs, and the `v1.0.0` release.
+**Phase 8 in progress (Days 76–90):** DevOps, tests, and launch — staging deploy
+config, Docker production image + CI build, security hardening, unit tests
+(Day 82), and a mobile-responsive pass on the landing site with the unused
+`apps/marketplace` app removed and consolidated into `apps/web` (Day 83). Still
+ahead: staging/production deploys (Vercel + Railway/Neon/Upstash), Sentry
+observability, Playwright suites, and the `v1.0.0` release.
 
 Full breakdown and per-phase status: [docs/PROJECT-STATUS.md](docs/PROJECT-STATUS.md).
 See [docs/architecture.md](./docs/architecture.md) for actors, the RLS data plane,
