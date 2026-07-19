@@ -211,10 +211,10 @@ export function PhotoHero() {
 
       {/* Headline */}
       <div ref={contentRef} className="relative z-30 mx-auto w-full max-w-4xl px-6 text-center will-change-transform">
-        <h1 className="text-[clamp(2.75rem,9vw,8rem)] leading-[0.95] font-semibold tracking-tight text-white drop-shadow-[0_2px_30px_rgba(0,0,0,0.5)]">
+        <h1 className="text-[clamp(2.75rem,9vw,8rem)] leading-[0.95] font-semibold tracking-tight text-neutral-900 drop-shadow-[0_1px_12px_rgba(255,255,255,0.6)] sm:text-white sm:drop-shadow-[0_2px_30px_rgba(0,0,0,0.5)]">
           Find what moves you
         </h1>
-        <p className="mx-auto mt-6 max-w-xl text-lg text-pretty text-white/90 drop-shadow-[0_1px_12px_rgba(0,0,0,0.5)]">
+        <p className="mx-auto mt-6 max-w-xl text-lg text-pretty text-neutral-800 drop-shadow-[0_1px_8px_rgba(255,255,255,0.6)] sm:text-white/90 sm:drop-shadow-[0_1px_12px_rgba(0,0,0,0.5)]">
           Expert agents. Real guidance. A curated collection of exceptional homes.
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
