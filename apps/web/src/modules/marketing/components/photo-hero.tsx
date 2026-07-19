@@ -32,7 +32,7 @@ function Atmosphere() {
         }}
       />
       <div className="absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-black/35 via-black/10 to-transparent" />
-      <div data-fog className="absolute inset-x-0 bottom-0 h-[58%]">
+      <div data-fog className="absolute inset-x-0 bottom-0 h-[58%] opacity-25 sm:opacity-100">
         <div className="absolute inset-0 bg-gradient-to-t from-white via-white/70 to-transparent" />
         <div className="absolute bottom-[-12%] left-[-15%] h-[70%] w-[75%] rounded-[50%] bg-white/80 blur-[90px]" />
         <div className="absolute bottom-[-6%] left-[28%] h-[62%] w-[70%] rounded-[50%] bg-white/65 blur-[110px]" />
@@ -151,11 +151,22 @@ export function PhotoHero() {
       {/* House photo — wrapper is scaled past the viewport so parallax never
           exposes an edge. */}
       <div ref={imgWrapRef} className="absolute inset-0 z-10 origin-center will-change-transform">
+        {/* Phones only: a blurred, zoomed copy fills the frame so the letterboxed
+            bands above/below the contained photo read as a soft backdrop rather
+            than empty space. Hidden from sm up, where the sharp cover layer below
+            fills the whole hero on its own (desktop unchanged). */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={HERO_IMG}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full scale-125 object-cover blur-2xl sm:hidden"
+        />
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={HERO_IMG}
           alt="A modern luxury home at dusk"
-          className="h-full w-full object-contain object-center sm:object-cover"
+          className="absolute inset-0 h-full w-full object-contain object-center sm:object-cover"
         />
       </div>
       <div
