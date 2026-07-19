@@ -210,7 +210,7 @@ export function PhotoHero() {
       </div>
 
       {/* Headline */}
-      <div ref={contentRef} className="relative z-30 mx-auto w-full max-w-4xl px-6 text-center will-change-transform">
+      <div ref={contentRef} className="relative z-30 mx-auto mt-[16vh] w-full max-w-4xl px-6 text-center will-change-transform sm:mt-0">
         <h1 className="text-[clamp(2.75rem,9vw,8rem)] leading-[0.95] font-semibold tracking-tight text-neutral-900 drop-shadow-[0_1px_12px_rgba(255,255,255,0.6)] sm:text-white sm:drop-shadow-[0_2px_30px_rgba(0,0,0,0.5)]">
           Find what moves you
         </h1>
