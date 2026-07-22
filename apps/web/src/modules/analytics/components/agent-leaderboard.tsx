@@ -30,7 +30,7 @@ export function AgentLeaderboard({ agents }: { agents: AnalyticsAgent[] }) {
   }
 
   return (
-    <Table>
+    <Table className="min-w-[460px]">
       <TableHeader>
         <TableRow>
           <TableHead>Agent</TableHead>

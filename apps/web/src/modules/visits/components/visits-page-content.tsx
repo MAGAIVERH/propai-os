@@ -63,7 +63,7 @@ function initials(name: string): string {
 
 function VisitRow({ visit, past }: { visit: VisitListItem; past?: boolean }) {
   return (
-    <li className="border-border bg-card flex items-center gap-4 rounded-2xl border p-4 shadow-sm transition-shadow hover:shadow-md">
+    <li className="border-border bg-card flex items-center gap-3 rounded-2xl border p-3 shadow-sm transition-shadow hover:shadow-md sm:gap-4 sm:p-4">
       <DateBadge iso={visit.scheduledAt} muted={past} />
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">

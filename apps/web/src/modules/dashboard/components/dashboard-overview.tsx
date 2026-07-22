@@ -121,6 +121,9 @@ export function DashboardOverview() {
         duration: 0.5,
         stagger: 0.07,
         ease: "power2.out",
+        // Strip the inline opacity/transform GSAP writes so no card can be left
+        // stuck mid-animation (faded / offset) after a re-render.
+        clearProps: "opacity,transform",
       });
       gsap.from("[data-panel]", {
         opacity: 0,
@@ -129,6 +132,7 @@ export function DashboardOverview() {
         stagger: 0.1,
         delay: 0.15,
         ease: "power2.out",
+        clearProps: "opacity,transform",
       });
     },
     { scope: rootRef, dependencies: [reduced] },
@@ -144,7 +148,7 @@ export function DashboardOverview() {
             {greeting()}, {firstName}
           </h1>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-end">
           <Tabs value={range} onValueChange={(v) => setRange(v as AnalyticsRange)}>
             <TabsList>
               {RANGES.map((r) => (

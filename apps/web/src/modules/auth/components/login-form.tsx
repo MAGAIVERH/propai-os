@@ -1,9 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -18,14 +16,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { SESSION_QUERY_KEY } from "@/hooks/use-session";
 import { signInWithEmail } from "@/lib/auth-client";
 import { getAuthFormErrorMessage } from "@/modules/auth/lib/auth-form-error";
+import { safeInternalPath } from "@/modules/auth/lib/safe-redirect";
 import { loginSchema, type LoginInput } from "@/modules/auth/schemas/login";
 
 export function LoginForm() {
-  const router = useRouter();
-  const queryClient = useQueryClient();
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<LoginInput>({
@@ -45,12 +41,12 @@ export function LoginForm() {
           rememberMe: true,
         });
 
-        await queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEY });
-
-        setTimeout(() => {
-          router.push("/dashboard");
-          router.refresh();
-        }, 400);
+        // Hard navigation (not router.push) so the freshly-set auth cookie is
+        // sent to the proxy gate on the very next request — the dashboard then
+        // renders on the first try, with no manual refresh. Honour the ?next=
+        // the proxy appends for a deep link, falling back to /dashboard.
+        const next = new URLSearchParams(window.location.search).get("next");
+        window.location.assign(safeInternalPath(next, "/dashboard"));
       } catch (error) {
         toast.error(
           getAuthFormErrorMessage(

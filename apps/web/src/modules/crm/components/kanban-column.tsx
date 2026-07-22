@@ -19,7 +19,7 @@ export function KanbanColumn({ stage, leads, activeLeadId, isWonCelebrating = fa
 
   return (
     <div
-      className="flex min-w-0 flex-1 flex-col gap-3"
+      className="flex w-full flex-col gap-3 lg:w-auto lg:min-w-0 lg:flex-1"
       data-column-id={stage.id}
     >
       {/* Column header */}
@@ -38,7 +38,7 @@ export function KanbanColumn({ stage, leads, activeLeadId, isWonCelebrating = fa
       <div
         ref={setNodeRef}
         className={cn(
-          "border-border/60 bg-muted/30 flex min-h-[26rem] flex-1 flex-col gap-2.5 rounded-2xl border p-2.5 transition-colors",
+          "border-border/60 bg-muted/30 flex min-h-[7rem] flex-1 flex-col gap-2.5 rounded-2xl border p-2.5 transition-colors lg:min-h-[26rem]",
           isOver && "border-primary/50 bg-primary/5 border-solid",
           isWonCelebrating && "border-emerald-400/60 bg-emerald-50/40 dark:bg-emerald-950/20",
         )}
@@ -63,12 +63,12 @@ export function KanbanColumn({ stage, leads, activeLeadId, isWonCelebrating = fa
 
 export function KanbanColumnSkeleton() {
   return (
-    <div className="flex min-w-0 flex-1 flex-col gap-3">
+    <div className="flex w-full flex-col gap-3 lg:w-auto lg:min-w-0 lg:flex-1">
       <div className="flex items-center gap-2 px-0.5">
         <Skeleton className="size-2.5 rounded-full" />
         <Skeleton className="h-4 w-24" />
       </div>
-      <div className="border-border/60 bg-muted/30 flex min-h-[26rem] flex-col gap-2.5 rounded-2xl border p-2.5">
+      <div className="border-border/60 bg-muted/30 flex min-h-[7rem] flex-col gap-2.5 rounded-2xl border p-2.5 lg:min-h-[26rem]">
         {Array.from({ length: 3 }, (_, i) => (
           <div
             key={`col-skel-${i}`}

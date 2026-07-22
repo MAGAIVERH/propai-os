@@ -12,7 +12,7 @@ export function DashboardHeader() {
   const { status } = useTenantSocket();
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border px-4">
+    <header className="bg-background/80 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b border-border px-3 backdrop-blur sm:px-4">
       <SidebarTrigger className="-ml-1" />
 
       <div className="min-w-0 flex-1">
@@ -23,7 +23,7 @@ export function DashboardHeader() {
         </p>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1 sm:gap-2">
         <NotificationBell connectionStatus={status} />
         <ThemeToggle />
         <UserNav />

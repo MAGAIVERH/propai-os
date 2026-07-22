@@ -2,7 +2,7 @@
 
 **An AI-powered Real Estate Operating System for US brokerages.**
 
-**Status:** Phases 1–7 complete; **Phase 8 in progress** (DevOps, tests, deploy) — CI + Docker image builds, security hardening, unit tests, and a mobile-responsive pass on the landing site. The standalone marketplace app was consolidated into `apps/web` (its public listings live under the `(marketing)` route group). Latest tag `ui-v0.1.0`. Full breakdown: [docs/PROJECT-STATUS.md](docs/PROJECT-STATUS.md).
+**Status:** Phases 1–7 complete; **Phase 8 in progress** (DevOps, tests, deploy) — CI + Docker image builds, security hardening, unit tests, and a mobile-responsive + premium pass across both the landing site and the dashboard. The standalone marketplace app was consolidated into `apps/web` (its public listings live under the `(marketing)` route group). Latest tag `ui-v0.1.0`. Full breakdown: [docs/PROJECT-STATUS.md](docs/PROJECT-STATUS.md).
 
 **Milestones:** [Foundation sign-off](docs/FOUNDATION-SIGNOFF.md) · [Backend checklist](docs/BACKEND-FOUNDATION-CHECKLIST.md) · tags `foundation-v0.1.0` · `ai-v0.1.0` · `ui-v0.1.0`
 
@@ -392,10 +392,12 @@ agent accounts. Latest tag `ui-v0.1.0`.
 
 **Phase 8 in progress (Days 76–90):** DevOps, tests, and launch — staging deploy
 config, Docker production image + CI build, security hardening, unit tests
-(Day 82), and a mobile-responsive pass on the landing site with the unused
-`apps/marketplace` app removed and consolidated into `apps/web` (Day 83). Still
-ahead: staging/production deploys (Vercel + Railway/Neon/Upstash), Sentry
-observability, Playwright suites, and the `v1.0.0` release.
+(Day 82), a mobile-responsive pass on the landing site with the unused
+`apps/marketplace` app removed and consolidated into `apps/web` (Day 83), and a
+mobile-responsive + premium pass across the whole dashboard plus a post-login
+redirect fix (Day 84). Still ahead: staging/production deploys (Vercel +
+Railway/Neon/Upstash), Sentry observability, Playwright suites, and the `v1.0.0`
+release.
 
 Full breakdown and per-phase status: [docs/PROJECT-STATUS.md](docs/PROJECT-STATUS.md).
 See [docs/architecture.md](./docs/architecture.md) for actors, the RLS data plane,

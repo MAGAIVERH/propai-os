@@ -19,7 +19,7 @@ type PropertiesTableProps = {
 export function PropertiesTable({ items }: PropertiesTableProps) {
   return (
     <div className="overflow-hidden rounded-2xl border border-border">
-      <Table>
+      <Table className="min-w-[720px]">
         <TableHeader>
           <TableRow className="border-b border-border bg-muted hover:bg-muted">
             <TableHead className="px-6 py-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">

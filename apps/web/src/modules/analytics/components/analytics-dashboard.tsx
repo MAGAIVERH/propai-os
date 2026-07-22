@@ -109,6 +109,9 @@ export function AnalyticsDashboard() {
         duration: 0.5,
         stagger: 0.08,
         ease: "power2.out",
+        // Strip inline opacity/transform on finish so no KPI card is left stuck
+        // mid-animation (faded / offset) after a re-render.
+        clearProps: "opacity,transform",
       });
     },
     { scope: rootRef },
@@ -130,7 +133,7 @@ export function AnalyticsDashboard() {
 
   return (
     <div ref={rootRef} className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Tabs value={range} onValueChange={(v) => setRange(v as AnalyticsRange)}>
           <TabsList>
             {RANGES.map((r) => (
@@ -141,7 +144,7 @@ export function AnalyticsDashboard() {
           </TabsList>
         </Tabs>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 [&>button]:flex-1 sm:[&>button]:flex-none">
           <Button
             variant="outline"
             size="sm"
