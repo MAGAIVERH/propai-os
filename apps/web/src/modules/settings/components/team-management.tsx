@@ -182,7 +182,7 @@ export function TeamManagement() {
       ) : team.isError ? (
         <p className="text-sm text-red-500">Could not load the team.</p>
       ) : (
-        <Table>
+        <Table className="min-w-[420px]">
           <TableHeader>
             <TableRow>
               <TableHead>Member</TableHead>

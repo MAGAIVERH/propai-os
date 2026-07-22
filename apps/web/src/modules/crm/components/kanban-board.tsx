@@ -97,7 +97,7 @@ export function KanbanBoard() {
 
   if (isPending) {
     return (
-      <div className="flex gap-3">
+      <div className="flex flex-col gap-3 lg:flex-row">
         {Array.from({ length: 5 }, (_, i) => (
           <KanbanColumnSkeleton key={`skel-${i}`} />
         ))}
@@ -111,9 +111,10 @@ export function KanbanBoard() {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      {/* Columns share the width equally (flex-1) so every stage fits without a
-          page or board horizontal scrollbar. */}
-      <div className="flex items-stretch gap-3">
+      {/* Mobile/tablet: stages stack vertically, each full-width and readable, so
+          the board scrolls naturally down the page. From lg up, columns sit side
+          by side and share the width equally (flex-1). */}
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-stretch">
         {stages.map((stage) => (
           <KanbanColumn
             key={stage.id}

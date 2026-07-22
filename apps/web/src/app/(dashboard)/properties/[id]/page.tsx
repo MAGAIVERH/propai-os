@@ -73,7 +73,7 @@ export default async function PropertyDetailPage({
         }
       />
 
-      <section className="border-border bg-card rounded-2xl border p-6">
+      <section className="border-border bg-card rounded-2xl border p-4 sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-primary text-3xl font-semibold tracking-tight tabular-nums">

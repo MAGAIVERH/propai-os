@@ -1,9 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -18,7 +16,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { SESSION_QUERY_KEY } from "@/hooks/use-session";
 import { signUpBrokerage } from "@/lib/auth-client";
 import { getAuthFormErrorMessage } from "@/modules/auth/lib/auth-form-error";
 import {
@@ -27,8 +24,6 @@ import {
 } from "@/modules/auth/schemas/sign-up";
 
 export function SignUpForm() {
-  const router = useRouter();
-  const queryClient = useQueryClient();
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<BrokerageSignUpInput>({
@@ -46,12 +41,9 @@ export function SignUpForm() {
       try {
         await signUpBrokerage(values);
 
-        await queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEY });
-
-        setTimeout(() => {
-          router.push("/dashboard");
-          router.refresh();
-        }, 400);
+        // Hard navigation so the new session cookie reaches the proxy gate on
+        // the next request — dashboard renders first try, no manual refresh.
+        window.location.assign("/dashboard");
       } catch (error) {
         toast.error(
           getAuthFormErrorMessage(

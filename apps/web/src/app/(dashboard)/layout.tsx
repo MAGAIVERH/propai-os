@@ -18,7 +18,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <AppSidebar />
       <SidebarInset>
         <DashboardHeader />
-        <div className="flex min-w-0 flex-1 flex-col gap-6 p-6">
+        <div className="flex min-w-0 flex-1 flex-col gap-5 p-4 sm:gap-6 sm:p-6 lg:p-8">
           <PageTransition>{children}</PageTransition>
         </div>
       </SidebarInset>

@@ -25,12 +25,13 @@ export function PropertiesStatusFilter({ filters }: PropertiesStatusFilterProps)
   }
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0 sm:pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       <Button
         type="button"
         size="sm"
         variant={activeStatus === undefined ? "default" : "outline"}
         onClick={() => navigateToStatus(undefined)}
+        className="shrink-0"
       >
         All
       </Button>
@@ -41,6 +42,7 @@ export function PropertiesStatusFilter({ filters }: PropertiesStatusFilterProps)
           size="sm"
           variant={activeStatus === status ? "default" : "outline"}
           onClick={() => navigateToStatus(status)}
+          className="shrink-0"
         >
           {getPropertyStatusLabel(status)}
         </Button>

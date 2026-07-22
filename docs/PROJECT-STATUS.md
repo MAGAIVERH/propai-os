@@ -87,8 +87,9 @@ In progress. Actual delivery has diverged slightly from the original day plan:
 - [x] **81** — Security hardening (env-driven trusted origins, log redaction, rate limit, trustProxy) (PR #50).
 - [x] **82** — Vitest unit tests for core pure logic (PR #51).
 - [x] **83** — Removed unused `apps/marketplace` app + mobile-responsive landing pass (PRs #52, #53).
+- [x] **84** — Mobile-responsive + premium pass across the **whole dashboard** (shell, Overview, Leads/Kanban, Properties, Visits, Analytics, Settings, Profile, forms + detail pages) + post-login redirect fix (soft nav → hard nav) and a KPI-card entrance-animation fix. See [`PHASE-8-DAY-84.md`](tasks/PHASE-8-DAY-84.md).
 - [ ] **—** — Playwright E2E (signup, AI publish, public lead).
-- [ ] **84** — Staff-level README (architecture, live demo, ADRs).
+- [ ] **—** — Staff-level README (architecture, live demo, ADRs).
 - [ ] **85** — 3-minute demo video + `docs/demo-script.md`.
 - [ ] **86** — Production deploy (Neon prod, rotated secrets).
 - [ ] **87** — Portfolio + LinkedIn + CV update.
@@ -98,4 +99,4 @@ In progress. Actual delivery has diverged slightly from the original day plan:
 
 ---
 
-*Last updated: 2026-07-18.*
+*Last updated: 2026-07-22.*

@@ -186,7 +186,7 @@ export function PropertyForm(props: PropertyFormProps) {
           </Alert>
         ) : null}
 
-        <section className="rounded-2xl border border-border bg-card p-6">
+        <section className="rounded-2xl border border-border bg-card p-4 sm:p-6">
           <h2 className="text-lg font-semibold text-foreground">
             Basic information
           </h2>
@@ -320,7 +320,7 @@ export function PropertyForm(props: PropertyFormProps) {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-border bg-card p-6">
+        <section className="rounded-2xl border border-border bg-card p-4 sm:p-6">
           <h2 className="text-lg font-semibold text-foreground">Address</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Property location for search and map display.
@@ -481,7 +481,7 @@ export function PropertyForm(props: PropertyFormProps) {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-border bg-card p-6">
+        <section className="rounded-2xl border border-border bg-card p-4 sm:p-6">
           <h2 className="text-lg font-semibold text-foreground">Details</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Square footage, beds, baths, and price in US dollars.

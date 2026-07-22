@@ -1,10 +1,11 @@
 "use client";
 
 import { APP_NAME } from "@propai/shared";
-import { LogOut } from "lucide-react";
+import { LogOut, PanelLeft } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { Button } from "@/components/ui/button";
 import {
   Sidebar,
   SidebarContent,
@@ -16,6 +17,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { useOrganizationQuery } from "@/hooks/use-organization";
 import { useSignOut } from "@/hooks/use-sign-out";
@@ -28,15 +30,21 @@ export function AppSidebar() {
   const pathname = usePathname();
   const { data: organization, isPending } = useOrganizationQuery();
   const { handleSignOut, isPending: isSigningOut } = useSignOut();
+  const { setOpenMobile } = useSidebar();
+
+  // On mobile the sidebar is an overlay drawer; close it after any navigation
+  // so the destination is visible without an extra tap outside the panel.
+  const closeMobile = () => setOpenMobile(false);
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border">
-      <SidebarHeader className="flex h-14 shrink-0 flex-row items-center border-b border-border px-3 py-0">
+      <SidebarHeader className="flex h-14 shrink-0 flex-row items-center gap-1 border-b border-border px-3 py-0">
         <SidebarMenu className="w-full">
           <SidebarMenuItem>
             <SidebarMenuButton
               size="lg"
               className="h-10 rounded-xl px-2"
+              onClick={closeMobile}
               render={<Link href="/dashboard" />}
             >
               <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#1b2947] shadow-sm">
@@ -58,6 +66,17 @@ export function AppSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
+
+        {/* Close control, mobile drawer only (desktop uses the header trigger). */}
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={closeMobile}
+          aria-label="Close menu"
+          className="shrink-0 md:hidden"
+        >
+          <PanelLeft className="size-4" aria-hidden="true" />
+        </Button>
       </SidebarHeader>
 
       <SidebarContent className="gap-2 px-2 py-3">
@@ -73,6 +92,7 @@ export function AppSidebar() {
                     render={<Link href={item.href} />}
                     isActive={isDashboardNavActive(pathname, item.href)}
                     tooltip={item.title}
+                    onClick={closeMobile}
                     className="h-10 rounded-xl px-3 transition-colors"
                   >
                     <item.icon className="size-4" />
