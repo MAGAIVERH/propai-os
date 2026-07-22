@@ -59,6 +59,10 @@ Thumbs.db
 .cache/
 package-lock.json
 
+# Local-only, throwaway helper scripts (machine-specific paths; never commit)
+tmp-*.mjs
+packages/db/tmp-neon-prep.mjs
+
 # Local-only docs (not for repository)
 guia-desenvolvimento-propai-os-dia-a-dia.md
 *.local.md
