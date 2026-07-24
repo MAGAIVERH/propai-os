@@ -68,7 +68,17 @@ type ApiFetchInit = Omit<RequestInit, "credentials"> & {
 };
 
 function getFetchBaseUrl(): string {
-  return typeof window === "undefined" ? getApiUrl() : getPublicApiUrl();
+  if (typeof window === "undefined") {
+    // Server-side (Server Components, route handlers): call the API origin
+    // directly and forward the incoming request cookie.
+    return getApiUrl();
+  }
+  // Browser in production: use a same-origin base ("") so requests go through
+  // the Next.js rewrite proxy (see next.config `rewrites`). This keeps the
+  // Better Auth session cookie first-party on the web domain — required when the
+  // API is deployed on a different domain (Vercel web + Render API). In dev we
+  // call the API directly for simplicity.
+  return process.env.NODE_ENV === "production" ? "" : getPublicApiUrl();
 }
 
 /** Credentialed fetch against the PropAI API (cookies for Better Auth). */

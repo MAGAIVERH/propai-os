@@ -42,8 +42,26 @@ function getMonorepoEnv() {
 
 const monorepoEnv = getMonorepoEnv();
 
+const apiProxyTarget =
+  process.env.API_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  monorepoEnv.API_URL ||
+  monorepoEnv.NEXT_PUBLIC_API_URL ||
+  "http://localhost:3333";
+
 const nextConfig: NextConfig = {
   transpilePackages: ["@propai/shared"],
+  // Proxy the API through the web origin so the Better Auth session cookie stays
+  // first-party on the web domain. Required when web (Vercel) and API (Render)
+  // live on different domains — a cross-site cookie would be dropped by both the
+  // browser and the server-side auth middleware. In production apiFetch() calls
+  // same-origin (see api-client.ts) and these rewrites forward to the real API.
+  async rewrites() {
+    return [
+      { source: "/api/:path*", destination: `${apiProxyTarget}/api/:path*` },
+      { source: "/v1/:path*", destination: `${apiProxyTarget}/v1/:path*` },
+    ];
+  },
   // Explicitly expose these to the client-side bundle.
   // Platform env vars (Vercel/host) take precedence; the monorepo root .env is a
   // local-dev fallback (it is gitignored and absent on the deploy platform).
