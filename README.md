@@ -23,17 +23,32 @@ PropAI OS is an AI-powered Real Estate Operating System built for US brokerages 
 ---
 
 ## Live demo
-> A public staging deploy lands in **Phase 8**. Until then, the full product runs
-> locally end to end: dashboard, marketplace, and landing site.
+
+**🔗 Live platform: https://propai-os-api.vercel.app**
+
+Deployed end to end on free-tier infrastructure — **Vercel** (Next.js web) ·
+**Render** (Dockerized Fastify API + BullMQ worker) · **Neon** (PostgreSQL).
+The API sleeps when idle, so the first request after a pause may take ~40s to
+cold-start.
+
+- **Public site** — landing, marketplace listings, AI search, and lead capture (no login).
+- **Brokerage dashboard** — use **"Agent login"** with the demo account:
+
+  ```
+  magaiiver@oi.com  /  12345678
+  ```
+
+  A multi-tenant CRM, Kanban pipeline, properties, analytics, and billing.
+
+Or run the full product locally end to end:
 
 ```bash
 pnpm dev:all      # API :3333 + web :3000 (dashboard + public site)
 pnpm db:seed      # demo tenant (Summit Realty Group) with listings + leads
 ```
 
-Local demo credentials (owner): `demo@propai.io` / `DemoPass123!` — see
-[Demo data](#demo-data). Buyers can also self-register at `/account/register`
-(a client-side demo session — see [Marketing site & accounts](#marketing-site--accounts)).
+Buyers can also self-register at `/account/register` (a client-side demo session
+— see [Marketing site & accounts](#marketing-site--accounts)).
 
 ---
 
@@ -395,9 +410,10 @@ config, Docker production image + CI build, security hardening, unit tests
 (Day 82), a mobile-responsive pass on the landing site with the unused
 `apps/marketplace` app removed and consolidated into `apps/web` (Day 83), and a
 mobile-responsive + premium pass across the whole dashboard plus a post-login
-redirect fix (Day 84). Still ahead: staging/production deploys (Vercel +
-Railway/Neon/Upstash), Sentry observability, Playwright suites, and the `v1.0.0`
-release.
+redirect fix (Day 84), and a **live production deploy** — Vercel (web) + Render
+(Dockerized API) + Neon (Postgres), with a same-origin API proxy for first-party
+auth cookies across the split web/API domains. Still ahead: Sentry observability,
+Playwright suites, and the `v1.0.0` release.
 
 Full breakdown and per-phase status: [docs/PROJECT-STATUS.md](docs/PROJECT-STATUS.md).
 See [docs/architecture.md](./docs/architecture.md) for actors, the RLS data plane,
