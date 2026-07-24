@@ -44,14 +44,30 @@ const monorepoEnv = getMonorepoEnv();
 
 const nextConfig: NextConfig = {
   transpilePackages: ["@propai/shared"],
-  // Explicitly expose these to the client-side bundle
+  // Explicitly expose these to the client-side bundle.
+  // Platform env vars (Vercel/host) take precedence; the monorepo root .env is a
+  // local-dev fallback (it is gitignored and absent on the deploy platform).
   env: {
-    NEXT_PUBLIC_API_URL: monorepoEnv.NEXT_PUBLIC_API_URL || "http://localhost:3333",
-    NEXT_PUBLIC_APP_URL: monorepoEnv.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-    NEXT_PUBLIC_MAP_PROVIDER: monorepoEnv.NEXT_PUBLIC_MAP_PROVIDER || "",
-    NEXT_PUBLIC_MAPBOX_TOKEN: monorepoEnv.NEXT_PUBLIC_MAPBOX_TOKEN || "",
+    NEXT_PUBLIC_API_URL:
+      process.env.NEXT_PUBLIC_API_URL ||
+      monorepoEnv.NEXT_PUBLIC_API_URL ||
+      "http://localhost:3333",
+    NEXT_PUBLIC_APP_URL:
+      process.env.NEXT_PUBLIC_APP_URL ||
+      monorepoEnv.NEXT_PUBLIC_APP_URL ||
+      "http://localhost:3000",
+    NEXT_PUBLIC_MAP_PROVIDER:
+      process.env.NEXT_PUBLIC_MAP_PROVIDER ||
+      monorepoEnv.NEXT_PUBLIC_MAP_PROVIDER ||
+      "",
+    NEXT_PUBLIC_MAPBOX_TOKEN:
+      process.env.NEXT_PUBLIC_MAPBOX_TOKEN ||
+      monorepoEnv.NEXT_PUBLIC_MAPBOX_TOKEN ||
+      "",
     NEXT_PUBLIC_GOOGLE_MAPS_API_KEY:
-      monorepoEnv.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+      process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
+      monorepoEnv.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
+      "",
   },
 };
 
